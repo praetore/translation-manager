@@ -1,0 +1,85 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: "Segoe UI", "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", "SF Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.985 0.008 95);
+  --foreground: oklch(0.22 0.02 160);
+  --card: oklch(0.995 0.004 95);
+  --card-foreground: oklch(0.22 0.02 160);
+  --popover: oklch(0.995 0.004 95);
+  --popover-foreground: oklch(0.22 0.02 160);
+  --primary: oklch(0.42 0.1 160);
+  --primary-foreground: oklch(0.98 0.01 160);
+  --secondary: oklch(0.95 0.01 95);
+  --secondary-foreground: oklch(0.28 0.02 160);
+  --muted: oklch(0.95 0.01 95);
+  --muted-foreground: oklch(0.5 0.02 160);
+  --accent: oklch(0.94 0.015 95);
+  --accent-foreground: oklch(0.28 0.02 160);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0.88 0.015 95);
+  --input: oklch(0.88 0.015 95);
+  --ring: oklch(0.42 0.1 160);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+
+  body {
+    @apply m-0 bg-background text-foreground font-sans antialiased;
+    background-image:
+      radial-gradient(circle at top left, color-mix(in oklab, var(--primary) 12%, transparent), transparent 40%),
+      linear-gradient(180deg, oklch(0.975 0.01 95) 0%, var(--background) 100%);
+  }
+}
+
+@layer utilities {
+  .row-missing-stripe {
+    background-color: rgb(254 226 226 / 0.35);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(254 202 202 / 0.45),
+      rgb(254 202 202 / 0.45) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+}

@@ -1,0 +1,125 @@
+auth:
+  createAccount: Créer un compte
+  email: E-mail
+  forgotPassword: Mot de passe oublié ?
+  login: Connexion
+  logout: Déconnexion
+  password: Mot de passe
+  rememberMe: Se souvenir de moi
+  resetPassword: Réinitialiser le mot de passe
+  signup: Inscription
+  welcomeBack: Bon retour
+common:
+  apply: Appliquer
+  back: Retour
+  cancel: Annuler
+  close: Fermer
+  confirm: Confirmer
+  copy: Copier
+  create: Créer
+  delete: Supprimer
+  download: Télécharger
+  duplicate: Dupliquer
+  edit: Modifier
+  export: Exporter
+  filter: Filtrer
+  import: Importer
+  less: Moins
+  loading: Chargement…
+  more: Plus
+  next: Suivant
+  'no': Non
+  paste: Coller
+  previous: Précédent
+  refresh: Actualiser
+  rename: Renommer
+  reset: Réinitialiser
+  retry: Réessayer
+  save: Enregistrer
+  search: Rechercher
+  update: Mettre à jour
+  upload: Importer
+  'yes': Oui
+editor:
+  addKey: Ajouter une clé
+  findReplace: Rechercher et remplacer
+  key: Clé
+  missing: Traductions manquantes
+  removeKey: Supprimer la clé
+  saved: Toutes les modifications sont enregistrées
+  sortByKey: Trier par clé
+  sortByLocale: Trier par langue
+  source: Source
+  target: Cible
+  title: Éditeur de traduction
+  unsaved: Modifications non enregistrées
+  value: Valeur
+errors:
+  forbidden: Accès refusé
+  network: Erreur réseau
+  notFound: Page introuvable
+  parseFailed: Impossible d'analyser le fichier
+  readFailed: Impossible de lire le dossier
+  server: Une erreur s'est produite
+  timeout: Délai d'attente dépassé
+  unauthorized: Vous n'êtes pas autorisé
+  writeFailed: Impossible d'écrire le fichier
+nav:
+  billing: Facturation
+  help: Aide
+  home: Accueil
+  languages: Langues
+  logout: Déconnexion
+  profile: Profil
+  projects: Projets
+  settings: Paramètres
+  team: Équipe
+  translations: Traductions
+projects:
+  archive: Archiver le projet
+  createdAt: Créé le
+  description: Description
+  empty: Aucun projet pour le moment
+  name: Nom du projet
+  new: Nouveau projet
+  open: Ouvrir le projet
+  owner: Propriétaire
+  title: Projets
+  updatedAt: Mis à jour le
+settings:
+  appearance: Apparence
+  autoSave: Enregistrement automatique
+  general: Général
+  language: Langue
+  notifications: Notifications
+  saveInterval: Intervalle d'enregistrement
+  shortcuts: Raccourcis clavier
+  sourceLocale: Langue source
+  theme: Thème
+  title: Paramètres
+status:
+  archived: Archivé
+  draft: Brouillon
+  offline: Hors ligne
+  online: En ligne
+  published: Publié
+  synced: Synchronisé
+  syncing: Synchronisation
+table:
+  columns: Colonnes
+  jumpTo: Aller à
+  noResults: Aucun résultat
+  of: sur
+  page: Page
+  perPage: Par page
+  rows: Lignes
+  selected: Sélectionné
+validation:
+  duplicateKey: Cette clé existe déjà
+  emptyFolder: Aucun fichier de traduction trouvé
+  invalidEmail: Saisissez une adresse e-mail valide
+  mismatch: Les valeurs ne correspondent pas
+  required: Ce champ est obligatoire
+  tooLong: La valeur est trop longue
+  tooShort: La valeur est trop courte
+  unsupportedFormat: Format de fichier non pris en charge

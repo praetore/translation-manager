@@ -1,0 +1,348 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "auth.createAccount"
+msgstr "Crea account"
+
+msgid "auth.email"
+msgstr "Email"
+
+msgid "auth.forgotPassword"
+msgstr "Password dimenticata?"
+
+msgid "auth.login"
+msgstr "Accedi"
+
+msgid "auth.logout"
+msgstr "Esci"
+
+msgid "auth.password"
+msgstr "Password"
+
+msgid "auth.rememberMe"
+msgstr "Ricordami"
+
+msgid "auth.resetPassword"
+msgstr "Reimposta password"
+
+msgid "auth.signup"
+msgstr "Registrati"
+
+msgid "auth.welcomeBack"
+msgstr "Bentornato"
+
+msgid "common.apply"
+msgstr "Applica"
+
+msgid "common.back"
+msgstr "Indietro"
+
+msgid "common.cancel"
+msgstr "Annulla"
+
+msgid "common.close"
+msgstr "Chiudi"
+
+msgid "common.confirm"
+msgstr "Conferma"
+
+msgid "common.copy"
+msgstr "Copia"
+
+msgid "common.create"
+msgstr "Crea"
+
+msgid "common.delete"
+msgstr "Elimina"
+
+msgid "common.download"
+msgstr "Scarica"
+
+msgid "common.duplicate"
+msgstr "Duplica"
+
+msgid "common.edit"
+msgstr "Modifica"
+
+msgid "common.export"
+msgstr "Esporta"
+
+msgid "common.filter"
+msgstr "Filtra"
+
+msgid "common.import"
+msgstr "Importa"
+
+msgid "common.less"
+msgstr "Meno"
+
+msgid "common.loading"
+msgstr "Caricamento…"
+
+msgid "common.more"
+msgstr "Altro"
+
+msgid "common.next"
+msgstr "Avanti"
+
+msgid "common.no"
+msgstr "No"
+
+msgid "common.paste"
+msgstr "Incolla"
+
+msgid "common.previous"
+msgstr "Precedente"
+
+msgid "common.refresh"
+msgstr "Aggiorna"
+
+msgid "common.rename"
+msgstr "Rinomina"
+
+msgid "common.reset"
+msgstr "Reimposta"
+
+msgid "common.retry"
+msgstr "Riprova"
+
+msgid "common.save"
+msgstr "Salva"
+
+msgid "common.search"
+msgstr "Cerca"
+
+msgid "common.update"
+msgstr "Aggiorna"
+
+msgid "common.upload"
+msgstr "Carica"
+
+msgid "common.yes"
+msgstr "Sì"
+
+msgid "editor.addKey"
+msgstr "Aggiungi chiave"
+
+msgid "editor.findReplace"
+msgstr "Trova e sostituisci"
+
+msgid "editor.key"
+msgstr "Chiave"
+
+msgid "editor.missing"
+msgstr "Traduzioni mancanti"
+
+msgid "editor.removeKey"
+msgstr "Rimuovi chiave"
+
+msgid "editor.saved"
+msgstr "Tutte le modifiche salvate"
+
+msgid "editor.sortByKey"
+msgstr "Ordina per chiave"
+
+msgid "editor.sortByLocale"
+msgstr "Ordina per lingua"
+
+msgid "editor.source"
+msgstr "Sorgente"
+
+msgid "editor.target"
+msgstr "Destinazione"
+
+msgid "editor.title"
+msgstr "Editor traduzioni"
+
+msgid "editor.unsaved"
+msgstr "Modifiche non salvate"
+
+msgid "editor.value"
+msgstr "Valore"
+
+msgid "errors.forbidden"
+msgstr "Accesso negato"
+
+msgid "errors.network"
+msgstr "Errore di rete"
+
+msgid "errors.notFound"
+msgstr "Pagina non trovata"
+
+msgid "errors.parseFailed"
+msgstr "Impossibile analizzare il file"
+
+msgid "errors.readFailed"
+msgstr "Impossibile leggere la cartella"
+
+msgid "errors.server"
+msgstr "Qualcosa è andato storto"
+
+msgid "errors.timeout"
+msgstr "Richiesta scaduta"
+
+msgid "errors.unauthorized"
+msgstr "Non sei autorizzato"
+
+msgid "errors.writeFailed"
+msgstr "Impossibile scrivere il file"
+
+msgid "nav.billing"
+msgstr "Fatturazione"
+
+msgid "nav.help"
+msgstr "Aiuto"
+
+msgid "nav.home"
+msgstr "Home"
+
+msgid "nav.languages"
+msgstr "Lingue"
+
+msgid "nav.logout"
+msgstr "Esci"
+
+msgid "nav.profile"
+msgstr "Profilo"
+
+msgid "nav.projects"
+msgstr "Progetti"
+
+msgid "nav.settings"
+msgstr "Impostazioni"
+
+msgid "nav.team"
+msgstr "Team"
+
+msgid "nav.translations"
+msgstr "Traduzioni"
+
+msgid "projects.archive"
+msgstr "Archivia progetto"
+
+msgid "projects.createdAt"
+msgstr "Creato il"
+
+msgid "projects.description"
+msgstr "Descrizione"
+
+msgid "projects.empty"
+msgstr "Nessun progetto ancora"
+
+msgid "projects.name"
+msgstr "Nome progetto"
+
+msgid "projects.new"
+msgstr "Nuovo progetto"
+
+msgid "projects.open"
+msgstr "Apri progetto"
+
+msgid "projects.owner"
+msgstr "Proprietario"
+
+msgid "projects.title"
+msgstr "Progetti"
+
+msgid "projects.updatedAt"
+msgstr "Aggiornato il"
+
+msgid "settings.appearance"
+msgstr "Aspetto"
+
+msgid "settings.autoSave"
+msgstr "Salvataggio automatico"
+
+msgid "settings.general"
+msgstr "Generale"
+
+msgid "settings.language"
+msgstr "Lingua"
+
+msgid "settings.notifications"
+msgstr "Notifiche"
+
+msgid "settings.saveInterval"
+msgstr "Intervallo di salvataggio"
+
+msgid "settings.shortcuts"
+msgstr "Scorciatoie da tastiera"
+
+msgid "settings.sourceLocale"
+msgstr "Lingua sorgente"
+
+msgid "settings.theme"
+msgstr "Tema"
+
+msgid "settings.title"
+msgstr "Impostazioni"
+
+msgid "status.archived"
+msgstr "Archiviato"
+
+msgid "status.draft"
+msgstr "Bozza"
+
+msgid "status.offline"
+msgstr "Offline"
+
+msgid "status.online"
+msgstr "Online"
+
+msgid "status.published"
+msgstr "Pubblicato"
+
+msgid "status.synced"
+msgstr "Sincronizzato"
+
+msgid "status.syncing"
+msgstr "Sincronizzazione"
+
+msgid "table.columns"
+msgstr "Colonne"
+
+msgid "table.jumpTo"
+msgstr "Vai a"
+
+msgid "table.noResults"
+msgstr "Nessun risultato"
+
+msgid "table.of"
+msgstr "di"
+
+msgid "table.page"
+msgstr "Pagina"
+
+msgid "table.perPage"
+msgstr "Per pagina"
+
+msgid "table.rows"
+msgstr "Righe"
+
+msgid "table.selected"
+msgstr "Selezionato"
+
+msgid "validation.duplicateKey"
+msgstr "Questa chiave esiste già"
+
+msgid "validation.emptyFolder"
+msgstr "Nessun file di traduzione trovato"
+
+msgid "validation.invalidEmail"
+msgstr "Inserisci un indirizzo email valido"
+
+msgid "validation.mismatch"
+msgstr "I valori non corrispondono"
+
+msgid "validation.required"
+msgstr "Questo campo è obbligatorio"
+
+msgid "validation.tooLong"
+msgstr "Il valore è troppo lungo"
+
+msgid "validation.tooShort"
+msgstr "Il valore è troppo corto"
+
+msgid "validation.unsupportedFormat"
+msgstr "Formato file non supportato"
