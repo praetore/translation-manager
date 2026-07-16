@@ -19,7 +19,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Create the GitHub release once up front so parallel platform/arch
+  # publishers only upload assets (avoids 422 tag_name already_exists).
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: tag
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="v$(node -p "require('./package.json').version")"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Using tag ${TAG}"
+
+      - name: Ensure GitHub release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — publishers will upload assets to it."
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Release ${TAG}" \
+              --target "$GITHUB_SHA"
+            echo "Created release ${TAG}"
+          fi
+
   release:
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
