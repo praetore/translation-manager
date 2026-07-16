@@ -5,6 +5,7 @@ import {
   updateCell,
   type TranslationProject,
 } from '@/services/translationProject'
+import { useI18n } from '@/i18n/LocaleProvider'
 import type { WriteFilesResult } from '@shared/types'
 
 const SESSION_DIRECTORY_KEY = 'translation-manager:directory-path'
@@ -43,11 +44,27 @@ function storeDirectory(directoryPath: string): void {
   }
 }
 
+function translateErrorMessage(
+  message: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  if (message.startsWith('errors.')) {
+    return t(message)
+  }
+  return message
+}
+
 export function useTranslationStore() {
+  const { t } = useI18n()
+  const tRef = useRef(t)
+  tRef.current = t
+
   const [project, setProject] = useState<TranslationProject | null>(null)
   const [directoryPath, setDirectoryPathState] = useState(readStoredDirectory)
   const [loadState, setLoadState] = useState<LoadState>(initialLoadState)
   const didRestoreRef = useRef(false)
+  const openProjectRef = useRef<() => Promise<void>>(async () => {})
+  const saveProjectRef = useRef<() => Promise<void>>(async () => {})
 
   const setDirectoryPath = useCallback((value: string) => {
     setDirectoryPathState(value)
@@ -58,18 +75,10 @@ export function useTranslationStore() {
     setLoadState((prev) => ({ ...prev, error: null, status: null }))
   }, [])
 
-  const browseDirectory = useCallback(async () => {
-    clearMessages()
-    const selected = await window.electronAPI.selectDirectory()
-    if (selected) {
-      setDirectoryPath(selected)
-    }
-  }, [clearMessages, setDirectoryPath])
-
   const loadDirectory = useCallback(async (pathOverride?: string) => {
     const target = (pathOverride ?? directoryPath).trim()
     if (!target) {
-      setLoadState((prev) => ({ ...prev, error: 'Voer een mappad in' }))
+      setLoadState((prev) => ({ ...prev, error: tRef.current('errors.enterPath') }))
       return
     }
 
@@ -84,18 +93,33 @@ export function useTranslationStore() {
         loading: false,
         saving: false,
         error: null,
-        status: `${nextProject.rows.length} sleutels · ${nextProject.columns.length} talen`,
+        status: tRef.current('status.keysAndLocales', {
+          keys: nextProject.rows.length,
+          locales: nextProject.columns.length,
+        }),
       })
     } catch (error) {
+      const raw = error instanceof Error ? error.message : String(error)
       setProject(null)
       setLoadState({
         loading: false,
         saving: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: translateErrorMessage(raw, tRef.current),
         status: null,
       })
     }
   }, [directoryPath, setDirectoryPath])
+
+  const browseDirectory = useCallback(async () => {
+    clearMessages()
+    const selected = await window.electronAPI.selectDirectory()
+    if (!selected) {
+      return
+    }
+    await loadDirectory(selected)
+  }, [clearMessages, loadDirectory])
+
+  const openProject = browseDirectory
 
   // After a Vite/Electron reload (e.g. file write in the repo), restore the last folder.
   useEffect(() => {
@@ -123,7 +147,12 @@ export function useTranslationStore() {
 
     // Keep a stable reference for this save; avoid depending on later state updates.
     const snapshot = project
-    setLoadState((prev) => ({ ...prev, saving: true, error: null, status: null }))
+    setLoadState((prev) => ({
+      ...prev,
+      saving: true,
+      error: null,
+      status: tRef.current('status.saving'),
+    }))
 
     try {
       const files = serializeProject(snapshot)
@@ -136,7 +165,7 @@ export function useTranslationStore() {
         setLoadState((prev) => ({
           ...prev,
           saving: false,
-          error: `Opslaan mislukt: ${message}`,
+          error: tRef.current('errors.saveFailed', { message }),
         }))
         return
       }
@@ -146,7 +175,7 @@ export function useTranslationStore() {
         loading: false,
         saving: false,
         error: null,
-        status: `${result.written.length} bestand(en) opgeslagen`,
+        status: tRef.current('status.saved', { count: result.written.length }),
       })
     } catch (error) {
       setLoadState((prev) => ({
@@ -157,6 +186,23 @@ export function useTranslationStore() {
     }
   }, [project])
 
+  openProjectRef.current = openProject
+  saveProjectRef.current = saveProject
+
+  useEffect(() => {
+    const unsubscribeOpen = window.electronAPI.onMenuOpen(() => {
+      void openProjectRef.current()
+    })
+    const unsubscribeSave = window.electronAPI.onMenuSave(() => {
+      void saveProjectRef.current()
+    })
+
+    return () => {
+      unsubscribeOpen()
+      unsubscribeSave()
+    }
+  }, [])
+
   return {
     project,
     directoryPath,
@@ -164,6 +210,7 @@ export function useTranslationStore() {
     loadState,
     browseDirectory,
     loadDirectory,
+    openProject,
     editCell,
     saveProject,
   }

@@ -26,7 +26,7 @@ export function buildProjectFromFiles(
   files: TranslationFilePayload[],
 ): TranslationProject {
   if (files.length === 0) {
-    throw new Error('Geen ondersteunde vertaalbestanden gevonden in deze map')
+    throw new Error('errors.noSupportedFiles')
   }
 
   const parsed: ParsedLocaleFile[] = []
@@ -51,7 +51,7 @@ export function buildProjectFromFiles(
   }
 
   if (parsed.length === 0) {
-    throw new Error('Geen geldige vertaalbestanden kunnen worden gelezen')
+    throw new Error('errors.noValidFiles')
   }
 
   const columns = parsed.map((item) => item.column)

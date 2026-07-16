@@ -50,6 +50,29 @@
   --border: oklch(0.88 0.015 95);
   --input: oklch(0.88 0.015 95);
   --ring: oklch(0.42 0.1 160);
+  --surface-glow: oklch(0.975 0.01 95);
+}
+
+.dark {
+  --background: oklch(0.18 0.015 160);
+  --foreground: oklch(0.93 0.01 95);
+  --card: oklch(0.22 0.015 160);
+  --card-foreground: oklch(0.93 0.01 95);
+  --popover: oklch(0.22 0.015 160);
+  --popover-foreground: oklch(0.93 0.01 95);
+  --primary: oklch(0.72 0.1 160);
+  --primary-foreground: oklch(0.18 0.02 160);
+  --secondary: oklch(0.28 0.015 160);
+  --secondary-foreground: oklch(0.92 0.01 95);
+  --muted: oklch(0.28 0.015 160);
+  --muted-foreground: oklch(0.72 0.02 95);
+  --accent: oklch(0.3 0.02 160);
+  --accent-foreground: oklch(0.93 0.01 95);
+  --destructive: oklch(0.65 0.18 25);
+  --border: oklch(0.34 0.015 160);
+  --input: oklch(0.34 0.015 160);
+  --ring: oklch(0.72 0.1 160);
+  --surface-glow: oklch(0.2 0.02 160);
 }
 
 @layer base {
@@ -67,7 +90,7 @@
     @apply m-0 bg-background text-foreground font-sans antialiased;
     background-image:
       radial-gradient(circle at top left, color-mix(in oklab, var(--primary) 12%, transparent), transparent 40%),
-      linear-gradient(180deg, oklch(0.975 0.01 95) 0%, var(--background) 100%);
+      linear-gradient(180deg, var(--surface-glow) 0%, var(--background) 100%);
   }
 }
 
@@ -80,6 +103,29 @@
       rgb(254 202 202 / 0.45) 8px,
       transparent 8px,
       transparent 16px
+    );
+  }
+
+  .dark .row-missing-stripe {
+    background-color: rgb(127 29 29 / 0.28);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(185 28 28 / 0.35),
+      rgb(185 28 28 / 0.35) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+
+  /* Opaque variant for sticky cells so scrolled content cannot show through. */
+  .row-missing-stripe-sticky {
+    background-color: color-mix(in oklab, var(--destructive) 16%, var(--card));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--destructive) 28%, var(--card)),
+      color-mix(in oklab, var(--destructive) 28%, var(--card)) 8px,
+      color-mix(in oklab, var(--destructive) 12%, var(--card)) 8px,
+      color-mix(in oklab, var(--destructive) 12%, var(--card)) 16px
     );
   }
 }

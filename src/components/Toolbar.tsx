@@ -1,8 +1,9 @@
-import { FolderOpen, ListFilter, Save, Search } from 'lucide-react'
+import { FolderOpen, ListFilter, Save } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 
 interface ToolbarProps {
@@ -15,13 +16,13 @@ interface ToolbarProps {
   loading: boolean
   saving: boolean
   canSave: boolean
-  dirty: boolean
   status: string | null
   error: string | null
   sourceLocale: string | null
   missingFilterActive: boolean
   missingFilterCount: number
   liveMissingCount: number
+  dirty: boolean
 }
 
 export function Toolbar({
@@ -34,30 +35,29 @@ export function Toolbar({
   loading,
   saving,
   canSave,
-  dirty,
   status,
   error,
   sourceLocale,
   missingFilterActive,
   missingFilterCount,
   liveMissingCount,
+  dirty,
 }: ToolbarProps) {
+  const { t } = useI18n()
   const canToggleMissing = missingFilterActive || liveMissingCount > 0
   const hasMissing = liveMissingCount > 0
 
   return (
     <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Translation Manager</h1>
-        <p className="text-muted-foreground text-sm">
-          Lokale vertaal-editor · JSON · YAML · PO · Properties
-        </p>
+        <h1 className="text-xl font-semibold tracking-tight">{t('app.title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('app.tagline')}</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-2">
         <div className="grid min-w-[240px] flex-[1_1_360px] gap-1.5">
           <Label htmlFor="directory-path" className="text-muted-foreground text-xs uppercase tracking-wide">
-            Mappad
+            {t('toolbar.directoryPath')}
           </Label>
           <Input
             id="directory-path"
@@ -76,26 +76,20 @@ export function Toolbar({
 
         <Button type="button" variant="outline" onClick={onBrowse} disabled={loading}>
           <FolderOpen />
-          Bladeren…
+          {t('toolbar.browse')}
         </Button>
-        <Button type="button" onClick={onLoad} disabled={loading}>
-          <Search />
-          {loading ? 'Laden…' : 'Openen'}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onSave}
-          disabled={!canSave || saving}
-        >
+        <Button type="button" onClick={onSave} disabled={!canSave || saving}>
           <Save />
-          {saving ? 'Opslaan…' : dirty ? 'Opslaan *' : 'Opslaan'}
+          {saving ? t('toolbar.saving') : dirty ? `${t('toolbar.save')} *` : t('toolbar.save')}
         </Button>
       </div>
 
       <div className="flex min-h-9 flex-wrap items-center gap-2" aria-live="polite">
         <div className="flex flex-wrap gap-2">
-          {sourceLocale && <Badge variant="secondary">Bron: {sourceLocale}</Badge>}
+          {sourceLocale && (
+            <Badge variant="secondary">{t('toolbar.source', { locale: sourceLocale })}</Badge>
+          )}
+          {dirty && <Badge variant="warning">{t('toolbar.unsaved')}</Badge>}
           {status && <Badge variant="success">{status}</Badge>}
           {error && <Badge variant="destructive">{error}</Badge>}
         </div>
@@ -106,7 +100,7 @@ export function Toolbar({
             'ml-auto',
             hasMissing &&
               !missingFilterActive &&
-              'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950',
+              'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',
           )}
           variant={hasMissing && missingFilterActive ? 'warning' : 'outline'}
           onClick={onToggleMissingFilter}
@@ -114,14 +108,14 @@ export function Toolbar({
           aria-pressed={missingFilterActive}
           title={
             missingFilterActive
-              ? 'Filter uitzetten om de lijst opnieuw te berekenen'
-              : 'Toon alleen rijen met ontbrekende vertalingen'
+              ? t('toolbar.missingFilterOn')
+              : t('toolbar.missingFilterOff')
           }
         >
           <ListFilter />
-          {missingFilterActive
-            ? `Ontbrekende (${missingFilterCount})`
-            : `Ontbrekende (${liveMissingCount})`}
+          {t('toolbar.missing', {
+            count: missingFilterActive ? missingFilterCount : liveMissingCount,
+          })}
         </Button>
       </div>
     </header>

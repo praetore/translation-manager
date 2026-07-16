@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "Translation Manager",
+    "tagline": "Lokale vertaal-editor · JSON · YAML · PO · Properties"
+  },
+  "toolbar": {
+    "directoryPath": "Mappad",
+    "browse": "Bladeren…",
+    "save": "Opslaan",
+    "saving": "Opslaan…",
+    "source": "Bron: {locale}",
+    "unsaved": "Niet opgeslagen",
+    "missing": "Ontbrekende ({count})",
+    "missingFilterOn": "Filter uitzetten om de lijst opnieuw te berekenen",
+    "missingFilterOff": "Toon alleen rijen met ontbrekende vertalingen"
+  },
+  "empty": {
+    "title": "Geen project geladen",
+    "description": "Kies via {menu} een lokale map met vertaalbestanden ({formats}) om te beginnen. Alles blijft op dit apparaat."
+  },
+  "menu": {
+    "file": "Bestand",
+    "open": "Openen…",
+    "save": "Opslaan",
+    "quit": "Afsluiten",
+    "close": "Sluiten",
+    "edit": "Bewerken",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw",
+    "cut": "Knippen",
+    "copy": "Kopiëren",
+    "paste": "Plakken",
+    "selectAll": "Alles selecteren",
+    "view": "Weergave",
+    "reload": "Herladen",
+    "toggleDevTools": "Developer Tools",
+    "resetZoom": "Normale grootte",
+    "zoomIn": "Inzoomen",
+    "zoomOut": "Uitzoomen",
+    "toggleFullscreen": "Volledig scherm",
+    "language": "Taal",
+    "theme": "Thema",
+    "about": "Over Translation Manager",
+    "hide": "Verberg Translation Manager",
+    "hideOthers": "Verberg andere",
+    "unhide": "Toon alles",
+    "quitApp": "Sluit Translation Manager",
+    "openFolderDialog": "Selecteer vertaalmap",
+    "fileOpenPath": "Bestand → Openen…"
+  },
+  "language": {
+    "en": "Engels",
+    "nl": "Nederlands"
+  },
+  "theme": {
+    "system": "Systeem",
+    "light": "Licht",
+    "dark": "Donker"
+  },
+  "status": {
+    "keysAndLocales": "{keys} sleutels · {locales} talen",
+    "saving": "Opslaan…",
+    "saved": "{count} bestand(en) opgeslagen"
+  },
+  "errors": {
+    "enterPath": "Voer een mappad in",
+    "saveFailed": "Opslaan mislukt: {message}",
+    "noSupportedFiles": "Geen ondersteunde vertaalbestanden gevonden in deze map",
+    "noValidFiles": "Geen geldige vertaalbestanden kunnen worden gelezen"
+  }
+}

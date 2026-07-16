@@ -4,12 +4,14 @@ import { Toolbar } from '@/components/Toolbar'
 import { TranslationTable } from '@/components/TranslationTable'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
+import { useI18n } from '@/i18n/LocaleProvider'
 import {
   collectMissingRowKeys,
   type TranslationProject,
 } from '@/services/translationProject'
 
 export default function App() {
+  const { t } = useI18n()
   const {
     project,
     directoryPath,
@@ -60,6 +62,27 @@ export default function App() {
     }
   }, [project, missingFilterKeys])
 
+  const emptyDescription = useMemo(() => {
+    const text = t('empty.description', {
+      menu: t('menu.fileOpenPath'),
+      formats: 'en.json, nl.json, YAML, PO, Properties',
+    })
+    const menuLabel = t('menu.fileOpenPath')
+    const parts = text.split(menuLabel)
+
+    if (parts.length === 1) {
+      return text
+    }
+
+    return (
+      <>
+        {parts[0]}
+        <strong>{menuLabel}</strong>
+        {parts.slice(1).join(menuLabel)}
+      </>
+    )
+  }, [t])
+
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
       <Toolbar
@@ -94,12 +117,8 @@ export default function App() {
               <div className="bg-muted mb-2 flex size-12 items-center justify-center rounded-full">
                 <FolderSearch className="text-muted-foreground size-6" />
               </div>
-              <CardTitle className="text-lg">Geen project geladen</CardTitle>
-              <CardDescription className="text-balance">
-                Kies een lokale map met vertaalbestanden (<code className="font-mono text-xs">en.json</code>,{' '}
-                <code className="font-mono text-xs">nl.json</code>, YAML, PO of Properties) om te
-                beginnen. Alles blijft op dit apparaat.
-              </CardDescription>
+              <CardTitle className="text-lg">{t('empty.title')}</CardTitle>
+              <CardDescription className="text-balance">{emptyDescription}</CardDescription>
             </CardHeader>
           </Card>
         )}

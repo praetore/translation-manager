@@ -8,6 +8,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -74,8 +75,11 @@ function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowDa
             className={cn(
               'flex min-w-0 items-center border-r px-2.5',
               missing && 'bg-destructive/15',
-              isKey && !rowMissing && 'bg-card sticky left-0 z-[1]',
-              isKey && rowMissing && 'row-missing-stripe sticky left-0 z-[1]',
+              isKey &&
+                cn(
+                  'sticky left-0 z-[2]',
+                  rowMissing ? 'row-missing-stripe-sticky' : 'bg-card',
+                ),
             )}
             style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
             role="cell"
@@ -88,29 +92,37 @@ function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowDa
   )
 }
 
-function createOuterElement(onHorizontalScroll: (left: number) => void) {
-  return function OuterElement({
-    onScroll,
-    style,
-    children,
-    ...rest
-  }: HTMLAttributes<HTMLDivElement> & { style?: CSSProperties }) {
-    const handleScroll = (event: UIEvent<HTMLDivElement>) => {
-      onHorizontalScroll(event.currentTarget.scrollLeft)
-      onScroll?.(event)
-    }
+function createOuterElement(
+  onHorizontalScroll: (left: number) => void,
+  scrollRef: { current: HTMLDivElement | null },
+) {
+  return forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & { style?: CSSProperties }>(
+    function OuterElement({ onScroll, style, children, ...rest }, ref) {
+      const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+        onHorizontalScroll(event.currentTarget.scrollLeft)
+        onScroll?.(event)
+      }
 
-    return (
-      <div
-        {...rest}
-        className="!overflow-auto"
-        style={style}
-        onScroll={handleScroll}
-      >
-        {children}
-      </div>
-    )
-  }
+      return (
+        <div
+          {...rest}
+          ref={(node) => {
+            scrollRef.current = node
+            if (typeof ref === 'function') {
+              ref(node)
+            } else if (ref) {
+              ref.current = node
+            }
+          }}
+          className="!overflow-auto"
+          style={style}
+          onScroll={handleScroll}
+        >
+          {children}
+        </div>
+      )
+    },
+  )
 }
 
 export function TranslationTable({
@@ -120,7 +132,9 @@ export function TranslationTable({
 }: TranslationTableProps) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
+  const listScrollRef = useRef<HTMLDivElement | null>(null)
   const [viewport, setViewport] = useState({ width: 800, height: 480 })
+  const [scrollbarWidth, setScrollbarWidth] = useState(0)
 
   useEffect(() => {
     const node = bodyRef.current
@@ -155,7 +169,10 @@ export function TranslationTable({
     }
   }, [])
 
-  const OuterElement = useMemo(() => createOuterElement(syncHeaderScroll), [syncHeaderScroll])
+  const OuterElement = useMemo(
+    () => createOuterElement(syncHeaderScroll, listScrollRef),
+    [syncHeaderScroll],
+  )
 
   const columns = useMemo<ColumnDef<TranslationRow>[]>(() => {
     const keyColumn: ColumnDef<TranslationRow> = {
@@ -214,6 +231,22 @@ export function TranslationTable({
   const { rows } = table.getRowModel()
   const totalWidth = table.getAllColumns().reduce((sum, column) => sum + column.getSize(), 0)
 
+  useLayoutEffect(() => {
+    const scrollEl = listScrollRef.current
+    if (!scrollEl) {
+      return
+    }
+
+    const measure = (): void => {
+      setScrollbarWidth(Math.max(0, scrollEl.offsetWidth - scrollEl.clientWidth))
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(scrollEl)
+    return () => observer.disconnect()
+  }, [rows.length, viewport.height, viewport.width, totalWidth])
+
   const InnerElement = useMemo(
     () =>
       forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function InnerElement(
@@ -248,10 +281,15 @@ export function TranslationTable({
 
   return (
     <div className="bg-card grid h-full min-h-0 min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border shadow-sm">
-      <div className="bg-muted/60 overflow-hidden border-b" ref={headerRef}>
+      <div className="bg-muted overflow-hidden border-b" ref={headerRef}>
         <div
           className="flex"
-          style={{ width: totalWidth, minWidth: totalWidth }}
+          style={{
+            width: totalWidth,
+            minWidth: totalWidth,
+            paddingRight: scrollbarWidth,
+            boxSizing: 'content-box',
+          }}
           role="row"
         >
           {table.getHeaderGroups().map((headerGroup) =>
@@ -262,7 +300,7 @@ export function TranslationTable({
                   key={header.id}
                   className={cn(
                     'flex min-h-[52px] min-w-0 items-center border-r px-2.5 text-xs font-semibold',
-                    isKey && 'bg-muted/60 sticky left-0 z-[2]',
+                    isKey && 'bg-muted sticky left-0 z-[3]',
                   )}
                   style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
                   role="columnheader"

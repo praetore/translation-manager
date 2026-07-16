@@ -3,10 +3,24 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  Menu,
+  nativeTheme,
+  type MenuItemConstructorOptions,
 } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
+import {
+  createTranslator,
+  resolveUiLocale,
+  UI_LOCALES,
+  type UiLocale,
+} from '../shared/i18n'
+import {
+  resolveUiTheme,
+  UI_THEMES,
+  type UiTheme,
+} from '../shared/theme'
 import {
   IPC_CHANNELS,
   SUPPORTED_EXTENSIONS,
@@ -28,6 +42,8 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   : RENDERER_DIST
 
 let mainWindow: BrowserWindow | null = null
+let uiLocale: UiLocale = 'en'
+let uiTheme: UiTheme = 'system'
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -68,6 +84,139 @@ function createWindow(): void {
   })
 }
 
+function sendMenuAction(channel: string): void {
+  mainWindow?.webContents.send(channel)
+}
+
+function setUiLocale(next: UiLocale, broadcast = true): void {
+  if (uiLocale === next) {
+    createApplicationMenu()
+    return
+  }
+
+  uiLocale = next
+  createApplicationMenu()
+
+  if (broadcast) {
+    mainWindow?.webContents.send(IPC_CHANNELS.UI_LOCALE_CHANGED, uiLocale)
+  }
+}
+
+function setUiTheme(next: UiTheme, broadcast = true): void {
+  uiTheme = next
+  nativeTheme.themeSource = next
+  createApplicationMenu()
+
+  if (broadcast) {
+    mainWindow?.webContents.send(IPC_CHANNELS.UI_THEME_CHANGED, uiTheme)
+  }
+}
+
+function createApplicationMenu(): void {
+  const isMac = process.platform === 'darwin'
+  const t = createTranslator(uiLocale)
+
+  const languageMenu: MenuItemConstructorOptions = {
+    label: t('menu.language'),
+    submenu: UI_LOCALES.map(
+      (locale): MenuItemConstructorOptions => ({
+        label: t(`language.${locale}`),
+        type: 'radio',
+        checked: uiLocale === locale,
+        click: () => setUiLocale(locale, true),
+      }),
+    ),
+  }
+
+  const themeMenu: MenuItemConstructorOptions = {
+    label: t('menu.theme'),
+    submenu: UI_THEMES.map(
+      (theme): MenuItemConstructorOptions => ({
+        label: t(`theme.${theme}`),
+        type: 'radio',
+        checked: uiTheme === theme,
+        click: () => setUiTheme(theme, true),
+      }),
+    ),
+  }
+
+  const fileMenu: MenuItemConstructorOptions = {
+    label: t('menu.file'),
+    submenu: [
+      {
+        label: t('menu.open'),
+        accelerator: 'CmdOrCtrl+O',
+        click: () => sendMenuAction(IPC_CHANNELS.MENU_OPEN),
+      },
+      {
+        label: t('menu.save'),
+        accelerator: 'CmdOrCtrl+S',
+        click: () => sendMenuAction(IPC_CHANNELS.MENU_SAVE),
+      },
+      { type: 'separator' },
+      isMac
+        ? { role: 'close', label: t('menu.close') }
+        : { role: 'quit', label: t('menu.quit') },
+    ],
+  }
+
+  const editMenu: MenuItemConstructorOptions = {
+    label: t('menu.edit'),
+    submenu: [
+      { role: 'undo', label: t('menu.undo') },
+      { role: 'redo', label: t('menu.redo') },
+      { type: 'separator' },
+      { role: 'cut', label: t('menu.cut') },
+      { role: 'copy', label: t('menu.copy') },
+      { role: 'paste', label: t('menu.paste') },
+      { role: 'selectAll', label: t('menu.selectAll') },
+    ],
+  }
+
+  const viewMenu: MenuItemConstructorOptions = {
+    label: t('menu.view'),
+    submenu: [
+      { role: 'reload', label: t('menu.reload') },
+      { role: 'toggleDevTools', label: t('menu.toggleDevTools') },
+      { type: 'separator' },
+      { role: 'resetZoom', label: t('menu.resetZoom') },
+      { role: 'zoomIn', label: t('menu.zoomIn') },
+      { role: 'zoomOut', label: t('menu.zoomOut') },
+      { type: 'separator' },
+      { role: 'togglefullscreen', label: t('menu.toggleFullscreen') },
+      { type: 'separator' },
+      themeMenu,
+      languageMenu,
+    ],
+  }
+
+  const template: MenuItemConstructorOptions[] = [
+    ...(isMac
+      ? [
+          {
+            label: app.name,
+            submenu: [
+              { role: 'about', label: t('menu.about') },
+              { type: 'separator' },
+              { role: 'services' },
+              { type: 'separator' },
+              { role: 'hide', label: t('menu.hide') },
+              { role: 'hideOthers', label: t('menu.hideOthers') },
+              { role: 'unhide', label: t('menu.unhide') },
+              { type: 'separator' },
+              { role: 'quit', label: t('menu.quitApp') },
+            ],
+          } satisfies MenuItemConstructorOptions,
+        ]
+      : []),
+    fileMenu,
+    editMenu,
+    viewMenu,
+  ]
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
+
 function isSupportedTranslationFile(fileName: string): boolean {
   const lower = fileName.toLowerCase()
   return SUPPORTED_EXTENSIONS.some((ext) => lower.endsWith(ext))
@@ -101,9 +250,10 @@ async function scanDirectory(directoryPath: string): Promise<ScanDirectoryResult
 
 function registerIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.SELECT_DIRECTORY, async () => {
+    const t = createTranslator(uiLocale)
     const result = await dialog.showOpenDialog(mainWindow!, {
       properties: ['openDirectory'],
-      title: 'Select translation folder',
+      title: t('menu.openFolderDialog'),
     })
 
     if (result.canceled || result.filePaths.length === 0) {
@@ -150,10 +300,27 @@ function registerIpcHandlers(): void {
       return { written, errors }
     },
   )
+
+  ipcMain.handle(IPC_CHANNELS.GET_UI_LOCALE, () => uiLocale)
+
+  ipcMain.handle(IPC_CHANNELS.SET_UI_LOCALE, (_event, locale: string) => {
+    setUiLocale(resolveUiLocale(locale), false)
+    return uiLocale
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_UI_THEME, () => uiTheme)
+
+  ipcMain.handle(IPC_CHANNELS.SET_UI_THEME, (_event, theme: string) => {
+    setUiTheme(resolveUiTheme(theme), false)
+    return uiTheme
+  })
 }
 
 app.whenReady().then(() => {
+  uiLocale = resolveUiLocale(app.getLocale())
+  nativeTheme.themeSource = uiTheme
   registerIpcHandlers()
+  createApplicationMenu()
   createWindow()
 
   app.on('activate', () => {

@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "Translation Manager",
+    "tagline": "Local translation editor · JSON · YAML · PO · Properties"
+  },
+  "toolbar": {
+    "directoryPath": "Folder path",
+    "browse": "Browse…",
+    "save": "Save",
+    "saving": "Saving…",
+    "source": "Source: {locale}",
+    "unsaved": "Unsaved",
+    "missing": "Missing ({count})",
+    "missingFilterOn": "Turn off filter to recalculate the list",
+    "missingFilterOff": "Show only rows with missing translations"
+  },
+  "empty": {
+    "title": "No project loaded",
+    "description": "Choose a local folder with translation files via {menu} ({formats}) to get started. Everything stays on this device."
+  },
+  "menu": {
+    "file": "File",
+    "open": "Open…",
+    "save": "Save",
+    "quit": "Quit",
+    "close": "Close",
+    "edit": "Edit",
+    "undo": "Undo",
+    "redo": "Redo",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "selectAll": "Select All",
+    "view": "View",
+    "reload": "Reload",
+    "toggleDevTools": "Toggle Developer Tools",
+    "resetZoom": "Actual Size",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "toggleFullscreen": "Toggle Full Screen",
+    "language": "Language",
+    "theme": "Theme",
+    "about": "About Translation Manager",
+    "hide": "Hide Translation Manager",
+    "hideOthers": "Hide Others",
+    "unhide": "Show All",
+    "quitApp": "Quit Translation Manager",
+    "openFolderDialog": "Select translation folder",
+    "fileOpenPath": "File → Open…"
+  },
+  "language": {
+    "en": "English",
+    "nl": "Dutch"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "status": {
+    "keysAndLocales": "{keys} keys · {locales} languages",
+    "saving": "Saving…",
+    "saved": "{count} file(s) saved"
+  },
+  "errors": {
+    "enterPath": "Enter a folder path",
+    "saveFailed": "Save failed: {message}",
+    "noSupportedFiles": "No supported translation files found in this folder",
+    "noValidFiles": "No valid translation files could be read"
+  }
+}
