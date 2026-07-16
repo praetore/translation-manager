@@ -88,7 +88,7 @@ The workflow in `.github/workflows/release.yml` runs automatically on `v*` tags 
 
 You can also trigger it manually via **Actions → Release → Run workflow**.
 
-Ensure `package.json` → `repository.url` matches your GitHub repo so electron-builder can resolve the publish target.
+Ensure `package.json` → `repository.url` points at your GitHub repo (`praetore/translation-manager`).
 
 ## Usage
 
