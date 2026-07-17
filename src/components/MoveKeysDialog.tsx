@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/LocaleProvider'
-import { applyKeyLead, validateLeadTemplate } from '@/services/keyPaths'
+import { applyKeyLead, hasIncompleteDollarToken, validateLeadTemplate } from '@/services/keyPaths'
 
 const TOKEN_ROWS = [
   { token: '$$', meaningKey: 'toolbar.moveTokenFullPath' },
@@ -40,12 +40,21 @@ export function MoveKeysDialog({
   const { t } = useI18n()
   const [lead, setLead] = useState('')
   const [conflict, setConflict] = useState(false)
+  const [revealIncompleteError, setRevealIncompleteError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const trimmedLead = lead.trim()
   const keysForValidation = selectedKeys.length > 0 ? selectedKeys : [sampleKey]
   const placeholderInvalid =
     trimmedLead.length > 0 && !validateLeadTemplate(trimmedLead, keysForValidation)
+  const showPlaceholderError =
+    placeholderInvalid &&
+    (!hasIncompleteDollarToken(trimmedLead) || revealIncompleteError)
+  const fieldError = showPlaceholderError
+    ? t('toolbar.moveInvalidPlaceholder')
+    : conflict
+      ? t('toolbar.moveConflict')
+      : null
   const canSubmit = trimmedLead.length > 0 && !placeholderInvalid
   const preview =
     sampleKey && canSubmit ? applyKeyLead(sampleKey, trimmedLead) : ''
@@ -70,6 +79,7 @@ export function MoveKeysDialog({
         if (!next) {
           setLead('')
           setConflict(false)
+          setRevealIncompleteError(false)
           onClose()
         }
       }}
@@ -116,17 +126,29 @@ export function MoveKeysDialog({
             </table>
             <p className="text-muted-foreground text-xs">{t('toolbar.moveTokenLeafNote')}</p>
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="key-lead">{t('toolbar.moveLead')}</Label>
+          <div className="grid gap-2.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <Label htmlFor="key-lead" className="shrink-0">
+                {t('toolbar.moveLead')}
+              </Label>
+              <p
+                className="text-destructive min-h-4 flex-1 text-right text-xs leading-4"
+                aria-live="polite"
+              >
+                {fieldError ?? '\u00a0'}
+              </p>
+            </div>
             <Input
               ref={inputRef}
               id="key-lead"
               value={lead}
               placeholder={t('toolbar.moveLeadPlaceholder')}
-              aria-invalid={placeholderInvalid || conflict || undefined}
+              aria-invalid={Boolean(fieldError) || undefined}
+              onBlur={() => setRevealIncompleteError(true)}
               onChange={(event) => {
                 setLead(event.target.value)
                 setConflict(false)
+                setRevealIncompleteError(false)
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
@@ -136,12 +158,6 @@ export function MoveKeysDialog({
               }}
             />
           </div>
-          {placeholderInvalid && (
-            <p className="text-destructive text-xs">{t('toolbar.moveInvalidPlaceholder')}</p>
-          )}
-          {conflict && !placeholderInvalid && (
-            <p className="text-destructive text-xs">{t('toolbar.moveConflict')}</p>
-          )}
           {preview ? (
             <p className="text-muted-foreground font-mono text-xs break-all">
               <span>{sampleKey}</span>

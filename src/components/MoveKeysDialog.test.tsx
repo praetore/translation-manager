@@ -59,6 +59,31 @@ describe('MoveKeysDialog', () => {
     expect(screen.getByLabelText('New path')).toHaveAttribute('aria-invalid', 'true')
   })
 
+  it('suppresses unfinished trailing-$ errors until blur', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <MoveKeysDialog
+        open
+        sampleKey="auth.createAccount"
+        selectedKeys={keys}
+        selectedCount={2}
+        onClose={() => undefined}
+        onConfirm={() => true}
+      />,
+    )
+    const input = screen.getByLabelText('New path')
+    await user.type(input, 'app.$')
+    expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled()
+    expect(
+      screen.queryByText('Unknown or out-of-range placeholder.'),
+    ).not.toBeInTheDocument()
+    expect(input).not.toHaveAttribute('aria-invalid')
+
+    await user.tab()
+    expect(screen.getByText('Unknown or out-of-range placeholder.')).toBeInTheDocument()
+    expect(input).toHaveAttribute('aria-invalid', 'true')
+  })
+
   it('shows a conflict message when onConfirm returns false', async () => {
     const user = userEvent.setup()
     renderWithProviders(

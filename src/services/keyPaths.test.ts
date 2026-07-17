@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyKeyLead,
   deleteRows,
+  hasIncompleteDollarToken,
   keyLeaf,
   keyLeadSegments,
   keysInIndexRange,
@@ -61,6 +62,18 @@ describe('keyPaths', () => {
     expect(validateLeadTemplate('price.\\$', keys)).toBe(true)
     expect(validateLeadTemplate('$2', ['solo'])).toBe(false)
     expect(validateLeadTemplate('$2', ['a.b.c', 'x.y'])).toBe(false)
+  })
+
+  it('detects unfinished trailing dollar tokens', () => {
+    expect(hasIncompleteDollarToken('$')).toBe(true)
+    expect(hasIncompleteDollarToken('app.$')).toBe(true)
+    expect(hasIncompleteDollarToken('app.$-')).toBe(true)
+    expect(hasIncompleteDollarToken('app.$$')).toBe(false)
+    expect(hasIncompleteDollarToken('app.$1')).toBe(false)
+    expect(hasIncompleteDollarToken('app.$-1')).toBe(false)
+    expect(hasIncompleteDollarToken('price.\\$')).toBe(false)
+    expect(hasIncompleteDollarToken('$9')).toBe(false)
+    expect(hasIncompleteDollarToken('$foo')).toBe(false)
   })
 
   it('moves selected keys with a new lead', () => {

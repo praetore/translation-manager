@@ -56,6 +56,18 @@ export function validateLeadTemplate(
   return !rest.includes('$')
 }
 
+/**
+ * True when the template ends in an unfinished `$` token (`$`, `$-`),
+ * e.g. while typing `app.$$` or `app.$1`. Complete tokens and `\$` do not count.
+ */
+export function hasIncompleteDollarToken(template: string): boolean {
+  let rest = template.replaceAll('\\$', LITERAL_DOLLAR)
+  rest = rest.replaceAll('$$', '')
+  rest = rest.replace(/\$-(\d+)/g, '')
+  rest = rest.replace(/\$(\d+)/g, '')
+  return /\$-?$/.test(rest)
+}
+
 /** Expand `$$` / `$n` / `$-n` and `\$` for one key. Throws if template is invalid. */
 export function expandLeadTemplate(key: string, template: string): string {
   if (!validateLeadTemplate(template, [key])) {
