@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Version tag to build (e.g. v0.1.0). Leave empty to use package.json version.'
+        description: 'Version tag to build (e.g. v0.3.0). Leave empty to use package.json version.'
         required: false
         type: string
 
@@ -109,3 +109,107 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --linux --publish always
+
+  # After a successful release: refresh README screenshots from that build,
+  # bump package.json to the next minor, and commit both to master.
+  post-release:
+    needs: [prepare, release]
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install OS dependencies for Electron screenshots
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-0 \
+            libnotify4 \
+            libnss3 \
+            libxss1 \
+            libgbm1 \
+            libx11-xcb1 \
+            libxshmfence1 \
+            libdrm2 \
+            libasound2t64 || sudo apt-get install -y libasound2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer + Electron
+        run: npm run build
+
+      - name: Capture README screenshots
+        run: xvfb-run -a npm run screenshots
+
+      - name: Stage screenshot + version bump artifacts
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.prepare.outputs.tag }}"
+          CURRENT="$(node -p "require('./package.json').version")"
+          mkdir -p /tmp/post-release
+          cp docs/main-window-dark.png docs/main-window-light.png /tmp/post-release/
+
+          if [ "v${CURRENT}" != "${TAG}" ]; then
+            echo "package.json is ${CURRENT} but release tag is ${TAG} — skipping version bump"
+            echo "should_bump=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          npm version minor --no-git-tag-version
+          NEXT="$(node -p "require('./package.json').version")"
+          cp package.json package-lock.json /tmp/post-release/
+          echo "should_bump=true" >> "$GITHUB_OUTPUT"
+          echo "next_version=${NEXT}" >> "$GITHUB_OUTPUT"
+          echo "Bumped ${CURRENT} → ${NEXT}"
+
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit screenshots and version bump to master
+        env:
+          SHOULD_BUMP: ${{ steps.bump.outputs.should_bump }}
+          NEXT_VERSION: ${{ steps.bump.outputs.next_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs
+          cp /tmp/post-release/main-window-dark.png /tmp/post-release/main-window-light.png docs/
+
+          if [ "${SHOULD_BUMP}" = "true" ]; then
+            cp /tmp/post-release/package.json /tmp/post-release/package-lock.json .
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/main-window-dark.png docs/main-window-light.png
+          if [ "${SHOULD_BUMP}" = "true" ]; then
+            git add package.json package-lock.json
+          fi
+
+          if git diff --staged --quiet; then
+            echo "No post-release changes to commit"
+            exit 0
+          fi
+
+          if [ "${SHOULD_BUMP}" = "true" ]; then
+            git commit -m "chore: bump to ${NEXT_VERSION} and refresh README screenshots"
+          else
+            git commit -m "chore: refresh README screenshots after ${{ needs.prepare.outputs.tag }}"
+          fi
+          git push origin HEAD:master

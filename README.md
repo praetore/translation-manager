@@ -6,7 +6,7 @@ Built with **Electron**, **React**, **TypeScript**, **Vite**, **Tailwind CSS**, 
 
 | Dark | Light |
 |:----:|:-----:|
-| ![Translation Manager in dark mode](docs/main-window.png) | ![Translation Manager in light mode](docs/main-window-light.png) |
+| ![Translation Manager in dark mode](docs/main-window-dark.png) | ![Translation Manager in light mode](docs/main-window-light.png) |
 
 ## Features
 
@@ -75,22 +75,28 @@ Optional: replace `build/icon.png` and run `npm run icons` to refresh `icon.ico`
 
 ### GitHub Releases
 
-Pushing a version tag builds installers on Windows, macOS, and Linux and uploads them to a GitHub Release.
+Pushing a version tag builds installers on Windows, macOS, and Linux and uploads them to a GitHub Release. After the release succeeds, CI captures fresh README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.3.0` → commit `0.4.0`).
 
 ```bash
-# 1. Bump version in package.json (must match the tag without the "v")
-# 2. Commit, then tag and push:
-git tag v0.1.0
-git push origin v0.1.0
+# package.json should already be the version you want to release (e.g. 0.3.0)
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
-The workflow in `.github/workflows/release.yml` runs automatically on `v*` tags and publishes:
+The workflow in `.github/workflows/release.yml` runs automatically on `v*` tags and:
 
-- Windows: Setup + Portable `.exe`
-- macOS: `.dmg` (x64 + arm64, unsigned in CI)
-- Linux: `.AppImage`
+1. Publishes Windows / macOS / Linux installers for that tag
+2. Captures `docs/main-window-dark.png` + `docs/main-window-light.png` from the released build
+3. Bumps the next minor on `master` and commits the screenshots + version files
 
 You can also trigger it manually via **Actions → Release → Run workflow**.
+
+Local screenshot refresh (after `npm run build`):
+
+```bash
+npm run screenshots          # Windows / macOS
+xvfb-run -a npm run screenshots   # Linux / CI
+```
 
 Ensure `package.json` → `repository.url` points at your GitHub repo (`praetore/translation-manager`).
 

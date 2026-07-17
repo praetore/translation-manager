@@ -1,7 +1,7 @@
 {
   "name": "translation-manager",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Local translation editor for software projects",
   "author": "Darry",
   "license": "MIT",
@@ -26,7 +26,8 @@
     "dist:mac": "npm run build && electron-builder --mac --publish never",
     "dist:linux": "npm run build && electron-builder --linux --publish never",
     "dist:publish": "npm run build && electron-builder --publish always",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "build": {
     "appId": "com.translationmanager.app",

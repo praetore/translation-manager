@@ -28,6 +28,13 @@ import {
   type WriteFileRequest,
   type WriteFilesResult,
 } from '../shared/types'
+import { isScreenshotMode, runScreenshotCapture } from './screenshot'
+
+if (isScreenshotMode()) {
+  // Required in Docker/CI (no user namespace privileges for Chromium sandbox).
+  app.commandLine.appendSwitch('no-sandbox')
+  app.commandLine.appendSwitch('disable-dev-shm-usage')
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -68,6 +75,10 @@ function createWindow(): void {
   }
 
   mainWindow.once('ready-to-show', () => {
+    if (isScreenshotMode()) {
+      void runScreenshotCapture(mainWindow!, setUiTheme)
+      return
+    }
     mainWindow?.show()
   })
 
