@@ -11,7 +11,14 @@
     "unsaved": "Niet opgeslagen",
     "addRow": "Rij toevoegen",
     "search": "Zoeken",
-    "searchPlaceholder": "Zoek sleutels of tekst…",
+    "searchPlaceholder": "Zoek keys of tekst…",
+    "searchRegex": "Regex-zoeken",
+    "searchScope": {
+      "label": "Zoeken in",
+      "all": "Alles",
+      "keys": "Keys",
+      "text": "Tekst"
+    },
     "selected": "{count} geselecteerd",
     "selectedSuffix": "geselecteerd",
     "moveKeys": "Verplaatsen",
@@ -19,25 +26,26 @@
     "deleteSelectedLabel": "Verwijderen",
     "deselect": "Deselecteren",
     "bulkActions": "Bulkacties",
-    "deleteSelectedConfirm": "{count} geselecteerde sleutel(s) verwijderen? Bij opslaan verdwijnen ze uit alle locale-bestanden.",
-    "moveTitle": "Sleutels verplaatsen",
-    "moveDescription": "Geef {count} geselecteerde sleutel(s) een nieuw pad. Alleen het laatste deel van elke naam blijft hetzelfde — bijvoorbeeld wordt auth.login.title met pad ui tot ui.title.",
+    "deleteSelectedConfirm": "{count} geselecteerde key(s) verwijderen? Bij opslaan verdwijnen ze uit alle locale-bestanden.",
+    "moveTitle": "Keys verplaatsen",
+    "moveDescription": "Geef {count} geselecteerde key(s) een nieuw pad. Alleen het laatste deel van elke naam blijft hetzelfde — bijvoorbeeld wordt auth.login.title met pad ui tot ui.title.",
     "moveLead": "Nieuw pad",
     "moveLeadPlaceholder": "ui.auth",
     "movePreview": "{from} → {to}",
-    "moveConflict": "Dat pad zou lege of dubbele sleutels opleveren.",
+    "moveConflict": "Dat pad zou lege of dubbele keys opleveren.",
     "moveConfirm": "Verplaatsen",
-    "deleteSelectedTitle": "Sleutels verwijderen",
+    "deleteSelectedTitle": "Keys verwijderen",
     "missing": "Ontbrekende ({count})",
     "missingFilterOn": "Filter uitzetten om de lijst opnieuw te berekenen",
     "missingFilterOff": "Toon alleen rijen met ontbrekende vertalingen"
   },
   "table": {
+    "key": "Key",
     "deleteRow": "Rij verwijderen",
-    "deleteTitle": "Sleutel verwijderen",
-    "editKey": "Sleutel bewerken",
-    "keyPlaceholder": "vertaling.sleutel",
-    "deleteConfirm": "Sleutel \"{key}\" verwijderen? Bij opslaan verdwijnt die uit alle locale-bestanden."
+    "deleteTitle": "Key verwijderen",
+    "editKey": "Key bewerken",
+    "keyPlaceholder": "translation.key",
+    "deleteConfirm": "Key \"{key}\" verwijderen? Bij opslaan verdwijnt die uit alle locale-bestanden."
   },
   "dialog": {
     "cancel": "Annuleren",
@@ -87,7 +95,7 @@
     "dark": "Donker"
   },
   "status": {
-    "keysAndLocales": "{keys} sleutels · {locales} talen",
+    "keysAndLocales": "{keys} keys · {locales} talen",
     "saving": "Opslaan…",
     "saved": "{count} bestand(en) opgeslagen"
   },

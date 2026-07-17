@@ -74,11 +74,14 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
       const scan = await window.electronAPI.scanDirectory(target)
       const nextProject = buildProjectFromFiles(scan.directoryPath, scan.files)
       storeDirectory(scan.directoryPath)
-      const status = t('status.keysAndLocales', {
-        keys: nextProject.rows.length,
-        locales: nextProject.columns.length,
-      })
-      toast.success(status)
+      const status = {
+        key: 'status.keysAndLocales',
+        params: {
+          keys: nextProject.rows.length,
+          locales: nextProject.columns.length,
+        },
+      }
+      toast.success(t(status.key, status.params))
       api.setState({
         project: nextProject,
         directoryPath: scan.directoryPath,
@@ -125,7 +128,7 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
         ...api.getState().load,
         saving: true,
         error: null,
-        status: t('status.saving'),
+        status: { key: 'status.saving' },
       },
     })
 
@@ -145,8 +148,11 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
         return
       }
 
-      const status = t('status.saved', { count: result.written.length })
-      toast.success(status)
+      const status = {
+        key: 'status.saved',
+        params: { count: result.written.length },
+      }
+      toast.success(t(status.key, status.params))
       api.setState({
         project: { ...snapshot, dirty: false },
         load: { loading: false, saving: false, error: null, status },

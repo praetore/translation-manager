@@ -45,7 +45,12 @@ function loadSample(project = sampleProject()) {
     pendingKeyEdit: null,
     selectedKeys: [],
     searchQuery: '',
-    load: { loading: false, saving: false, error: null, status: 'ready' },
+    load: {
+      loading: false,
+      saving: false,
+      error: null,
+      status: { key: 'status.keysAndLocales', params: { keys: 2, locales: 2 } },
+    },
   })
 }
 
@@ -156,15 +161,28 @@ describe('translationStore', () => {
   it('marks save success as clean with a status message', () => {
     loadSample({ ...sampleProject(), dirty: true })
     useTranslationStoreBase.setState({
-      load: { loading: false, saving: true, error: null, status: 'saving' },
+      load: {
+        loading: false,
+        saving: true,
+        error: null,
+        status: { key: 'status.saving' },
+      },
     })
     useTranslationStoreBase.setState({
       project: { ...useTranslationStoreBase.getState().project!, dirty: false },
-      load: { loading: false, saving: false, error: null, status: '2 file(s) saved' },
+      load: {
+        loading: false,
+        saving: false,
+        error: null,
+        status: { key: 'status.saved', params: { count: 2 } },
+      },
     })
     const state = useTranslationStoreBase.getState()
     expect(state.project?.dirty).toBe(false)
-    expect(state.load.status).toBe('2 file(s) saved')
+    expect(state.load.status).toEqual({
+      key: 'status.saved',
+      params: { count: 2 },
+    })
   })
 
   it('moves and deletes selected rows with exit animation', () => {
@@ -196,16 +214,15 @@ describe('translationStore', () => {
 
     useTranslationStoreBase.getState().selectKeys(['ui.title', 'keep'])
     useTranslationStoreBase.getState().deleteSelectedRows()
-    expect(useTranslationStoreBase.getState().exitingKeys).toEqual([
-      'ui.title',
-      'keep',
-    ])
+    // Only visible rows (missing-filter on) participate in the exit/FLIP animation.
+    expect(useTranslationStoreBase.getState().exitingKeys).toEqual(['ui.title'])
     vi.runAllTimers()
     state = useTranslationStoreBase.getState()
     expect(state.project?.rows.map((row) => row.key)).toEqual(['ui.button'])
     expect(state.missingFilterKeys).toEqual([])
     expect(state.selectedKeys).toEqual([])
   })
+
 
   it('updates selection with select, remove, and clear', () => {
     loadSample()

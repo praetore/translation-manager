@@ -1,7 +1,8 @@
-import { FolderOpen, ListFilter, Plus, Save, Search } from 'lucide-react'
+import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AnimatedCount } from '@/components/AnimatedCount'
 import { Hint } from '@/components/Hint'
+import { SearchControls } from '@/components/SearchControls'
 import { SelectionToolbarActions } from '@/components/SelectionToolbarActions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,8 +29,6 @@ export function Toolbar() {
     missingFilterKeys,
     liveMissingKeys,
     selectedKeys,
-    searchQuery,
-    setSearchQuery,
     layoutMotion,
     filterLayoutMode,
   } = useTranslationStore()
@@ -40,7 +39,7 @@ export function Toolbar() {
   const missingFilterActive = missingFilterKeys !== null
   const missingFilterCount = missingFilterKeys?.length ?? 0
   const liveMissingCount = liveMissingKeys.length
-  const filterBusy = layoutMotion !== null
+  const filterBusy = layoutMotion !== null && filterLayoutMode !== null
   /** Collapse in flight → on-state colors; expand → off-state immediately. */
   const filterVisuallyOn =
     missingFilterActive || filterLayoutMode === 'collapse'
@@ -91,7 +90,9 @@ export function Toolbar() {
           {dirty ? (
             <Badge variant="warning">{t('toolbar.unsaved')}</Badge>
           ) : (
-            status && <Badge variant="success">{status}</Badge>
+            status && (
+              <Badge variant="success">{t(status.key, status.params)}</Badge>
+            )
           )}
           <AnimatePresence initial={false}>
             {selectedCount > 0 && (
@@ -113,18 +114,7 @@ export function Toolbar() {
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <SelectionToolbarActions />
-          <div className="relative">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-            <Input
-              type="search"
-              value={searchQuery}
-              disabled={!project}
-              placeholder={t('toolbar.searchPlaceholder')}
-              aria-label={t('toolbar.search')}
-              className="bg-background h-9 w-44 pl-8 md:w-56"
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-          </div>
+          <SearchControls />
           <Separator orientation="vertical" className="mx-1 hidden sm:block" />
           <Button type="button" onClick={addRow} disabled={!canAddRow}>
             <Plus />

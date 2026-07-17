@@ -1,10 +1,17 @@
 import type { TranslationProject } from '@/services/translationProject'
+import type { SearchScope } from '@/store/searchFilter'
+
+/** i18n key + params; render with the current locale's `t`. */
+export type StatusMessage = {
+  key: string
+  params?: Record<string, string | number>
+}
 
 export interface LoadState {
   loading: boolean
   saving: boolean
   error: string | null
-  status: string | null
+  status: StatusMessage | null
 }
 
 /** Project session fields (load + editor document). */
@@ -44,6 +51,13 @@ export interface MotionState {
 export interface TranslationState extends SessionState, MotionState {
   selectedKeys: string[]
   searchQuery: string
+  searchScope: SearchScope
+  searchRegex: boolean
+  /**
+   * While search shrink-animates, keep these keys mounted so exiting rows can
+   * fade out. Null = show live search results.
+   */
+  searchLayoutHoldKeys: string[] | null
 }
 
 export const initialLoadState: LoadState = {
@@ -63,6 +77,9 @@ export function createInitialTranslationState(directoryPath: string): Translatio
     pendingKeyEdit: null,
     selectedKeys: [],
     searchQuery: '',
+    searchScope: 'all',
+    searchRegex: false,
+    searchLayoutHoldKeys: null,
     enteringKeys: [],
     fadeEnteringKeys: [],
     flashingKeys: [],

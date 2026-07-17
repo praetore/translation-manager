@@ -13,6 +13,7 @@ import {
   LOCALE_COLUMN_WIDTH,
 } from '@/components/translation-table/virtualization'
 import type { SelectionPointerHandler } from '@/hooks/useKeyDragSelection'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import type { TranslationProject } from '@/services/translationProject'
 import { isMissingAgainstSource } from '@/services/translationProject'
@@ -36,11 +37,13 @@ export function useTranslationColumns({
   onClearPendingKeyEdit: () => void
   onSelectionPointerDown: SelectionPointerHandler
 }): ColumnDef<TranslationRow>[] {
+  const { t } = useI18n()
+
   return useMemo(() => {
     const keyColumn: ColumnDef<TranslationRow> = {
       id: 'key',
       accessorKey: 'key',
-      header: 'Key',
+      header: t('table.key'),
       size: KEY_COLUMN_WIDTH,
       cell: (info) => {
         const keyName = info.getValue<string>()
@@ -96,6 +99,7 @@ export function useTranslationColumns({
 
     return [keyColumn, ...localeColumns]
   }, [
+    t,
     project.columns,
     project.sourceLocale,
     onEdit,

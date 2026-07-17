@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { difference } from 'remeda'
-import { ROW_HEIGHT } from '@/lib/motion'
 import {
   buildLeadMoveMapping,
   moveKeysWithLead,
@@ -12,15 +11,18 @@ import {
   peekNextRowKey,
   updateCell,
 } from '@/services/translationProject'
-import { planFilterCollapse, planFilterExpand } from '@/store/filterLayout'
+import {
+  createMotionActions,
+  type KeyListTransitionMode,
+} from '@/store/motionActions'
 import {
   leaveKeyInLists,
   pickKeyLists,
   removeKeysFromLists,
 } from '@/store/keyLists'
-import { createMotionActions } from '@/store/motionActions'
 import { createPersistenceActions, readStoredDirectory, storeDirectory } from '@/store/persistence'
-import { canRenameKey } from '@/store/selectors'
+import type { SearchScope } from '@/store/searchFilter'
+import { canRenameKey, selectDisplayProject } from '@/store/selectors'
 import {
   applyDeleteRows,
   applyMoveKeys,
@@ -33,10 +35,40 @@ import {
   type TranslationState,
 } from '@/store/types'
 
+function visibleDisplayKeys(state: TranslationState): string[] {
+  return (
+    selectDisplayProject(
+      {
+        project: state.project,
+        missingFilterKeys: state.missingFilterKeys,
+        searchScope: state.searchScope,
+        searchRegex: state.searchRegex,
+      },
+      state.searchQuery,
+    )?.rows.map((row) => row.key) ?? []
+  )
+}
+
 export type TranslationStore = TranslationState & {
   setDirectoryPath: (path: string) => void
   setSearchQuery: (value: string) => void
   clearSearch: () => void
+  setSearchScope: (scope: SearchScope) => void
+  setSearchRegex: (enabled: boolean) => void
+  /**
+   * Shared row-list FLIP/fade for search, filter, add, and delete.
+   * Returns the motion mode that was started.
+   */
+  transitionDisplayKeys: (
+    fromKeys: string[],
+    toKeys: string[],
+    options?: {
+      trackFilterMode?: boolean
+      holdOnCollapse?: boolean
+      slideEnterKeys?: readonly string[]
+      onDone?: () => void
+    },
+  ) => KeyListTransitionMode
   selectKeys: (keys: string[]) => void
   clearSelection: () => void
   removeFromSelection: (key: string) => void
@@ -63,6 +95,50 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
     getStoreTranslator,
   )
 
+  const transitionDisplayKeys: TranslationStore['transitionDisplayKeys'] = (
+    fromKeys,
+    toKeys,
+    options = {},
+  ) => {
+    if (fromKeys.length === 0) {
+      set({ searchLayoutHoldKeys: null })
+      return 'none'
+    }
+
+    const state = get()
+    // Missing-filter owns the layout channel — don't fight it (unless we are it).
+    if (
+      !options.trackFilterMode &&
+      state.layoutMotion !== null &&
+      state.searchLayoutHoldKeys === null
+    ) {
+      return 'none'
+    }
+
+    if (options.holdOnCollapse) {
+      const willCollapse =
+        fromKeys.some((key) => !toKeys.includes(key)) &&
+        toKeys.every((key) => fromKeys.includes(key))
+      if (willCollapse) {
+        set({ searchLayoutHoldKeys: [...fromKeys] })
+      } else {
+        set({ searchLayoutHoldKeys: null })
+      }
+    }
+
+    const mode = motion.animateKeyListTransition(fromKeys, toKeys, {
+      trackFilterMode: options.trackFilterMode,
+      slideEnterKeys: options.slideEnterKeys,
+      onDone: () => {
+        if (options.holdOnCollapse) {
+          set({ searchLayoutHoldKeys: null })
+        }
+        options.onDone?.()
+      },
+    })
+    return mode
+  }
+
   return {
     ...createInitialTranslationState(readStoredDirectory()),
 
@@ -73,6 +149,10 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
 
     setSearchQuery: (value) => set({ searchQuery: value }),
     clearSearch: () => set({ searchQuery: '' }),
+    setSearchScope: (scope) => set({ searchScope: scope }),
+    setSearchRegex: (enabled) => set({ searchRegex: enabled }),
+
+    transitionDisplayKeys,
 
     selectKeys: (keys) => set({ selectedKeys: keys }),
     clearSelection: () => set({ selectedKeys: [] }),
@@ -90,31 +170,38 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       }),
 
     addRow: () => {
-      const { project } = get()
-      if (!project) {
+      const state = get()
+      if (!state.project) {
         return
       }
-      motion.animateEnter([peekNextRowKey(project)])
-      set((state) => {
-        if (!state.project) {
-          return state
+      const fromKeys = visibleDisplayKeys(state)
+      const newKey = peekNextRowKey(state.project)
+      set((current) => {
+        if (!current.project) {
+          return current
         }
-        const next = addProjectRow(state.project)
-        const newKey = next.rows[0]?.key
+        const next = addProjectRow(current.project)
+        const addedKey = next.rows[0]?.key
         return {
           ...withDirtyProject(
-            state,
+            current,
             next,
             null,
-            newKey ? [...state.freshKeys, newKey] : state.freshKeys,
+            addedKey ? [...current.freshKeys, addedKey] : current.freshKeys,
           ),
-          pendingKeyEdit: newKey ?? null,
+          pendingKeyEdit: addedKey ?? null,
         }
+      })
+      const afterKeys = visibleDisplayKeys(get())
+      transitionDisplayKeys(fromKeys, afterKeys, {
+        slideEnterKeys: afterKeys[0] === newKey ? [newKey] : [],
       })
     },
 
     deleteRow: (key) => {
-      motion.animateExit([key], () => {
+      const fromKeys = visibleDisplayKeys(get())
+      const toKeys = fromKeys.filter((item) => item !== key)
+      const commit = () => {
         set((state) => {
           if (!state.project) {
             return state
@@ -131,17 +218,28 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
             pendingKeyEdit: lists.pendingKeyEdit,
           }
         })
-      })
+      }
+      const mode = transitionDisplayKeys(fromKeys, toKeys, { onDone: commit })
+      if (mode === 'none') {
+        commit()
+      }
     },
 
     deleteSelectedRows: () => {
       const keys = [...get().selectedKeys]
-      motion.animateExit(keys, () => {
+      const fromKeys = visibleDisplayKeys(get())
+      const remove = new Set(keys)
+      const toKeys = fromKeys.filter((key) => !remove.has(key))
+      const commit = () => {
         set((state) => ({
           ...applyDeleteRows(state, keys),
           selectedKeys: [],
         }))
-      })
+      }
+      const mode = transitionDisplayKeys(fromKeys, toKeys, { onDone: commit })
+      if (mode === 'none') {
+        commit()
+      }
     },
 
     renameKey: (oldKey, newKey) => {
@@ -189,30 +287,23 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       if (!state.project) {
         return
       }
-      // Ignore while filter collapse is in flight (avoids overlapping toggles).
       if (state.layoutMotion !== null) {
         return
       }
 
+      const allKeys = state.project.rows.map((row) => row.key)
+
       if (state.missingFilterKeys !== null) {
-        const { appearing, expanding } = planFilterExpand(
-          state.project.rows,
-          state.missingFilterKeys,
-          ROW_HEIGHT,
-        )
+        const fromKeys = state.missingFilterKeys
         set({ missingFilterKeys: null })
-        motion.animateFilterExpand(appearing, expanding)
+        transitionDisplayKeys(fromKeys, allKeys, { trackFilterMode: true })
         return
       }
 
-      const missing = collectMissingRowKeys(state.project, state.freshKeys)
-      const { hiding, remaining, missingKeys } = planFilterCollapse(
-        state.project.rows,
-        missing,
-        ROW_HEIGHT,
-      )
-      motion.animateFilterCollapse(hiding, remaining, () => {
-        set({ missingFilterKeys: missingKeys })
+      const toKeys = collectMissingRowKeys(state.project, state.freshKeys)
+      transitionDisplayKeys(allKeys, toKeys, {
+        trackFilterMode: true,
+        onDone: () => set({ missingFilterKeys: toKeys }),
       })
     },
 

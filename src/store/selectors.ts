@@ -1,10 +1,15 @@
-import { filter, pipe, values } from 'remeda'
+import { pipe } from 'remeda'
 import type { TranslationRow } from '@shared/types'
 import {
   collectMissingRowKeys,
   renameKey as renameProjectKey,
   type TranslationProject,
 } from '@/services/translationProject'
+import {
+  filterRowsBySearch,
+  type SearchOptions,
+  type SearchScope,
+} from '@/store/searchFilter'
 import type { SessionState } from '@/store/types'
 
 function filterByMissingKeys(
@@ -14,36 +19,26 @@ function filterByMissingKeys(
     return (rows) => [...rows]
   }
   const keySet = new Set(missingFilterKeys)
-  return (rows) => filter(rows, (row) => keySet.has(row.key))
-}
-
-function filterBySearch(
-  query: string,
-): (rows: readonly TranslationRow[]) => TranslationRow[] {
-  const normalized = query.trim().toLowerCase()
-  if (!normalized) {
-    return (rows) => [...rows]
-  }
-  return (rows) =>
-    filter(
-      rows,
-      (row) =>
-        row.key.toLowerCase().includes(normalized) ||
-        values(row.values).some((value) =>
-          value.toLowerCase().includes(normalized),
-        ),
-    )
+  return (rows) => rows.filter((row) => keySet.has(row.key))
 }
 
 export function selectDisplayProject(
-  state: Pick<SessionState, 'project' | 'missingFilterKeys'>,
+  state: Pick<SessionState, 'project' | 'missingFilterKeys'> & {
+    searchScope?: SearchScope
+    searchRegex?: boolean
+  },
   searchQuery = '',
 ): TranslationProject | null {
   if (!state.project) {
     return null
   }
 
-  const query = searchQuery.trim()
+  const options: SearchOptions = {
+    query: searchQuery,
+    scope: state.searchScope ?? 'all',
+    regex: state.searchRegex ?? false,
+  }
+  const query = options.query.trim()
   if (state.missingFilterKeys === null && !query) {
     return state.project
   }
@@ -51,7 +46,7 @@ export function selectDisplayProject(
   const rows = pipe(
     state.project.rows,
     filterByMissingKeys(state.missingFilterKeys),
-    filterBySearch(query),
+    (next) => filterRowsBySearch(next, options),
   )
 
   return {

@@ -1,4 +1,4 @@
-import { unique } from 'remeda'
+import { planKeyListTransition } from '@/store/filterLayout'
 import {
   FILTER_LAYOUT_MS,
   ROW_ENTER_MS,
@@ -6,6 +6,7 @@ import {
   ROW_FLASH_MS,
   ROW_HEIGHT,
 } from '@/lib/motion'
+import { unique } from 'remeda'
 import type { RowLayoutMotion, TranslationState } from '@/store/types'
 
 type SetState = (
@@ -13,6 +14,16 @@ type SetState = (
     | Partial<TranslationState>
     | ((state: TranslationState) => Partial<TranslationState>),
 ) => void
+
+export type KeyListTransitionMode = 'collapse' | 'expand' | 'none'
+
+export type KeyListTransitionOptions = {
+  /** Drive missing-filter button / stripe fade. */
+  trackFilterMode?: boolean
+  /** Slide-enter these keys instead of fade-enter (e.g. new row). */
+  slideEnterKeys?: readonly string[]
+  onDone?: () => void
+}
 
 const enterTimers = new Map<string, number>()
 const fadeEnterTimers = new Map<string, number>()
@@ -89,7 +100,7 @@ function afterPaint(cb: () => void) {
 
 function runFlipLayout(
   set: SetState,
-  mode: 'collapse' | 'expand',
+  mode: 'collapse' | 'expand' | null,
   inverted: Record<string, RowLayoutMotion>,
   settled: Record<string, RowLayoutMotion>,
   extra: Partial<TranslationState>,
@@ -130,14 +141,11 @@ export function createMotionActions(set: SetState) {
     }, ROW_EXIT_MS) as unknown as number
   }
 
-  /**
-   * Fade out `hiding` in place; FLIP-compact `remaining` via transform.
-   * Phase 1 paints inverted shiftY; phase 2 eases shiftY → 0.
-   */
-  const animateFilterCollapse = (
+  const animateCollapse = (
     hiding: readonly string[],
     remaining: readonly { key: string; fromTop: number }[],
     commit: () => void,
+    trackFilterMode: boolean,
   ) => {
     if (hiding.length === 0) {
       commit()
@@ -152,7 +160,7 @@ export function createMotionActions(set: SetState) {
     })
     runFlipLayout(
       set,
-      'collapse',
+      trackFilterMode ? 'collapse' : null,
       inverted,
       settled,
       { exitingKeys: [...hiding] },
@@ -160,13 +168,10 @@ export function createMotionActions(set: SetState) {
     )
   }
 
-  /**
-   * FLIP-expand rows that stay visible; fade-enter `appearing` at final slots.
-   * Caller should clear `missingFilterKeys` in the same turn before/with this.
-   */
-  const animateFilterExpand = (
+  const animateExpand = (
     appearing: readonly string[],
     expanding: readonly { key: string; fromTop: number; toTop: number }[],
+    trackFilterMode: boolean,
   ) => {
     if (expanding.length === 0 && appearing.length === 0) {
       return
@@ -191,7 +196,45 @@ export function createMotionActions(set: SetState) {
     if (expanding.length === 0) {
       return
     }
-    runFlipLayout(set, 'expand', inverted, settled, { exitingKeys: [] })
+    runFlipLayout(
+      set,
+      trackFilterMode ? 'expand' : null,
+      inverted,
+      settled,
+      { exitingKeys: [] },
+    )
+  }
+
+  /**
+   * Shared FLIP/fade path for any from→to key list change (search, filter,
+   * add, delete).
+   */
+  const animateKeyListTransition = (
+    fromKeys: readonly string[],
+    toKeys: readonly string[],
+    options: KeyListTransitionOptions = {},
+  ): KeyListTransitionMode => {
+    const trackFilterMode = options.trackFilterMode ?? false
+    const plan = planKeyListTransition(fromKeys, toKeys, ROW_HEIGHT)
+    if (plan.type === 'none') {
+      return 'none'
+    }
+    if (plan.type === 'collapse') {
+      animateCollapse(plan.hiding, plan.remaining, () => {
+        options.onDone?.()
+      }, trackFilterMode)
+      return 'collapse'
+    }
+
+    const slideSet = new Set(options.slideEnterKeys ?? [])
+    const fadeAppearing = plan.appearing.filter((key) => !slideSet.has(key))
+    const slideAppearing = plan.appearing.filter((key) => slideSet.has(key))
+    if (slideAppearing.length > 0) {
+      animateEnter(slideAppearing)
+    }
+    animateExpand(fadeAppearing, plan.expanding, trackFilterMode)
+    options.onDone?.()
+    return 'expand'
   }
 
   const clearMotion = () => {
@@ -215,6 +258,7 @@ export function createMotionActions(set: SetState) {
       exitingKeys: [],
       layoutMotion: null,
       filterLayoutMode: null,
+      searchLayoutHoldKeys: null,
     })
   }
 
@@ -222,8 +266,7 @@ export function createMotionActions(set: SetState) {
     animateEnter,
     animateFlash,
     animateExit,
-    animateFilterCollapse,
-    animateFilterExpand,
+    animateKeyListTransition,
     clearMotion,
   }
 }

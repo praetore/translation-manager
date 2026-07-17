@@ -1,14 +1,8 @@
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react'
+import { I18nextProvider, useTranslation } from 'react-i18next'
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
-import {
-  createTranslator,
+  changeUiLocale,
+  i18n,
   resolveUiLocale,
   UI_LOCALES,
   type MessageParams,
@@ -23,8 +17,6 @@ interface LocaleContextValue {
   t: (key: string, params?: MessageParams) => string
   locales: readonly UiLocale[]
 }
-
-const LocaleContext = createContext<LocaleContextValue | null>(null)
 
 function readStoredLocale(): UiLocale | null {
   try {
@@ -47,47 +39,64 @@ function detectInitialLocale(): UiLocale {
   return readStoredLocale() ?? resolveUiLocale(navigator.language)
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<UiLocale>(detectInitialLocale)
-
-  const setLocale = useCallback((next: UiLocale) => {
-    setLocaleState(next)
-    storeLocale(next)
-    void window.electronAPI.setUiLocale(next)
-  }, [])
+function LocaleEffects({ children }: { children: ReactNode }) {
+  const { i18n: i18nInstance } = useTranslation()
 
   useEffect(() => {
-    document.documentElement.lang = locale
-    void window.electronAPI.setUiLocale(locale)
-  }, [locale])
+    const initial = detectInitialLocale()
+    if (resolveUiLocale(i18nInstance.language) !== initial) {
+      void changeUiLocale(initial)
+    }
+    document.documentElement.lang = initial
+    void window.electronAPI.setUiLocale(initial)
+  }, [i18nInstance])
+
+  useEffect(() => {
+    const onLanguageChanged = (lng: string) => {
+      document.documentElement.lang = resolveUiLocale(lng)
+    }
+    i18nInstance.on('languageChanged', onLanguageChanged)
+    return () => {
+      i18nInstance.off('languageChanged', onLanguageChanged)
+    }
+  }, [i18nInstance])
 
   useEffect(() => {
     return window.electronAPI.onUiLocaleChanged((next: string) => {
       const resolved = resolveUiLocale(next)
-      setLocaleState(resolved)
       storeLocale(resolved)
+      void changeUiLocale(resolved)
     })
   }, [])
 
-  const t = useMemo(() => createTranslator(locale), [locale])
+  return children
+}
 
-  const value = useMemo<LocaleContextValue>(
+export function LocaleProvider({ children }: { children: ReactNode }) {
+  return (
+    <I18nextProvider i18n={i18n}>
+      <LocaleEffects>{children}</LocaleEffects>
+    </I18nextProvider>
+  )
+}
+
+export function useI18n(): LocaleContextValue {
+  const { t, i18n: i18nInstance } = useTranslation()
+  const locale = resolveUiLocale(i18nInstance.language)
+
+  const setLocale = useCallback((next: UiLocale) => {
+    storeLocale(next)
+    void changeUiLocale(next)
+    void window.electronAPI.setUiLocale(next)
+  }, [])
+
+  return useMemo(
     () => ({
       locale,
       setLocale,
-      t,
+      t: (key: string, params?: MessageParams) => t(key, params),
       locales: UI_LOCALES,
     }),
     [locale, setLocale, t],
   )
-
-  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
-}
-
-export function useI18n(): LocaleContextValue {
-  const context = useContext(LocaleContext)
-  if (!context) {
-    throw new Error('useI18n must be used within LocaleProvider')
-  }
-  return context
 }

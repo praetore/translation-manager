@@ -12,6 +12,13 @@
     "addRow": "Add row",
     "search": "Search",
     "searchPlaceholder": "Search keys or text…",
+    "searchRegex": "Regex search",
+    "searchScope": {
+      "label": "Search in",
+      "all": "All",
+      "keys": "Keys",
+      "text": "Text"
+    },
     "selected": "{count} selected",
     "selectedSuffix": "selected",
     "moveKeys": "Move",
@@ -33,6 +40,7 @@
     "missingFilterOff": "Show only rows with missing translations"
   },
   "table": {
+    "key": "Key",
     "deleteRow": "Delete row",
     "deleteTitle": "Delete key",
     "editKey": "Edit key",
