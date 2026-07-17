@@ -1,4 +1,4 @@
-import { FolderInput, Trash2, X } from 'lucide-react'
+import { FolderInput, Trash2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatedCount } from '@/components/AnimatedCount'
@@ -22,7 +22,7 @@ export function SelectionToolbarActions({
 }: SelectionToolbarActionsProps) {
   const { t } = useI18n()
   const compact = useIsToolbarCompact()
-  const { selectedKeys, clearSelection, deleteSelectedRows, moveSelectedKeys } =
+  const { selectedKeys, deleteSelectedRows, moveSelectedKeys } =
     useTranslationStore()
   const [moveOpen, setMoveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -80,12 +80,6 @@ export function SelectionToolbarActions({
                 {t('toolbar.bulkActions')}
               </span>
             </span>
-            <ToolbarActionButton
-              icon={X}
-              label={t('toolbar.deselect')}
-              variant="outline"
-              onClick={clearSelection}
-            />
             <ToolbarActionButton
               icon={FolderInput}
               label={t('toolbar.moveKeys')}

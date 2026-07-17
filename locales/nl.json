@@ -26,7 +26,7 @@
     "deleteSelected": "Verwijderen ({count})",
     "deleteSelectedLabel": "Verwijderen",
     "deselect": "Deselecteren",
-    "bulkActions": "Bulkacties",
+    "bulkActions": "Acties voor selectie",
     "deleteSelectedConfirm": "{count} geselecteerde key(s) verwijderen? Bij opslaan verdwijnen ze uit alle locale-bestanden.",
     "moveTitle": "Keys verplaatsen",
     "moveDescription": "Geef {count} geselecteerde key(s) een nieuw pad. Alleen het laatste segment van elke key blijft behouden.",

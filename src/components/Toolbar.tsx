@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type RefObject } from 'react'
-import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
+import { FolderOpen, ListFilter, Plus, Save, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AnimatedCount } from '@/components/AnimatedCount'
 import { SearchControls } from '@/components/SearchControls'
@@ -60,6 +60,7 @@ function ToolbarContent({
     missingFilterKeys,
     liveMissingKeys,
     selectedKeys,
+    clearSelection,
     layoutMotion,
     filterLayoutMode,
   } = useTranslationStore()
@@ -154,9 +155,17 @@ function ToolbarContent({
                 exit={{ opacity: 0, scale: 0.92, x: -6 }}
                 transition={springSnappy}
               >
-                <Badge variant="secondary" className="inline-flex items-center gap-1">
+                <Badge variant="secondary" className="inline-flex items-center gap-1 pr-1">
                   <AnimatedCount value={selectedCount} />
                   {t('toolbar.selectedSuffix')}
+                  <button
+                    type="button"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex size-4 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    aria-label={t('toolbar.deselect')}
+                    onClick={clearSelection}
+                  >
+                    <X className="size-2.5" strokeWidth={2.5} />
+                  </button>
                 </Badge>
               </motion.div>
             )}

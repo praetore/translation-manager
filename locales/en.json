@@ -26,7 +26,7 @@
     "deleteSelected": "Delete ({count})",
     "deleteSelectedLabel": "Delete",
     "deselect": "Deselect",
-    "bulkActions": "Bulk actions",
+    "bulkActions": "Selection actions",
     "deleteSelectedConfirm": "Delete {count} selected key(s)? This removes them from all locale files when you save.",
     "moveTitle": "Move keys",
     "moveDescription": "Set a new path for {count} selected key(s). Only the last segment of each key is kept.",
