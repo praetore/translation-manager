@@ -34,7 +34,11 @@ export function ToolbarCompactProvider({
   )
 }
 
-function rowContentOverflows(el: HTMLElement): boolean {
+/**
+ * Flex + overflow-hidden often keeps scrollWidth === clientWidth even when
+ * children visibly overflow, so measure child widths instead.
+ */
+export function rowContentOverflows(el: HTMLElement): boolean {
   const children = Array.from(el.children).filter(
     (node): node is HTMLElement =>
       node instanceof HTMLElement && getComputedStyle(node).display !== 'none',

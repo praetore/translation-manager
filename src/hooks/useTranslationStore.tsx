@@ -45,9 +45,10 @@ export function TranslationStoreProvider({ children }: { children: ReactNode }) 
   const saveProject = useTranslationStoreBase((s) => s.saveProject)
 
   useEffect(() => {
-    // Same store instance the UI uses — required for screenshot selection.
-    if (localStorage.getItem('translation-manager:screenshot') === '1') {
-      window.__TM_STORE__ = useTranslationStoreBase
+    // Same store instance the UI uses — screenshots and e2e drive selection via this.
+    window.__TM_STORE__ = useTranslationStoreBase
+    return () => {
+      delete window.__TM_STORE__
     }
   }, [])
 

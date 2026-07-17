@@ -1,5 +1,8 @@
 # Translation Manager
 
+[![CI](https://github.com/praetore/translation-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/praetore/translation-manager/actions/workflows/ci.yml)
+[![Release](https://github.com/praetore/translation-manager/actions/workflows/release.yml/badge.svg)](https://github.com/praetore/translation-manager/actions/workflows/release.yml)
+
 A local desktop translation editor for software projects. Open a folder of locale files, edit keys and translations in a fast grid, and save changes back to disk — entirely offline, with no cloud or AI runtime.
 
 |                                  Wide toolbar (dark mode)                                  |                                                    Compact toolbar + selection (light mode)                                                    |
@@ -76,6 +79,7 @@ This starts Vite and launches the Electron window.
 | `npm run dev` | Dev server + Electron |
 | `npm run build` | Typecheck + production build |
 | `npm test` | Unit tests (Vitest) |
+| `npm run test:e2e` | Electron smoke tests (Playwright; requires `npm run build`) |
 | `npm run lint:all` | ESLint + file-length checks |
 | `npm run dist` | Build + package for the current OS |
 | `npm run dist:win` / `dist:mac` / `dist:linux` | Platform-specific packages |
@@ -107,7 +111,9 @@ fixtures/          Sample translation files for local testing
 
 ### Releasing
 
-Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
+Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. CI runs **`npm test`** and **`npm run test:e2e`** first; packaging only starts if those pass. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
+
+Every push and PR to `master` also runs the same tests via the **CI** workflow (status badge at the top of this README).
 
 ```bash
 # package.json should already be the version you want to release (e.g. 0.4.0)

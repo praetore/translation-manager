@@ -19,9 +19,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Gate packaging: Vitest + Playwright Electron must pass before we create
+  # a GitHub release or upload installers.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit + component tests
+        run: npm test
+
+      - name: Install OS dependencies for Electron e2e
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-0 \
+            libnotify4 \
+            libnss3 \
+            libxss1 \
+            libgbm1 \
+            libx11-xcb1 \
+            libxshmfence1 \
+            libdrm2 \
+            libasound2t64 || sudo apt-get install -y libasound2
+
+      - name: Build renderer + Electron
+        run: npm run build
+
+      - name: Electron e2e (Playwright)
+        run: xvfb-run -a npm run test:e2e
+
   # Create the GitHub release once up front so parallel platform/arch
   # publishers only upload assets (avoids 422 tag_name already_exists).
   prepare:
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
