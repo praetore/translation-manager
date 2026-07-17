@@ -18,7 +18,6 @@ interface ToolbarProps {
   canSave: boolean
   status: string | null
   error: string | null
-  sourceLocale: string | null
   missingFilterActive: boolean
   missingFilterCount: number
   liveMissingCount: number
@@ -37,7 +36,6 @@ export function Toolbar({
   canSave,
   status,
   error,
-  sourceLocale,
   missingFilterActive,
   missingFilterCount,
   liveMissingCount,
@@ -86,9 +84,6 @@ export function Toolbar({
 
       <div className="flex min-h-9 flex-wrap items-center gap-2" aria-live="polite">
         <div className="flex flex-wrap gap-2">
-          {sourceLocale && (
-            <Badge variant="secondary">{t('toolbar.source', { locale: sourceLocale })}</Badge>
-          )}
           {dirty && <Badge variant="warning">{t('toolbar.unsaved')}</Badge>}
           {status && <Badge variant="success">{status}</Badge>}
           {error && <Badge variant="destructive">{error}</Badge>}

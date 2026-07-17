@@ -8,7 +8,6 @@
     "browse": "Browse…",
     "save": "Save",
     "saving": "Saving…",
-    "source": "Source: {locale}",
     "unsaved": "Unsaved",
     "missing": "Missing ({count})",
     "missingFilterOn": "Turn off filter to recalculate the list",

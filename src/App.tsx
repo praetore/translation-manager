@@ -98,7 +98,6 @@ export default function App() {
         dirty={Boolean(project?.dirty)}
         status={loadState.status}
         error={loadState.error}
-        sourceLocale={project?.sourceLocale ?? null}
         missingFilterActive={missingFilterKeys !== null}
         missingFilterCount={missingFilterKeys?.length ?? 0}
         liveMissingCount={liveMissingKeys.length}
