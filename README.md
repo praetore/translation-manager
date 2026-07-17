@@ -11,9 +11,9 @@ A local desktop translation editor for software projects. Open a folder of local
 
 ## Features
 
-- **Local folder workflow** — open a locales directory via path or **Browse…**
-- **Multiple formats in one project** — JSON, YAML (`.yaml` / `.yml`), gettext PO (`.po`), and Java `.properties`
-- **Virtualized grid** — smooth scrolling for large key sets; one column per detected locale file
+- **Local folder workflow** — open a locales directory via path or **Browse…**, then choose which translation files to load
+- **Multiple formats in one project** — JSON, YAML (`.yaml` / `.yml`), gettext PO (`.po`), and Java `.properties`; unreadable or non-locale files are skipped with a reason
+- **Virtualized grid** — smooth scrolling for large key sets; one column per locale with flag + language label
 - **Search** — filter by keys and/or text, with optional regex and scope (all / keys / text)
 - **Missing translations** — empty targets are highlighted when the source locale has a value; **Missing (N)** focuses on incomplete rows (snapshot stays stable until you toggle the filter again)
 - **Inline editing** — edit keys and cells in place; unsaved work is tracked until you save
@@ -40,15 +40,16 @@ Download the latest build from [GitHub Releases](https://github.com/praetore/tra
 
 1. Open the app
 2. Enter a folder path that contains translation files, or click **Browse…**
-3. Press **Enter** in the path field (or open via **File → Open…**) to load the project
-4. Edit cells and keys inline
-5. Click **Save** when you want changes written back to disk
-6. Optional:
+3. Press **Enter** in the path field (or open via **File → Open…**) to scan the folder
+4. In **Choose translation files**, confirm which locale files to open (or cancel to keep the current project)
+5. Edit cells and keys inline
+6. Click **Save** when you want changes written back to disk
+7. Optional:
    - Use **search** (and regex / scope) to narrow the grid
    - Click **Missing (N)** to focus on incomplete rows
    - Select rows for **Move** / **Delete**, or use **Add row** for a new key
 
-Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, …). The source locale defaults to `en` when present.
+Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, …). The source locale defaults to `en` when present. Files that are not valid locales or fail to parse appear under **Skipped** in the picker and are not loaded.
 
 ### Try sample data
 
@@ -101,7 +102,7 @@ fixtures/          Sample translation files for local testing
 
 | Process | Responsibility |
 |---------|----------------|
-| Main | `dialog`, `fs` read/write, directory scan |
+| Main | `dialog`, `fs` read/write, directory scan (renderer then picks files) |
 | Preload | `contextBridge` API (`window.electronAPI`) |
 | Renderer | UI, adapters, in-memory project state |
 
