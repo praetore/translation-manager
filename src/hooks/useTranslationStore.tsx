@@ -35,18 +35,27 @@ function sameKeys(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((key, index) => key === b[index])
 }
 
+/** Survive React StrictMode remounts so we don't double-load (which clears selection). */
+let didRestoreDirectory = false
+
 /** Binds i18n, menu shortcuts, and directory restore to the Zustand store. */
 export function TranslationStoreProvider({ children }: { children: ReactNode }) {
   const loadDirectory = useTranslationStoreBase((s) => s.loadDirectory)
   const openProject = useTranslationStoreBase((s) => s.openProject)
   const saveProject = useTranslationStoreBase((s) => s.saveProject)
-  const didRestoreRef = useRef(false)
 
   useEffect(() => {
-    if (didRestoreRef.current) {
+    // Same store instance the UI uses — required for screenshot selection.
+    if (localStorage.getItem('translation-manager:screenshot') === '1') {
+      window.__TM_STORE__ = useTranslationStoreBase
+    }
+  }, [])
+
+  useEffect(() => {
+    if (didRestoreDirectory) {
       return
     }
-    didRestoreRef.current = true
+    didRestoreDirectory = true
     const stored = readStoredDirectory().trim()
     if (!stored || useTranslationStoreBase.getState().project) {
       return

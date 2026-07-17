@@ -1,7 +1,6 @@
 import { FolderInput, Trash2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { AnimatedCount } from '@/components/AnimatedCount'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { MoveKeysDialog } from '@/components/MoveKeysDialog'
 import { ToolbarActionButton } from '@/components/ToolbarActionButton'
@@ -46,8 +45,6 @@ export function SelectionToolbarActions({
     }
   }, [hasSelection, onChromePresentChange])
 
-  const deleteLabel = t('toolbar.deleteSelected', { count: cachedCount })
-
   return (
     <>
       <AnimatePresence
@@ -87,18 +84,11 @@ export function SelectionToolbarActions({
             />
             <ToolbarActionButton
               icon={Trash2}
-              label={deleteLabel}
+              label={t('toolbar.deleteSelected', { count: cachedCount })}
               variant="destructive"
               onClick={() => setDeleteOpen(true)}
             >
-              <span className="inline-flex items-center gap-1">
-                {t('toolbar.deleteSelectedLabel')}
-                <span className="inline-flex items-center">
-                  (
-                  <AnimatedCount value={cachedCount} />
-                  )
-                </span>
-              </span>
+              {t('toolbar.deleteSelectedLabel')}
             </ToolbarActionButton>
             <Separator orientation="vertical" className="mx-1 shrink-0" />
           </motion.div>

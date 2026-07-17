@@ -27,7 +27,8 @@
     "dist:linux": "npm run build && electron-builder --linux --publish never",
     "dist:publish": "npm run build && electron-builder --publish always",
     "icons": "node scripts/generate-icons.mjs",
-    "screenshots": "node scripts/capture-screenshots.mjs"
+    "screenshots": "node scripts/capture-screenshots.mjs",
+    "screenshots:local": "node scripts/capture-screenshots.mjs --local"
   },
   "build": {
     "appId": "com.translationmanager.app",

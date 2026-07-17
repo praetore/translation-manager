@@ -5,9 +5,12 @@ import electronPath from 'electron'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const fixtures = path.join(root, 'fixtures')
+const localOut = process.argv.includes('--local')
 const outDir = process.env.TM_SCREENSHOT_OUT
   ? path.resolve(process.env.TM_SCREENSHOT_OUT)
-  : path.join(root, 'docs')
+  : localOut
+    ? path.join(root, 'tmp', 'screenshots')
+    : path.join(root, 'docs')
 
 // Chromium refuses to start as root (Docker/CI) without these flags as argv.
 const electronArgs = ['.', '--no-sandbox', '--disable-dev-shm-usage']
