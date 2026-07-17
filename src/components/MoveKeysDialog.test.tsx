@@ -18,10 +18,12 @@ describe('MoveKeysDialog', () => {
         onConfirm={() => true}
       />,
     )
-    expect(screen.getByText(/Example: auth.login.title/)).toBeInTheDocument()
+    expect(screen.getByText(/Example: auth.login.email/)).toBeInTheDocument()
     expect(screen.getByRole('table')).toBeInTheDocument()
     expect(screen.getByText('$$')).toBeInTheDocument()
     expect(screen.getByText('Current path (before the last segment)')).toBeInTheDocument()
+    expect(screen.getByText('auth.login')).toBeInTheDocument()
+    expect(screen.getByText('$1 → auth · $2 → login')).toBeInTheDocument()
   })
 
   it('shows a live from → to preview when a lead is typed', async () => {

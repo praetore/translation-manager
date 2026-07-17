@@ -13,11 +13,29 @@ import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { applyKeyLead, hasIncompleteDollarToken, validateLeadTemplate } from '@/services/keyPaths'
 
+const EXAMPLE_KEY = 'auth.login.email'
+
 const TOKEN_ROWS = [
-  { token: '$$', meaningKey: 'toolbar.moveTokenFullPath' },
-  { token: '$1, $2, …', meaningKey: 'toolbar.moveTokenFromLeft' },
-  { token: '$-1, $-2, …', meaningKey: 'toolbar.moveTokenFromRight' },
-  { token: '\\$', meaningKey: 'toolbar.moveTokenLiteral' },
+  {
+    token: '$$',
+    meaningKey: 'toolbar.moveTokenFullPath',
+    exampleKey: 'toolbar.moveTokenExampleFullPath',
+  },
+  {
+    token: '$1, $2, …',
+    meaningKey: 'toolbar.moveTokenFromLeft',
+    exampleKey: 'toolbar.moveTokenExampleFromLeft',
+  },
+  {
+    token: '$-1, $-2, …',
+    meaningKey: 'toolbar.moveTokenFromRight',
+    exampleKey: 'toolbar.moveTokenExampleFromRight',
+  },
+  {
+    token: '\\$',
+    meaningKey: 'toolbar.moveTokenLiteral',
+    exampleKey: 'toolbar.moveTokenExampleLiteral',
+  },
 ] as const
 
 interface MoveKeysDialogProps {
@@ -86,6 +104,7 @@ export function MoveKeysDialog({
     >
       <DialogContent
         showCloseButton={false}
+        className="max-w-xl"
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           inputRef.current?.focus()
@@ -103,22 +122,31 @@ export function MoveKeysDialog({
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr className="border-border border-b text-left">
-                  <th className="text-muted-foreground pr-4 pb-1.5 font-medium">
+                  <th className="text-muted-foreground pr-3 pb-1.5 font-medium">
                     {t('toolbar.moveToken')}
                   </th>
-                  <th className="text-muted-foreground pb-1.5 font-medium">
+                  <th className="text-muted-foreground pr-3 pb-1.5 font-medium">
                     {t('toolbar.moveTokenMeaning')}
+                  </th>
+                  <th className="text-muted-foreground pb-1.5 font-medium">
+                    {t('toolbar.moveTokenExample')}{' '}
+                    <span className="text-foreground font-mono font-semibold">
+                      {EXAMPLE_KEY}
+                    </span>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {TOKEN_ROWS.map((row) => (
                   <tr key={row.token} className="border-border/60 border-b last:border-b-0">
-                    <td className="text-foreground py-1.5 pr-4 align-top font-mono whitespace-nowrap">
+                    <td className="text-foreground py-1.5 pr-3 align-top font-mono whitespace-nowrap">
                       {row.token}
                     </td>
-                    <td className="text-muted-foreground py-1.5 align-top">
+                    <td className="text-muted-foreground py-1.5 pr-3 align-top">
                       {t(row.meaningKey)}
+                    </td>
+                    <td className="text-muted-foreground py-1.5 align-top font-mono">
+                      {t(row.exampleKey)}
                     </td>
                   </tr>
                 ))}
