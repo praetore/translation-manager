@@ -102,8 +102,23 @@ describe('translationStore', () => {
   it('toggles the missing filter snapshot', () => {
     loadSample()
     useTranslationStoreBase.getState().toggleMissingFilter()
+    const collapsing = useTranslationStoreBase.getState()
+    expect(collapsing.exitingKeys).toEqual(['greeting'])
+    expect(collapsing.layoutMotion).toEqual({
+      farewell: { top: 0, shiftY: 40, animate: false },
+    })
+
+    // Second click during collapse is ignored
+    useTranslationStoreBase.getState().toggleMissingFilter()
+    expect(useTranslationStoreBase.getState().missingFilterKeys).toBeNull()
+    expect(useTranslationStoreBase.getState().layoutMotion).toEqual({
+      farewell: { top: 0, shiftY: 40, animate: false },
+    })
+
+    vi.runAllTimers()
     let state = useTranslationStoreBase.getState()
     expect(state.missingFilterKeys).toEqual(['farewell'])
+    expect(state.layoutMotion).toBeNull()
     expect(selectDisplayProject(state)?.rows.map((row) => row.key)).toEqual([
       'farewell',
     ])
@@ -111,6 +126,17 @@ describe('translationStore', () => {
     useTranslationStoreBase.getState().toggleMissingFilter()
     state = useTranslationStoreBase.getState()
     expect(state.missingFilterKeys).toBeNull()
+    expect(state.filterLayoutMode).toBe('expand')
+    expect(state.layoutMotion).toEqual({
+      farewell: { top: 40, shiftY: -40, animate: false },
+    })
+    expect(state.fadeEnteringKeys).toEqual(['greeting'])
+    expect(state.enteringKeys).toEqual([])
+
+    vi.runAllTimers()
+    state = useTranslationStoreBase.getState()
+    expect(state.layoutMotion).toBeNull()
+    expect(state.filterLayoutMode).toBeNull()
   })
 
   it('filters display rows by search query on keys and values', () => {

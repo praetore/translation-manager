@@ -11,7 +11,7 @@ export default function App() {
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
       <Toolbar />
-      <main className="min-h-0 min-w-0 overflow-hidden p-4">
+      <main className="h-full min-h-0 min-w-0 overflow-hidden p-4">
         {showSkeleton ? (
           <LoadingSkeleton />
         ) : displayProject ? (

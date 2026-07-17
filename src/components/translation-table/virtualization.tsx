@@ -1,33 +1,38 @@
 import { flexRender, type Row } from '@tanstack/react-table'
-import { motion } from 'motion/react'
-import {
-  forwardRef,
-  type CSSProperties,
-  type FocusEvent,
-  type HTMLAttributes,
-  type UIEvent,
-} from 'react'
+import { type CSSProperties, type FocusEvent } from 'react'
 import { type ListChildComponentProps } from 'react-window'
 import type { TranslationRow } from '@shared/types'
-import { springLayout, springSoft } from '@/lib/motion'
+import {
+  resolveRowMotion,
+  resolveRowTone,
+  translationRowVariants,
+} from '@/components/translation-table/rowVariants'
+import { ROW_HEIGHT } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { isMissingAgainstSource } from '@/services/translationProject'
+import type { RowLayoutMotion } from '@/store/types'
 
-export const ROW_HEIGHT = 40
+export { ROW_HEIGHT }
 export const KEY_COLUMN_WIDTH = 280
 export const LOCALE_COLUMN_WIDTH = 260
+
+export type TablePane = 'key' | 'locales'
 
 export interface VirtualRowData {
   rows: Array<Row<TranslationRow>>
   sourceLocale: string
-  totalWidth: number
+  pane: TablePane
+  paneWidth: number
   locales: string[]
   stripeMissingRows: boolean
   freshKeys: ReadonlySet<string>
   selectedKeys: ReadonlySet<string>
   enteringKeys: ReadonlySet<string>
+  fadeEnteringKeys: ReadonlySet<string>
   flashingKeys: ReadonlySet<string>
   exitingKeys: ReadonlySet<string>
+  layoutMotion: Record<string, RowLayoutMotion> | null
+  filterLayoutMode: 'collapse' | 'expand' | null
   onLeaveFreshKey: (key: string) => void
 }
 
@@ -60,57 +65,53 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
 
   const handleRowBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget
-    if (next instanceof Node && event.currentTarget.contains(next)) {
-      return
+    if (next instanceof HTMLElement) {
+      const nextRow = next.closest('[data-row-key]')
+      if (nextRow?.getAttribute('data-row-key') === row.original.key) {
+        return
+      }
     }
     data.onLeaveFreshKey(row.original.key)
   }
 
   const rowSelected = data.selectedKeys.has(row.original.key)
-  const rowEntering = data.enteringKeys.has(row.original.key)
-  const rowFlashing = data.flashingKeys.has(row.original.key)
-  const rowExiting = data.exitingKeys.has(row.original.key)
-  const top = readTop(style)
+  const layout = data.layoutMotion?.[row.original.key]
+  const top = layout?.top ?? readTop(style)
+  const fadeEntering = data.fadeEnteringKeys.has(row.original.key)
+  const cells = row.getVisibleCells().filter((cell) =>
+    data.pane === 'key' ? cell.column.id === 'key' : cell.column.id !== 'key',
+  )
 
   return (
-    <motion.div
+    <div
       className={cn(
-        'flex border-b',
-        rowMissing && 'row-missing-stripe',
-        rowSelected && 'row-selected',
-        rowExiting && 'pointer-events-none',
+        translationRowVariants({
+          tone: resolveRowTone(rowMissing, rowSelected),
+          motion: resolveRowMotion(
+            data.enteringKeys.has(row.original.key) || fadeEntering,
+            data.exitingKeys.has(row.original.key),
+            data.flashingKeys.has(row.original.key),
+            fadeEntering,
+          ),
+        }),
+        layout && layout.animate && 'row-layout',
+        layout && rowMissing && data.filterLayoutMode === 'collapse' && 'row-stripe-fade',
       )}
       style={{
         position: 'absolute',
         left: 0,
+        top,
         height: style.height,
-        width: data.totalWidth,
-        minWidth: data.totalWidth,
+        width: data.paneWidth,
+        minWidth: data.paneWidth,
+        transform: layout ? `translateY(${layout.shiftY}px)` : undefined,
       }}
       role="row"
       aria-selected={rowSelected}
+      data-row-key={row.original.key}
       onBlur={handleRowBlur}
-      initial={
-        rowEntering
-          ? { opacity: 0, top: top - ROW_HEIGHT }
-          : false
-      }
-      animate={{
-        top,
-        opacity: rowExiting ? 0 : 1,
-        filter: rowFlashing ? 'brightness(1.08)' : 'brightness(1)',
-      }}
-      transition={{
-        top: springLayout,
-        opacity: rowExiting
-          ? { duration: 0.22, ease: 'easeIn' }
-          : rowEntering
-            ? springSoft
-            : { duration: 0 },
-        filter: rowFlashing ? { duration: 0.45, ease: 'easeOut' } : { duration: 0 },
-      }}
     >
-      {row.getVisibleCells().map((cell) => {
+      {cells.map((cell) => {
         const locale = cell.column.id === 'key' ? null : cell.column.id
         const missing =
           locale !== null &&
@@ -120,7 +121,6 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
             data.sourceLocale,
             data.freshKeys,
           )
-        const isKey = cell.column.id === 'key'
 
         return (
           <div
@@ -129,13 +129,6 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
               'flex min-w-0 items-center border-r px-2.5',
               missing && !rowSelected && 'bg-destructive/15',
               missing && rowSelected && 'bg-primary/15',
-              isKey &&
-                cn(
-                  'sticky left-0 z-[2]',
-                  rowSelected && 'row-selected-sticky',
-                  rowMissing && 'row-missing-stripe-sticky',
-                  !rowMissing && !rowSelected && 'bg-card',
-                ),
             )}
             style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
             role="cell"
@@ -144,39 +137,6 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
           </div>
         )
       })}
-    </motion.div>
-  )
-}
-
-export function createOuterElement(
-  onHorizontalScroll: (left: number) => void,
-  scrollRef: { current: HTMLDivElement | null },
-) {
-  return forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & { style?: CSSProperties }>(
-    function OuterElement({ onScroll, style, children, ...rest }, ref) {
-      const handleScroll = (event: UIEvent<HTMLDivElement>) => {
-        onHorizontalScroll(event.currentTarget.scrollLeft)
-        onScroll?.(event)
-      }
-
-      return (
-        <div
-          {...rest}
-          ref={(node) => {
-            scrollRef.current = node
-            if (typeof ref === 'function') {
-              ref(node)
-            } else if (ref) {
-              ref.current = node
-            }
-          }}
-          className="!overflow-auto"
-          style={style}
-          onScroll={handleScroll}
-        >
-          {children}
-        </div>
-      )
-    },
+    </div>
   )
 }

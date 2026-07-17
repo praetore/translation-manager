@@ -28,6 +28,126 @@
   --color-ring: var(--ring);
   --font-sans: "Segoe UI", "IBM Plex Sans", "Helvetica Neue", sans-serif;
   --font-mono: "Cascadia Code", "Consolas", "SF Mono", ui-monospace, monospace;
+  --animate-row-enter: row-enter 0.35s ease-out;
+  --animate-row-enter-fade: row-enter-fade 0.24s ease-out;
+
+  @keyframes row-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes row-enter-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@utility row-exit {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+
+@utility row-flash {
+  filter: brightness(1.08);
+  transition: filter 0.45s ease-out;
+}
+
+@utility row-layout {
+  will-change: transform;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility row-missing-stripe {
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.22s ease;
+    background-color: rgb(254 226 226 / 0.35);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(254 202 202 / 0.45),
+      rgb(254 202 202 / 0.45) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+
+  @variant dark {
+    &::before {
+      background-color: rgb(127 29 29 / 0.28);
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgb(185 28 28 / 0.35),
+        rgb(185 28 28 / 0.35) 8px,
+        transparent 8px,
+        transparent 16px
+      );
+    }
+  }
+}
+
+@utility row-stripe-fade {
+  &::before {
+    opacity: 0;
+  }
+}
+
+@utility row-selected {
+  box-shadow: inset 3px 0 0 0 var(--primary);
+  background-color: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+@utility row-missing-selected {
+  isolation: isolate;
+  box-shadow: inset 3px 0 0 0 var(--primary);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.22s ease;
+    background-color: color-mix(in oklab, var(--primary) 22%, rgb(254 226 226 / 0.55));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)),
+      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)) 8px,
+      color-mix(in oklab, var(--primary) 12%, transparent) 8px,
+      color-mix(in oklab, var(--primary) 12%, transparent) 16px
+    );
+  }
+
+  @variant dark {
+    &::before {
+      background-color: color-mix(in oklab, var(--primary) 28%, rgb(127 29 29 / 0.4));
+      background-image: repeating-linear-gradient(
+        -45deg,
+        color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)),
+        color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)) 8px,
+        color-mix(in oklab, var(--primary) 14%, transparent) 8px,
+        color-mix(in oklab, var(--primary) 14%, transparent) 16px
+      );
+    }
+  }
 }
 
 :root {
@@ -91,85 +211,5 @@
     background-image:
       radial-gradient(circle at top left, color-mix(in oklab, var(--primary) 12%, transparent), transparent 40%),
       linear-gradient(180deg, var(--surface-glow) 0%, var(--background) 100%);
-  }
-}
-
-@layer utilities {
-  .row-missing-stripe {
-    background-color: rgb(254 226 226 / 0.35);
-    background-image: repeating-linear-gradient(
-      -45deg,
-      rgb(254 202 202 / 0.45),
-      rgb(254 202 202 / 0.45) 8px,
-      transparent 8px,
-      transparent 16px
-    );
-  }
-
-  .dark .row-missing-stripe {
-    background-color: rgb(127 29 29 / 0.28);
-    background-image: repeating-linear-gradient(
-      -45deg,
-      rgb(185 28 28 / 0.35),
-      rgb(185 28 28 / 0.35) 8px,
-      transparent 8px,
-      transparent 16px
-    );
-  }
-
-  /* Opaque variant for sticky cells so scrolled content cannot show through. */
-  .row-missing-stripe-sticky {
-    background-color: color-mix(in oklab, var(--destructive) 16%, var(--card));
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in oklab, var(--destructive) 28%, var(--card)),
-      color-mix(in oklab, var(--destructive) 28%, var(--card)) 8px,
-      color-mix(in oklab, var(--destructive) 12%, var(--card)) 8px,
-      color-mix(in oklab, var(--destructive) 12%, var(--card)) 16px
-    );
-  }
-
-  /* Selection must stay visible on top of missing stripes. */
-  .row-selected {
-    box-shadow: inset 3px 0 0 0 var(--primary);
-    background-color: color-mix(in oklab, var(--primary) 16%, transparent);
-  }
-
-  .row-missing-stripe.row-selected {
-    background-color: color-mix(in oklab, var(--primary) 22%, rgb(254 226 226 / 0.55));
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)),
-      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)) 8px,
-      color-mix(in oklab, var(--primary) 12%, transparent) 8px,
-      color-mix(in oklab, var(--primary) 12%, transparent) 16px
-    );
-  }
-
-  .dark .row-missing-stripe.row-selected {
-    background-color: color-mix(in oklab, var(--primary) 28%, rgb(127 29 29 / 0.4));
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)),
-      color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)) 8px,
-      color-mix(in oklab, var(--primary) 14%, transparent) 8px,
-      color-mix(in oklab, var(--primary) 14%, transparent) 16px
-    );
-  }
-
-  .row-selected-sticky {
-    background-color: color-mix(in oklab, var(--primary) 18%, var(--card));
-    box-shadow: inset 3px 0 0 0 var(--primary);
-  }
-
-  .row-missing-stripe-sticky.row-selected-sticky {
-    background-color: color-mix(in oklab, var(--primary) 22%, color-mix(in oklab, var(--destructive) 14%, var(--card)));
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in oklab, var(--primary) 30%, color-mix(in oklab, var(--destructive) 22%, var(--card))),
-      color-mix(in oklab, var(--primary) 30%, color-mix(in oklab, var(--destructive) 22%, var(--card))) 8px,
-      color-mix(in oklab, var(--primary) 16%, var(--card)) 8px,
-      color-mix(in oklab, var(--primary) 16%, var(--card)) 16px
-    );
   }
 }

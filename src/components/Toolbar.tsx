@@ -30,6 +30,8 @@ export function Toolbar() {
     selectedKeys,
     searchQuery,
     setSearchQuery,
+    layoutMotion,
+    filterLayoutMode,
   } = useTranslationStore()
 
   const dirty = Boolean(project?.dirty)
@@ -38,6 +40,10 @@ export function Toolbar() {
   const missingFilterActive = missingFilterKeys !== null
   const missingFilterCount = missingFilterKeys?.length ?? 0
   const liveMissingCount = liveMissingKeys.length
+  const filterBusy = layoutMotion !== null
+  /** Collapse in flight → on-state colors; expand → off-state immediately. */
+  const filterVisuallyOn =
+    missingFilterActive || filterLayoutMode === 'collapse'
   const canToggleMissing = missingFilterActive || liveMissingCount > 0
   const hasMissing = liveMissingCount > 0
   const selectedCount = selectedKeys.length
@@ -127,7 +133,7 @@ export function Toolbar() {
           <Hint
             side="bottom"
             label={
-              missingFilterActive
+              filterVisuallyOn
                 ? t('toolbar.missingFilterOn')
                 : t('toolbar.missingFilterOff')
             }
@@ -136,13 +142,15 @@ export function Toolbar() {
               type="button"
               className={cn(
                 hasMissing &&
-                  !missingFilterActive &&
+                  !filterVisuallyOn &&
                   'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',
+                filterBusy && 'pointer-events-none',
               )}
-              variant={hasMissing && missingFilterActive ? 'warning' : 'outline'}
+              variant={hasMissing && filterVisuallyOn ? 'warning' : 'outline'}
               onClick={toggleMissingFilter}
               disabled={!canToggleMissing}
-              aria-pressed={missingFilterActive}
+              aria-disabled={!canToggleMissing || filterBusy}
+              aria-pressed={filterVisuallyOn}
             >
               <ListFilter />
               {t('toolbar.missing', {

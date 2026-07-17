@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { ROW_HEIGHT } from '@/lib/motion'
 import {
   buildLeadMoveMapping,
   moveKeysWithLead,
@@ -213,18 +214,53 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
         state.pendingKeyEdit === null ? state : { pendingKeyEdit: null },
       ),
 
-    toggleMissingFilter: () =>
-      set((state) => {
-        if (state.missingFilterKeys !== null) {
-          return { missingFilterKeys: null }
+    toggleMissingFilter: () => {
+      const state = get()
+      if (!state.project) {
+        return
+      }
+      // Ignore while filter collapse is in flight (avoids overlapping toggles).
+      if (state.layoutMotion !== null) {
+        return
+      }
+
+      if (state.missingFilterKeys !== null) {
+        const visible = state.missingFilterKeys
+        const visibleSet = new Set(visible)
+        const compactIndex = new Map(visible.map((key, index) => [key, index]))
+        const appearing: string[] = []
+        const expanding: { key: string; fromTop: number; toTop: number }[] = []
+        state.project.rows.forEach((row, index) => {
+          if (visibleSet.has(row.key)) {
+            expanding.push({
+              key: row.key,
+              fromTop: (compactIndex.get(row.key) ?? 0) * ROW_HEIGHT,
+              toTop: index * ROW_HEIGHT,
+            })
+          } else {
+            appearing.push(row.key)
+          }
+        })
+        set({ missingFilterKeys: null })
+        motion.animateFilterExpand(appearing, expanding)
+        return
+      }
+
+      const missing = collectMissingRowKeys(state.project, state.freshKeys)
+      const missingSet = new Set(missing)
+      const hiding: string[] = []
+      const remaining: { key: string; fromTop: number }[] = []
+      state.project.rows.forEach((row, index) => {
+        if (missingSet.has(row.key)) {
+          remaining.push({ key: row.key, fromTop: index * ROW_HEIGHT })
+        } else {
+          hiding.push(row.key)
         }
-        if (!state.project) {
-          return state
-        }
-        return {
-          missingFilterKeys: collectMissingRowKeys(state.project, state.freshKeys),
-        }
-      }),
+      })
+      motion.animateFilterCollapse(hiding, remaining, () => {
+        set({ missingFilterKeys: missing })
+      })
+    },
 
     clearMotion: motion.clearMotion,
 
