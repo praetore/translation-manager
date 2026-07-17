@@ -4,6 +4,10 @@ A local desktop translation editor for software projects. Open a folder of local
 
 Built with **Electron**, **React**, **TypeScript**, **Vite**, **Tailwind CSS**, and **shadcn/ui**.
 
+| Dark | Light |
+|:----:|:-----:|
+| ![Translation Manager in dark mode](docs/main-window.png) | ![Translation Manager in light mode](docs/main-window-light.png) |
+
 ## Features
 
 - **Local folder workflow** — pick a directory via path input or native folder dialog
@@ -20,9 +24,9 @@ Built with **Electron**, **React**, **TypeScript**, **Vite**, **Tailwind CSS**, 
 - **Missing filter** — toggle to focus on incomplete rows; the filtered set stays stable while you edit (refresh by toggling the filter off and on again)
 - **100% local** — no network calls for translation; Main/Renderer separation via IPC
 
-## Screenshots / sample data
+## Sample data
 
-Use the included `fixtures/` folder to try the app quickly. It contains English, Dutch, French, German, and Italian files across JSON, YAML, Properties, and PO.
+Use the included `fixtures/` folder to try the app quickly (the screenshots above use this set). It contains English, Dutch, French, German, and Italian files across JSON, YAML, Properties, and PO.
 
 ## Requirements
 
