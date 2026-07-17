@@ -1,21 +1,48 @@
+import { useRef, type RefObject } from 'react'
 import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AnimatedCount } from '@/components/AnimatedCount'
 import { Hint } from '@/components/Hint'
 import { SearchControls } from '@/components/SearchControls'
 import { SelectionToolbarActions } from '@/components/SelectionToolbarActions'
+import { ToolbarActionButton } from '@/components/ToolbarActionButton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import {
+  ToolbarCompactProvider,
+  useIsToolbarCompact,
+  useToolbarCompact,
+} from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { springSnappy } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 export function Toolbar() {
+  const actionsRef = useRef<HTMLDivElement>(null)
+  const { selectedKeys } = useTranslationStore()
+  const compact = useToolbarCompact(actionsRef, [selectedKeys.length])
+
+  return (
+    <ToolbarCompactProvider compact={compact}>
+      <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
+        <ToolbarContent actionsRef={actionsRef} />
+      </header>
+    </ToolbarCompactProvider>
+  )
+}
+
+function ToolbarContent({
+  actionsRef,
+}: {
+  actionsRef: RefObject<HTMLDivElement | null>
+}) {
   const { t } = useI18n()
+  const compact = useIsToolbarCompact()
   const {
     project,
     directoryPath,
@@ -34,7 +61,7 @@ export function Toolbar() {
   } = useTranslationStore()
 
   const dirty = Boolean(project?.dirty)
-  const canSave = Boolean(project)
+  const canSave = dirty
   const canAddRow = Boolean(project)
   const missingFilterActive = missingFilterKeys !== null
   const missingFilterCount = missingFilterKeys?.length ?? 0
@@ -48,8 +75,32 @@ export function Toolbar() {
   const selectedCount = selectedKeys.length
   const { loading, saving, status } = loadState
 
+  const browseLabel = t('toolbar.browse')
+  const saveLabel = saving
+    ? t('toolbar.saving')
+    : dirty
+      ? `${t('toolbar.save')} *`
+      : t('toolbar.save')
+  const missingLabel = t('toolbar.missing', {
+    count: missingFilterActive ? missingFilterCount : liveMissingCount,
+  })
+
+  const browseButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size={compact ? 'icon' : 'default'}
+      aria-label={browseLabel}
+      onClick={() => void browseDirectory()}
+      disabled={loading}
+    >
+      <FolderOpen />
+      {!compact && browseLabel}
+    </Button>
+  )
+
   return (
-    <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
+    <>
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t('app.title')}</h1>
         <p className="text-muted-foreground text-sm">{t('app.tagline')}</p>
@@ -57,32 +108,42 @@ export function Toolbar() {
 
       <div className="flex flex-wrap items-end gap-2">
         <div className="grid min-w-[240px] flex-[1_1_360px] gap-1.5">
-          <Label htmlFor="directory-path" className="text-muted-foreground text-xs uppercase tracking-wide">
+          <Label
+            htmlFor="directory-path"
+            className="text-muted-foreground text-xs uppercase tracking-wide"
+          >
             {t('toolbar.directoryPath')}
           </Label>
-          <Input
-            id="directory-path"
-            type="text"
-            value={directoryPath}
-            placeholder="C:\project\locales"
-            className="bg-background"
-            onChange={(event) => setDirectoryPath(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                void loadDirectory()
-              }
-            }}
-          />
+          <ButtonGroup className="w-full">
+            <Input
+              id="directory-path"
+              type="text"
+              value={directoryPath}
+              placeholder="C:\project\locales"
+              className="bg-background"
+              onChange={(event) => setDirectoryPath(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  void loadDirectory()
+                }
+              }}
+            />
+            {compact ? (
+              <Hint label={browseLabel} side="bottom">
+                {browseButton}
+              </Hint>
+            ) : (
+              browseButton
+            )}
+          </ButtonGroup>
         </div>
 
-        <Button type="button" variant="outline" onClick={() => void browseDirectory()} disabled={loading}>
-          <FolderOpen />
-          {t('toolbar.browse')}
-        </Button>
-        <Button type="button" onClick={() => void saveProject()} disabled={!canSave || saving}>
-          <Save />
-          {saving ? t('toolbar.saving') : dirty ? `${t('toolbar.save')} *` : t('toolbar.save')}
-        </Button>
+        <ToolbarActionButton
+          icon={Save}
+          label={saveLabel}
+          onClick={() => void saveProject()}
+          disabled={!canSave || saving}
+        />
       </div>
 
       <div className="flex min-h-9 flex-wrap items-center gap-2">
@@ -112,44 +173,41 @@ export function Toolbar() {
           </AnimatePresence>
         </div>
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <div
+          ref={actionsRef}
+          className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2"
+        >
           <SelectionToolbarActions />
           <SearchControls />
           <Separator orientation="vertical" className="mx-1 hidden sm:block" />
-          <Button type="button" onClick={addRow} disabled={!canAddRow}>
-            <Plus />
-            {t('toolbar.addRow')}
-          </Button>
-          <Hint
-            side="bottom"
-            label={
+          <ToolbarActionButton
+            icon={Plus}
+            label={t('toolbar.addRow')}
+            onClick={addRow}
+            disabled={!canAddRow}
+          />
+          <ToolbarActionButton
+            icon={ListFilter}
+            label={missingLabel}
+            hint={
               filterVisuallyOn
                 ? t('toolbar.missingFilterOn')
                 : t('toolbar.missingFilterOff')
             }
-          >
-            <Button
-              type="button"
-              className={cn(
-                hasMissing &&
-                  !filterVisuallyOn &&
-                  'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',
-                filterBusy && 'pointer-events-none',
-              )}
-              variant={hasMissing && filterVisuallyOn ? 'warning' : 'outline'}
-              onClick={toggleMissingFilter}
-              disabled={!canToggleMissing}
-              aria-disabled={!canToggleMissing || filterBusy}
-              aria-pressed={filterVisuallyOn}
-            >
-              <ListFilter />
-              {t('toolbar.missing', {
-                count: missingFilterActive ? missingFilterCount : liveMissingCount,
-              })}
-            </Button>
-          </Hint>
+            className={cn(
+              hasMissing &&
+                !filterVisuallyOn &&
+                'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',
+              filterBusy && 'pointer-events-none',
+            )}
+            variant={hasMissing && filterVisuallyOn ? 'warning' : 'outline'}
+            onClick={toggleMissingFilter}
+            disabled={!canToggleMissing}
+            aria-disabled={!canToggleMissing || filterBusy}
+            aria-pressed={filterVisuallyOn}
+          />
         </div>
       </div>
-    </header>
+    </>
   )
 }

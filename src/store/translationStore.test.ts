@@ -39,6 +39,10 @@ function sampleProject(overrides?: Partial<TranslationProject>): TranslationProj
 function loadSample(project = sampleProject()) {
   useTranslationStoreBase.setState({
     project,
+    baselineRows: project.rows.map((row) => ({
+      key: row.key,
+      values: { ...row.values },
+    })),
     directoryPath: project.directoryPath,
     missingFilterKeys: null,
     freshKeys: [],
@@ -74,6 +78,23 @@ describe('translationStore', () => {
     expect(state.missingFilterKeys).toBeNull()
     expect(state.project?.dirty).toBe(true)
     expect(state.enteringKeys).toContain('new.key')
+  })
+
+  it('clears dirty after adding then deleting the same row', () => {
+    loadSample()
+    useTranslationStoreBase.getState().addRow()
+    expect(useTranslationStoreBase.getState().project?.dirty).toBe(true)
+
+    useTranslationStoreBase.getState().deleteRow('new.key')
+    vi.runAllTimers()
+
+    const state = useTranslationStoreBase.getState()
+    expect(state.project?.rows.map((row) => row.key)).toEqual([
+      'greeting',
+      'farewell',
+    ])
+    expect(state.project?.dirty).toBe(false)
+    expect(state.freshKeys).toEqual([])
   })
 
   it('keeps fresh keys out of live missing until leaveFreshKey', () => {
@@ -144,6 +165,26 @@ describe('translationStore', () => {
     expect(state.filterLayoutMode).toBeNull()
   })
 
+  it('slide-enters a row added during missing-filter collapse', () => {
+    loadSample()
+    useTranslationStoreBase.getState().toggleMissingFilter()
+    expect(useTranslationStoreBase.getState().layoutMotion).not.toBeNull()
+
+    useTranslationStoreBase.getState().addRow()
+    const during = useTranslationStoreBase.getState()
+    expect(during.project?.rows[0]?.key).toBe('new.key')
+    expect(during.enteringKeys).toContain('new.key')
+    expect(during.freshKeys).toEqual(['new.key'])
+
+    vi.runAllTimers()
+    const after = useTranslationStoreBase.getState()
+    expect(after.missingFilterKeys).toEqual(['new.key', 'farewell'])
+    expect(selectDisplayProject(after)?.rows.map((row) => row.key)).toEqual([
+      'new.key',
+      'farewell',
+    ])
+  })
+
   it('filters display rows by search query on keys and values', () => {
     loadSample()
     expect(
@@ -158,7 +199,7 @@ describe('translationStore', () => {
     ).toEqual(['greeting'])
   })
 
-  it('marks save success as clean with a status message', () => {
+  it('marks save success as clean and restores keys/locales status', () => {
     loadSample({ ...sampleProject(), dirty: true })
     useTranslationStoreBase.setState({
       load: {
@@ -174,14 +215,17 @@ describe('translationStore', () => {
         loading: false,
         saving: false,
         error: null,
-        status: { key: 'status.saved', params: { count: 2 } },
+        status: {
+          key: 'status.keysAndLocales',
+          params: { keys: 2, locales: 2 },
+        },
       },
     })
     const state = useTranslationStoreBase.getState()
     expect(state.project?.dirty).toBe(false)
     expect(state.load.status).toEqual({
-      key: 'status.saved',
-      params: { count: 2 },
+      key: 'status.keysAndLocales',
+      params: { keys: 2, locales: 2 },
     })
   })
 

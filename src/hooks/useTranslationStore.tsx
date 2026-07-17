@@ -5,12 +5,10 @@ import {
   useRef,
   type ReactNode,
 } from 'react'
-import { useI18n } from '@/i18n/LocaleProvider'
 import {
   selectDisplayProject,
   selectLiveMissingKeys,
 } from '@/store/selectors'
-import { setStoreTranslator } from '@/store/translator'
 import {
   useTranslationStoreBase,
   type TranslationStore,
@@ -21,6 +19,7 @@ import { readStoredDirectory } from '@/store/persistence'
 export type TranslationStoreValue = Omit<
   TranslationStore,
   | 'load'
+  | 'baselineRows'
   | 'clearSearch'
   | 'clearMotion'
   | 'removeFromSelection'
@@ -38,15 +37,10 @@ function sameKeys(a: readonly string[], b: readonly string[]): boolean {
 
 /** Binds i18n, menu shortcuts, and directory restore to the Zustand store. */
 export function TranslationStoreProvider({ children }: { children: ReactNode }) {
-  const { t } = useI18n()
   const loadDirectory = useTranslationStoreBase((s) => s.loadDirectory)
   const openProject = useTranslationStoreBase((s) => s.openProject)
   const saveProject = useTranslationStoreBase((s) => s.saveProject)
   const didRestoreRef = useRef(false)
-
-  useEffect(() => {
-    setStoreTranslator(t)
-  }, [t])
 
   useEffect(() => {
     if (didRestoreRef.current) {

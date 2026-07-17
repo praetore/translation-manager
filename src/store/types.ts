@@ -1,4 +1,5 @@
 import type { TranslationProject } from '@/services/translationProject'
+import type { TranslationRow } from '@shared/types'
 import type { SearchScope } from '@/store/searchFilter'
 
 /** i18n key + params; render with the current locale's `t`. */
@@ -17,6 +18,11 @@ export interface LoadState {
 /** Project session fields (load + editor document). */
 export interface SessionState {
   project: TranslationProject | null
+  /**
+   * Last loaded/saved row snapshot. `project.dirty` is derived by comparing
+   * current rows to this baseline.
+   */
+  baselineRows: TranslationRow[] | null
   directoryPath: string
   load: LoadState
   /** Snapshot of row keys when the missing-filter was enabled. Null = filter off. */
@@ -70,6 +76,7 @@ export const initialLoadState: LoadState = {
 export function createInitialTranslationState(directoryPath: string): TranslationState {
   return {
     project: null,
+    baselineRows: null,
     directoryPath,
     load: initialLoadState,
     missingFilterKeys: null,

@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import {
   buildProjectFromFiles,
+  cloneTranslationRows,
   serializeProject,
 } from '@/services/translationProject'
 import type { WriteFilesResult } from '@shared/types'
@@ -81,9 +82,9 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
           locales: nextProject.columns.length,
         },
       }
-      toast.success(t(status.key, status.params))
       api.setState({
         project: nextProject,
+        baselineRows: cloneTranslationRows(nextProject.rows),
         directoryPath: scan.directoryPath,
         missingFilterKeys: null,
         freshKeys: [],
@@ -96,6 +97,7 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
       toast.error(message)
       api.setState({
         project: null,
+        baselineRows: null,
         missingFilterKeys: null,
         freshKeys: [],
         pendingKeyEdit: null,
@@ -119,7 +121,7 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
   const saveProject = async () => {
     const t = getT()
     const snapshot = api.getState().project
-    if (!snapshot) {
+    if (!snapshot?.dirty) {
       return
     }
 
@@ -148,13 +150,17 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
         return
       }
 
+      toast.success(t('status.saved', { count: result.written.length }))
       const status = {
-        key: 'status.saved',
-        params: { count: result.written.length },
+        key: 'status.keysAndLocales',
+        params: {
+          keys: snapshot.rows.length,
+          locales: snapshot.columns.length,
+        },
       }
-      toast.success(t(status.key, status.params))
       api.setState({
         project: { ...snapshot, dirty: false },
+        baselineRows: cloneTranslationRows(snapshot.rows),
         load: { loading: false, saving: false, error: null, status },
       })
     } catch (error) {

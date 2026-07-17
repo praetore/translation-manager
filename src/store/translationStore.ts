@@ -193,9 +193,12 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
         }
       })
       const afterKeys = visibleDisplayKeys(get())
-      transitionDisplayKeys(fromKeys, afterKeys, {
-        slideEnterKeys: afterKeys[0] === newKey ? [newKey] : [],
-      })
+      const slideEnterKeys = afterKeys[0] === newKey ? [newKey] : []
+      const mode = transitionDisplayKeys(fromKeys, afterKeys, { slideEnterKeys })
+      // Missing-filter owns layoutMotion — still slide-enter the new row.
+      if (mode === 'none' && slideEnterKeys.length > 0) {
+        motion.animateEnter(slideEnterKeys)
+      }
     },
 
     deleteRow: (key) => {
@@ -303,7 +306,12 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       const toKeys = collectMissingRowKeys(state.project, state.freshKeys)
       transitionDisplayKeys(allKeys, toKeys, {
         trackFilterMode: true,
-        onDone: () => set({ missingFilterKeys: toKeys }),
+        onDone: () =>
+          set((current) => {
+            // Rows added during the collapse stay visible under the snapshot.
+            const extras = current.freshKeys.filter((key) => !toKeys.includes(key))
+            return { missingFilterKeys: [...extras, ...toKeys] }
+          }),
       })
     },
 

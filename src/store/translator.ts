@@ -1,14 +1,8 @@
-export type TranslateFn = (
-  key: string,
-  params?: Record<string, string | number>,
-) => string
+import { i18n, type MessageParams } from '@shared/i18n'
 
-let translate: TranslateFn = (key) => key
+export type TranslateFn = (key: string, params?: MessageParams) => string
 
-export function setStoreTranslator(t: TranslateFn): void {
-  translate = t
-}
-
+/** Always reads the live i18n instance so toasts match the current UI locale. */
 export function getStoreTranslator(): TranslateFn {
-  return translate
+  return (key, params) => i18n.t(key, params)
 }

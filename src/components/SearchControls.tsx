@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
@@ -25,6 +26,7 @@ const SCOPES: SearchScope[] = ['all', 'keys', 'text']
 
 export function SearchControls() {
   const { t } = useI18n()
+  const compact = useIsToolbarCompact()
   const {
     project,
     searchQuery,
@@ -41,7 +43,10 @@ export function SearchControls() {
   return (
     <ButtonGroup className="w-fit max-w-full">
       <InputGroup
-        className={cn('w-44 md:w-56', disabled && 'opacity-50')}
+        className={cn(
+          compact ? 'w-36' : 'w-44 md:w-56',
+          disabled && 'opacity-50',
+        )}
         data-disabled={disabled || undefined}
       >
         <InputGroupInput

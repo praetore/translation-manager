@@ -1,4 +1,7 @@
-import type { TranslationProject } from '@/services/translationProject'
+import {
+  translationRowsEqual,
+  type TranslationProject,
+} from '@/services/translationProject'
 import type { LoadState, SessionState } from '@/store/types'
 
 export function clearMessages(load: LoadState): LoadState {
@@ -14,9 +17,14 @@ export function withDirtyProject<T extends SessionState>(
   missingFilterKeys: string[] | null = state.missingFilterKeys,
   freshKeys: string[] = state.freshKeys,
 ): T {
+  const dirty =
+    state.baselineRows === null
+      ? true
+      : !translationRowsEqual(project.rows, state.baselineRows)
+
   return {
     ...state,
-    project,
+    project: { ...project, dirty },
     missingFilterKeys,
     freshKeys,
     load: clearMessages(state.load),

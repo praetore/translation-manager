@@ -146,6 +146,46 @@ export function deleteRow(project: TranslationProject, key: string): Translation
   }
 }
 
+/** Deep-clone row list for dirty-baseline snapshots. */
+export function cloneTranslationRows(
+  rows: readonly TranslationRow[],
+): TranslationRow[] {
+  return rows.map((row) => ({ key: row.key, values: { ...row.values } }))
+}
+
+/** True when row keys, order, and values match. */
+export function translationRowsEqual(
+  a: readonly TranslationRow[],
+  b: readonly TranslationRow[],
+): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  for (let index = 0; index < a.length; index += 1) {
+    const left = a[index]!
+    const right = b[index]!
+    if (left.key !== right.key) {
+      return false
+    }
+    const leftLocales = Object.keys(left.values)
+    const rightLocales = Object.keys(right.values)
+    if (leftLocales.length !== rightLocales.length) {
+      return false
+    }
+    for (const locale of leftLocales) {
+      if (left.values[locale] !== right.values[locale]) {
+        return false
+      }
+    }
+    for (const locale of rightLocales) {
+      if (left.values[locale] !== right.values[locale]) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
 
 /**
  * Rename a translation key. Returns null when the new key is empty or already used.

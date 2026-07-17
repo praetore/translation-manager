@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { TranslationProject } from '@/services/translationProject'
 import {
   addRow,
+  cloneTranslationRows,
   collectMissingRowKeys,
   deleteRow,
   isMissingAgainstSource,
   renameKey,
   rowHasMissingTranslation,
+  translationRowsEqual,
   updateCell,
 } from '@/services/translationProject'
 
@@ -100,6 +102,17 @@ describe('row mutations', () => {
   it('deletes a row by key', () => {
     const next = deleteRow(makeProject(), 'greeting')
     expect(next.rows.map((row) => row.key)).toEqual(['farewell'])
+  })
+
+  it('compares translation row snapshots for dirty baselines', () => {
+    const rows = makeProject().rows
+    expect(translationRowsEqual(rows, cloneTranslationRows(rows))).toBe(true)
+    expect(
+      translationRowsEqual(rows, [
+        rows[0]!,
+        { key: 'farewell', values: { en: 'Bye', nl: 'Doei' } },
+      ]),
+    ).toBe(false)
   })
 
   it('renames a key or rejects duplicates and empty names', () => {

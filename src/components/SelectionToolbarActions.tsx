@@ -3,15 +3,16 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { AnimatedCount } from '@/components/AnimatedCount'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { Hint } from '@/components/Hint'
 import { MoveKeysDialog } from '@/components/MoveKeysDialog'
-import { Button } from '@/components/ui/button'
+import { ToolbarActionButton } from '@/components/ToolbarActionButton'
+import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { springSnappy } from '@/lib/motion'
 
 export function SelectionToolbarActions() {
   const { t } = useI18n()
+  const compact = useIsToolbarCompact()
   const { selectedKeys, clearSelection, deleteSelectedRows, moveSelectedKeys } =
     useTranslationStore()
   const [moveOpen, setMoveOpen] = useState(false)
@@ -38,38 +39,37 @@ export function SelectionToolbarActions() {
             exit={{ opacity: 0, x: -10, scale: 0.96 }}
             transition={springSnappy}
           >
-            <span className="text-muted-foreground shrink-0 px-1 text-xs font-medium tracking-wide uppercase">
-              {t('toolbar.bulkActions')}
-            </span>
-            <Hint label={t('toolbar.deselect')} side="bottom">
-              <Button type="button" variant="outline" onClick={clearSelection}>
-                <X />
-                {t('toolbar.deselect')}
-              </Button>
-            </Hint>
-            <Hint label={t('toolbar.moveKeys')} side="bottom">
-              <Button type="button" onClick={() => setMoveOpen(true)}>
-                <FolderInput />
-                {t('toolbar.moveKeys')}
-              </Button>
-            </Hint>
-            <Hint label={deleteLabel} side="bottom">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setDeleteOpen(true)}
-              >
-                <Trash2 />
-                <span className="inline-flex items-center gap-1">
-                  {t('toolbar.deleteSelectedLabel')}
-                  <span className="inline-flex items-center">
-                    (
-                    <AnimatedCount value={cachedCount} />
-                    )
-                  </span>
+            {!compact && (
+              <span className="text-muted-foreground shrink-0 px-1 text-xs font-medium tracking-wide uppercase">
+                {t('toolbar.bulkActions')}
+              </span>
+            )}
+            <ToolbarActionButton
+              icon={X}
+              label={t('toolbar.deselect')}
+              variant="outline"
+              onClick={clearSelection}
+            />
+            <ToolbarActionButton
+              icon={FolderInput}
+              label={t('toolbar.moveKeys')}
+              onClick={() => setMoveOpen(true)}
+            />
+            <ToolbarActionButton
+              icon={Trash2}
+              label={deleteLabel}
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <span className="inline-flex items-center gap-1">
+                {t('toolbar.deleteSelectedLabel')}
+                <span className="inline-flex items-center">
+                  (
+                  <AnimatedCount value={cachedCount} />
+                  )
                 </span>
-              </Button>
-            </Hint>
+              </span>
+            </ToolbarActionButton>
           </motion.div>
         )}
       </AnimatePresence>
