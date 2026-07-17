@@ -23,7 +23,6 @@
     "selected": "{count} geselecteerd",
     "selectedSuffix": "geselecteerd",
     "moveKeys": "Verplaatsen",
-    "deleteSelected": "Verwijderen ({count})",
     "deleteSelectedLabel": "Verwijderen",
     "deselect": "Deselecteren",
     "bulkActions": "Acties voor selectie",

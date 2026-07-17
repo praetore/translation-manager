@@ -23,7 +23,6 @@
     "selected": "{count} selected",
     "selectedSuffix": "selected",
     "moveKeys": "Move",
-    "deleteSelected": "Delete ({count})",
     "deleteSelectedLabel": "Delete",
     "deselect": "Deselect",
     "bulkActions": "Selection actions",

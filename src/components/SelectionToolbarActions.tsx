@@ -84,12 +84,10 @@ export function SelectionToolbarActions({
             />
             <ToolbarActionButton
               icon={Trash2}
-              label={t('toolbar.deleteSelected', { count: cachedCount })}
+              label={t('toolbar.deleteSelectedLabel')}
               variant="destructive"
               onClick={() => setDeleteOpen(true)}
-            >
-              {t('toolbar.deleteSelectedLabel')}
-            </ToolbarActionButton>
+            />
             <Separator orientation="vertical" className="mx-1 shrink-0" />
           </motion.div>
         )}
