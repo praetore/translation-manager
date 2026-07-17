@@ -42,7 +42,7 @@
     "moveTokenExampleFromRight": "$-1 → login · $-2 → auth",
     "moveTokenExampleLiteral": "price.\\$ → price.$",
     "moveTokenLeafNote": "Het laatste key-segment blijft altijd behouden.",
-    "movePreviewExample": "Voorbeeld: auth.login.email → app.$$ → app.auth.login.email",
+    "movePreviewExample": "Voorbeeld: auth.login.email → app.$$.basic → app.auth.login.basic.email",
     "moveInvalidPlaceholder": "Onbekende of ongeldige placeholder.",
     "moveConflict": "Dat pad zou lege of dubbele keys opleveren.",
     "moveConfirm": "Verplaatsen",

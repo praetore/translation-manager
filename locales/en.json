@@ -42,7 +42,7 @@
     "moveTokenExampleFromRight": "$-1 → login · $-2 → auth",
     "moveTokenExampleLiteral": "price.\\$ → price.$",
     "moveTokenLeafNote": "The last key segment is always kept.",
-    "movePreviewExample": "Example: auth.login.email → app.$$ → app.auth.login.email",
+    "movePreviewExample": "Example: auth.login.email → app.$$.basic → app.auth.login.basic.email",
     "moveInvalidPlaceholder": "Unknown or out-of-range placeholder.",
     "moveConflict": "That path would create empty or duplicate keys.",
     "moveConfirm": "Move",

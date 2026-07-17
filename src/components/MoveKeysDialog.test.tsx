@@ -18,7 +18,7 @@ describe('MoveKeysDialog', () => {
         onConfirm={() => true}
       />,
     )
-    expect(screen.getByText(/Example: auth.login.email/)).toBeInTheDocument()
+    expect(screen.getByText(/auth.login.email → app\.\$\$\.basic → app.auth.login.basic.email/)).toBeInTheDocument()
     expect(screen.getByRole('table')).toBeInTheDocument()
     expect(screen.getByText('$$')).toBeInTheDocument()
     expect(screen.getByText('Current path (before the last segment)')).toBeInTheDocument()
