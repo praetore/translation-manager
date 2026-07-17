@@ -71,6 +71,45 @@ describe('SelectionToolbarActions', () => {
     expect(keys).not.toContain('greeting')
   })
 
+  it('moves selected keys using path tokens', async () => {
+    const user = userEvent.setup()
+    loadSampleProject(
+      sampleProject({
+        rows: [
+          { key: 'auth.login.title', values: { en: 'A', nl: 'A' } },
+          { key: 'auth.login.button', values: { en: 'B', nl: 'B' } },
+        ],
+      }),
+    )
+    useTranslationStoreBase.setState({
+      selectedKeys: ['auth.login.title', 'auth.login.button'],
+    })
+    renderWithProviders(<SelectionToolbarActions />)
+    await user.click(screen.getByRole('button', { name: 'Move' }))
+    await user.type(screen.getByLabelText('New path'), 'app.$$')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Move' }))
+    expect(useTranslationStoreBase.getState().project!.rows.map((row) => row.key)).toEqual([
+      'app.auth.login.title',
+      'app.auth.login.button',
+    ])
+  })
+
+  it('keeps confirm disabled for an out-of-range path token', async () => {
+    const user = userEvent.setup()
+    loadSampleProject()
+    useTranslationStoreBase.setState({ selectedKeys: ['auth.login'] })
+    renderWithProviders(<SelectionToolbarActions />)
+    await user.click(screen.getByRole('button', { name: 'Move' }))
+    await user.type(screen.getByLabelText('New path'), '$9')
+    expect(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Move' }),
+    ).toBeDisabled()
+    expect(screen.getByText('Unknown or out-of-range placeholder.')).toBeInTheDocument()
+    expect(useTranslationStoreBase.getState().project!.rows.map((r) => r.key)).toContain(
+      'auth.login',
+    )
+  })
+
   it('shows a conflict when the move lead is invalid', async () => {
     const user = userEvent.setup()
     loadSampleProject(

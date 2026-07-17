@@ -3,8 +3,10 @@ import {
   applyKeyLead,
   deleteRows,
   keyLeaf,
+  keyLeadSegments,
   keysInIndexRange,
   moveKeysWithLead,
+  validateLeadTemplate,
 } from '@/services/keyPaths'
 import type { TranslationProject } from '@/services/translationProject'
 
@@ -29,9 +31,36 @@ describe('keyPaths', () => {
   it('extracts the leaf and applies a lead', () => {
     expect(keyLeaf('auth.login.button')).toBe('button')
     expect(keyLeaf('solo')).toBe('solo')
+    expect(keyLeadSegments('auth.login.button')).toEqual(['auth', 'login'])
+    expect(keyLeadSegments('solo')).toEqual([])
     expect(applyKeyLead('auth.login.button', 'ui.cta')).toBe('ui.cta.button')
     expect(applyKeyLead('solo', 'ui')).toBe('ui.solo')
     expect(applyKeyLead('auth.login.button', '')).toBe('button')
+  })
+
+  it('expands path tokens in the lead', () => {
+    const key = 'auth.login.button'
+    expect(applyKeyLead(key, '$$')).toBe('auth.login.button')
+    expect(applyKeyLead(key, 'app.$$')).toBe('app.auth.login.button')
+    expect(applyKeyLead(key, '$1')).toBe('auth.button')
+    expect(applyKeyLead(key, '$2')).toBe('login.button')
+    expect(applyKeyLead(key, '$-1')).toBe('login.button')
+    expect(applyKeyLead(key, '$-2')).toBe('auth.button')
+    expect(applyKeyLead(key, 'ui.$1')).toBe('ui.auth.button')
+    expect(applyKeyLead(key, 'price.\\$')).toBe('price.$.button')
+  })
+
+  it('validates lead placeholders against selected keys', () => {
+    const keys = ['auth.login.button', 'auth.signup.button']
+    expect(validateLeadTemplate('app.$$', keys)).toBe(true)
+    expect(validateLeadTemplate('$1.$2', keys)).toBe(true)
+    expect(validateLeadTemplate('$9', keys)).toBe(false)
+    expect(validateLeadTemplate('$0', keys)).toBe(false)
+    expect(validateLeadTemplate('$foo', keys)).toBe(false)
+    expect(validateLeadTemplate('price.$', keys)).toBe(false)
+    expect(validateLeadTemplate('price.\\$', keys)).toBe(true)
+    expect(validateLeadTemplate('$2', ['solo'])).toBe(false)
+    expect(validateLeadTemplate('$2', ['a.b.c', 'x.y'])).toBe(false)
   })
 
   it('moves selected keys with a new lead', () => {
@@ -47,6 +76,23 @@ describe('keyPaths', () => {
       'other',
     ])
     expect(result?.project.dirty).toBe(true)
+  })
+
+  it('moves with token leads and rejects invalid templates', () => {
+    const project = makeProject([
+      { key: 'auth.login.title', values: { en: 'A' } },
+      { key: 'auth.login.button', values: { en: 'B' } },
+    ])
+    const moved = moveKeysWithLead(
+      project,
+      ['auth.login.title', 'auth.login.button'],
+      'app.$$',
+    )
+    expect(moved?.project.rows.map((row) => row.key)).toEqual([
+      'app.auth.login.title',
+      'app.auth.login.button',
+    ])
+    expect(moveKeysWithLead(project, ['auth.login.title'], '$9')).toBeNull()
   })
 
   it('rejects colliding move targets', () => {

@@ -1,15 +1,85 @@
 import type { TranslationProject } from '@/services/translationProject'
 
+/** Sentinel while expanding so literal `$` from `\$` is not re-parsed as a token. */
+const LITERAL_DOLLAR = '\u0000'
+
 /** Rightmost segment after the final `.` (or the whole key if none). */
 export function keyLeaf(key: string): string {
   const index = key.lastIndexOf('.')
   return index === -1 ? key : key.slice(index + 1)
 }
 
-/** Replace the lead (everything before the leaf) with `lead`. */
+/** Mutable path segments (everything before the leaf). */
+export function keyLeadSegments(key: string): string[] {
+  const index = key.lastIndexOf('.')
+  if (index === -1) {
+    return []
+  }
+  return key.slice(0, index).split('.').filter((part) => part.length > 0)
+}
+
+/**
+ * Returns false when the template has invalid `$` tokens for any key
+ * (out of range, `$0`, unknown `$…`, or bare unescaped `$`).
+ */
+export function validateLeadTemplate(
+  template: string,
+  keys: readonly string[],
+): boolean {
+  const masked = template.replaceAll('\\$', LITERAL_DOLLAR)
+  // Strip valid tokens, then any remaining `$` is invalid.
+  let rest = masked.replaceAll('$$', '')
+  rest = rest.replace(/\$-(\d+)/g, (match, digits: string) => {
+    const n = Number(digits)
+    if (n < 1 || keys.length === 0) {
+      return match
+    }
+    for (const key of keys) {
+      if (n > keyLeadSegments(key).length) {
+        return match
+      }
+    }
+    return ''
+  })
+  rest = rest.replace(/\$(\d+)/g, (match, digits: string) => {
+    const n = Number(digits)
+    if (n < 1 || keys.length === 0) {
+      return match
+    }
+    for (const key of keys) {
+      if (n > keyLeadSegments(key).length) {
+        return match
+      }
+    }
+    return ''
+  })
+  return !rest.includes('$')
+}
+
+/** Expand `$$` / `$n` / `$-n` and `\$` for one key. Throws if template is invalid. */
+export function expandLeadTemplate(key: string, template: string): string {
+  if (!validateLeadTemplate(template, [key])) {
+    throw new Error('Invalid lead template')
+  }
+  const segments = keyLeadSegments(key)
+  let result = template.replaceAll('\\$', LITERAL_DOLLAR)
+  result = result.replaceAll('$$', segments.join('.'))
+  result = result.replace(/\$-(\d+)/g, (_match, digits: string) => {
+    const n = Number(digits)
+    return segments[segments.length - n] ?? ''
+  })
+  result = result.replace(/\$(\d+)/g, (_match, digits: string) => {
+    const n = Number(digits)
+    return segments[n - 1] ?? ''
+  })
+  return result.replaceAll(LITERAL_DOLLAR, '$')
+}
+
+/** Replace the lead (everything before the leaf) with `lead` (supports tokens). */
 export function applyKeyLead(key: string, lead: string): string {
+  const expanded = expandLeadTemplate(key, lead)
   const leaf = keyLeaf(key)
-  const trimmed = lead.trim().replace(/^\.+|\.+$/g, '')
+  const trimmed = expanded.trim().replace(/^\.+|\.+$/g, '')
   return trimmed ? `${trimmed}.${leaf}` : leaf
 }
 
@@ -19,6 +89,9 @@ export function buildLeadMoveMapping(
 ): Map<string, string> | null {
   if (keys.length === 0) {
     return new Map()
+  }
+  if (!validateLeadTemplate(lead, keys)) {
+    return null
   }
 
   const mapping = new Map<string, string>()
@@ -38,7 +111,8 @@ export function buildLeadMoveMapping(
 
 /**
  * Re-prefix selected keys, keeping each leaf. Returns null when the lead would
- * create empty or colliding keys (among selection or with other rows).
+ * create empty or colliding keys (among selection or with other rows), or when
+ * the lead template is invalid.
  */
 export function moveKeysWithLead(
   project: TranslationProject,

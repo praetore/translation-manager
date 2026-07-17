@@ -96,6 +96,7 @@ export function SelectionToolbarActions({
       <MoveKeysDialog
         open={moveOpen}
         sampleKey={selectedKeys[0] ?? ''}
+        selectedKeys={selectedKeys}
         selectedCount={count}
         onClose={() => setMoveOpen(false)}
         onConfirm={moveSelectedKeys}

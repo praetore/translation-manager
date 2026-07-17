@@ -11,11 +11,19 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/LocaleProvider'
-import { applyKeyLead } from '@/services/keyPaths'
+import { applyKeyLead, validateLeadTemplate } from '@/services/keyPaths'
+
+const TOKEN_ROWS = [
+  { token: '$$', meaningKey: 'toolbar.moveTokenFullPath' },
+  { token: '$1, $2, …', meaningKey: 'toolbar.moveTokenFromLeft' },
+  { token: '$-1, $-2, …', meaningKey: 'toolbar.moveTokenFromRight' },
+  { token: '\\$', meaningKey: 'toolbar.moveTokenLiteral' },
+] as const
 
 interface MoveKeysDialogProps {
   open: boolean
   sampleKey: string
+  selectedKeys: readonly string[]
   selectedCount: number
   onClose: () => void
   onConfirm: (lead: string) => boolean
@@ -24,27 +32,36 @@ interface MoveKeysDialogProps {
 export function MoveKeysDialog({
   open,
   sampleKey,
+  selectedKeys,
   selectedCount,
   onClose,
   onConfirm,
 }: MoveKeysDialogProps) {
   const { t } = useI18n()
   const [lead, setLead] = useState('')
-  const [error, setError] = useState(false)
+  const [conflict, setConflict] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const trimmedLead = lead.trim()
-  const preview = sampleKey && trimmedLead ? applyKeyLead(sampleKey, trimmedLead) : ''
+  const keysForValidation = selectedKeys.length > 0 ? selectedKeys : [sampleKey]
+  const placeholderInvalid =
+    trimmedLead.length > 0 && !validateLeadTemplate(trimmedLead, keysForValidation)
+  const canSubmit = trimmedLead.length > 0 && !placeholderInvalid
+  const preview =
+    sampleKey && canSubmit ? applyKeyLead(sampleKey, trimmedLead) : ''
 
   const submit = useCallback(() => {
-    const ok = onConfirm(lead)
+    if (!canSubmit) {
+      return
+    }
+    const ok = onConfirm(trimmedLead)
     if (ok) {
       onClose()
       return
     }
-    setError(true)
+    setConflict(true)
     inputRef.current?.focus()
-  }, [lead, onClose, onConfirm])
+  }, [canSubmit, trimmedLead, onClose, onConfirm])
 
   return (
     <Dialog
@@ -52,7 +69,7 @@ export function MoveKeysDialog({
       onOpenChange={(next) => {
         if (!next) {
           setLead('')
-          setError(false)
+          setConflict(false)
           onClose()
         }
       }}
@@ -71,26 +88,58 @@ export function MoveKeysDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-1.5">
-          <Label htmlFor="key-lead">{t('toolbar.moveLead')}</Label>
-          <Input
-            ref={inputRef}
-            id="key-lead"
-            value={lead}
-            placeholder={t('toolbar.moveLeadPlaceholder')}
-            aria-invalid={error}
-            onChange={(event) => {
-              setLead(event.target.value)
-              setError(false)
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                submit()
-              }
-            }}
-          />
-          {error && (
+        <div className="grid gap-3">
+          <div className="grid gap-1.5">
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr className="border-border border-b text-left">
+                  <th className="text-muted-foreground pr-4 pb-1.5 font-medium">
+                    {t('toolbar.moveToken')}
+                  </th>
+                  <th className="text-muted-foreground pb-1.5 font-medium">
+                    {t('toolbar.moveTokenMeaning')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {TOKEN_ROWS.map((row) => (
+                  <tr key={row.token} className="border-border/60 border-b last:border-b-0">
+                    <td className="text-foreground py-1.5 pr-4 align-top font-mono whitespace-nowrap">
+                      {row.token}
+                    </td>
+                    <td className="text-muted-foreground py-1.5 align-top">
+                      {t(row.meaningKey)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-muted-foreground text-xs">{t('toolbar.moveTokenLeafNote')}</p>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="key-lead">{t('toolbar.moveLead')}</Label>
+            <Input
+              ref={inputRef}
+              id="key-lead"
+              value={lead}
+              placeholder={t('toolbar.moveLeadPlaceholder')}
+              aria-invalid={placeholderInvalid || conflict || undefined}
+              onChange={(event) => {
+                setLead(event.target.value)
+                setConflict(false)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  submit()
+                }
+              }}
+            />
+          </div>
+          {placeholderInvalid && (
+            <p className="text-destructive text-xs">{t('toolbar.moveInvalidPlaceholder')}</p>
+          )}
+          {conflict && !placeholderInvalid && (
             <p className="text-destructive text-xs">{t('toolbar.moveConflict')}</p>
           )}
           {preview ? (
@@ -110,7 +159,7 @@ export function MoveKeysDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             {t('dialog.cancel')}
           </Button>
-          <Button type="button" onClick={submit}>
+          <Button type="button" onClick={submit} disabled={!canSubmit}>
             {t('toolbar.moveConfirm')}
           </Button>
         </DialogFooter>

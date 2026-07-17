@@ -267,6 +267,33 @@ describe('translationStore', () => {
     expect(state.selectedKeys).toEqual([])
   })
 
+  it('moves selected keys with path tokens and rejects invalid templates', () => {
+    loadSample(
+      sampleProject({
+        rows: [
+          { key: 'auth.login.title', values: { en: 'A', nl: '' } },
+          { key: 'auth.signup.button', values: { en: 'B', nl: 'C' } },
+        ],
+      }),
+    )
+    useTranslationStoreBase.setState({
+      selectedKeys: ['auth.login.title', 'auth.signup.button'],
+    })
+
+    expect(useTranslationStoreBase.getState().moveSelectedKeys('$9')).toBe(false)
+    expect(useTranslationStoreBase.getState().project?.rows.map((row) => row.key)).toEqual([
+      'auth.login.title',
+      'auth.signup.button',
+    ])
+
+    expect(useTranslationStoreBase.getState().moveSelectedKeys('app.$$')).toBe(true)
+    const state = useTranslationStoreBase.getState()
+    expect(state.project?.rows.map((row) => row.key)).toEqual([
+      'app.auth.login.title',
+      'app.auth.signup.button',
+    ])
+    expect(state.selectedKeys).toEqual(['app.auth.login.title', 'app.auth.signup.button'])
+  })
 
   it('updates selection with select, remove, and clear', () => {
     loadSample()
