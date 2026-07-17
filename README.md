@@ -113,8 +113,6 @@ fixtures/          Sample translation files for local testing
 
 Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. CI runs **`npm test`** and **`npm run test:e2e`** first; packaging only starts if those pass. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
 
-Every push and PR to `master` also runs the same tests via the **CI** workflow (status badge at the top of this README).
-
 ```bash
 # package.json should already be the version you want to release (e.g. 0.4.0)
 git tag v0.4.0
