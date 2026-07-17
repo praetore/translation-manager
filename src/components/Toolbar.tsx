@@ -1,7 +1,5 @@
 import { useCallback, useRef, useState, type RefObject } from 'react'
-import { FolderOpen, ListFilter, Plus, Save, X } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
-import { AnimatedCount } from '@/components/AnimatedCount'
+import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
 import { SearchControls } from '@/components/SearchControls'
 import { SelectionToolbarActions } from '@/components/SelectionToolbarActions'
 import { ToolbarActionButton } from '@/components/ToolbarActionButton'
@@ -16,7 +14,6 @@ import {
 } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
-import { springSnappy } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 export function Toolbar() {
@@ -59,8 +56,6 @@ function ToolbarContent({
     saveProject,
     missingFilterKeys,
     liveMissingKeys,
-    selectedKeys,
-    clearSelection,
     layoutMotion,
     filterLayoutMode,
   } = useTranslationStore()
@@ -77,7 +72,6 @@ function ToolbarContent({
     missingFilterActive || filterLayoutMode === 'collapse'
   const canToggleMissing = missingFilterActive || liveMissingCount > 0
   const hasMissing = liveMissingCount > 0
-  const selectedCount = selectedKeys.length
   const { loading, saving, status } = loadState
 
   const browseLabel = t('toolbar.browse')
@@ -146,30 +140,6 @@ function ToolbarContent({
               <Badge variant="success">{t(status.key, status.params)}</Badge>
             )
           )}
-          <AnimatePresence initial={false}>
-            {selectedCount > 0 && (
-              <motion.div
-                key="selected-badge"
-                initial={{ opacity: 0, scale: 0.92, x: -6 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.92, x: -6 }}
-                transition={springSnappy}
-              >
-                <Badge variant="secondary" className="inline-flex items-center gap-1 pr-1">
-                  <AnimatedCount value={selectedCount} />
-                  {t('toolbar.selectedSuffix')}
-                  <button
-                    type="button"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex size-4 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                    aria-label={t('toolbar.deselect')}
-                    onClick={clearSelection}
-                  >
-                    <X className="size-2.5" strokeWidth={2.5} />
-                  </button>
-                </Badge>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         <div

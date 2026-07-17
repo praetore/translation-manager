@@ -86,8 +86,9 @@ export function useTranslationColumns({
         return (
           <Input
             className={cn(
-              'h-8 border-transparent bg-transparent shadow-none focus-visible:bg-background',
-              missing && 'border-destructive/40 bg-destructive/10',
+              'h-8 rounded-none border-transparent bg-transparent shadow-none dark:bg-transparent',
+              'focus-visible:border-transparent focus-visible:bg-transparent focus-visible:ring-0',
+              missing && 'placeholder:text-destructive/80',
             )}
             value={value}
             aria-label={`${row.key} · ${column.locale}`}

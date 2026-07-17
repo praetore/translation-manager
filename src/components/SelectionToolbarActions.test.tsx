@@ -14,12 +14,21 @@ describe('SelectionToolbarActions', () => {
     expect(screen.queryByRole('button', { name: 'Deselect' })).not.toBeInTheDocument()
   })
 
-  it('shows move and delete without a deselect toolbar button', () => {
+  it('clears selection from the selected-count badge', async () => {
+    const user = userEvent.setup()
+    useTranslationStoreBase.setState({ selectedKeys: ['a', 'b'] })
+    renderWithProviders(<SelectionToolbarActions />)
+    await user.click(screen.getByRole('button', { name: 'Deselect' }))
+    expect(useTranslationStoreBase.getState().selectedKeys).toEqual([])
+  })
+
+  it('shows move, delete, and a selected-count badge with deselect', () => {
     useTranslationStoreBase.setState({ selectedKeys: ['a', 'b', 'c'] })
     renderWithProviders(<SelectionToolbarActions />)
     expect(screen.getByRole('button', { name: 'Move' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Deselect' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Deselect' })).toBeInTheDocument()
+    expect(screen.getByText('selected')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).not.toHaveAccessibleName(
       /Delete \(3\)/,
     )

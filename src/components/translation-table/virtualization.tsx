@@ -127,7 +127,12 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
             key={cell.id}
             className={cn(
               'flex min-w-0 items-center border-r px-2.5',
-              missing && !rowSelected && 'bg-destructive/15',
+              data.pane === 'locales' &&
+                !missing &&
+                'bg-muted/40 [&:not(:focus-within):hover]:bg-muted/70 focus-within:bg-muted/90',
+              missing &&
+                !rowSelected &&
+                'bg-destructive/15 [&:not(:focus-within):hover]:bg-destructive/25 focus-within:bg-destructive/35',
               missing && rowSelected && 'bg-primary/15',
             )}
             style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}

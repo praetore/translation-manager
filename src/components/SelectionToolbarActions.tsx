@@ -1,15 +1,15 @@
-import { FolderInput, Trash2 } from 'lucide-react'
+import { FolderInput, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { AnimatedCount } from '@/components/AnimatedCount'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { MoveKeysDialog } from '@/components/MoveKeysDialog'
 import { ToolbarActionButton } from '@/components/ToolbarActionButton'
+import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { springSnappy } from '@/lib/motion'
-import { cn } from '@/lib/utils'
 
 interface SelectionToolbarActionsProps {
   /** True while bulk chrome is mounted, including during exit animation. */
@@ -20,8 +20,7 @@ export function SelectionToolbarActions({
   onChromePresentChange,
 }: SelectionToolbarActionsProps) {
   const { t } = useI18n()
-  const compact = useIsToolbarCompact()
-  const { selectedKeys, deleteSelectedRows, moveSelectedKeys } =
+  const { selectedKeys, clearSelection, deleteSelectedRows, moveSelectedKeys } =
     useTranslationStore()
   const [moveOpen, setMoveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -58,25 +57,27 @@ export function SelectionToolbarActions({
         {hasSelection && (
           <motion.div
             key="bulk-actions"
-            className="flex shrink-0 flex-nowrap items-center gap-2"
+            className="flex shrink-0 flex-nowrap items-center gap-3"
             initial={{ opacity: 0, x: -12, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -10, scale: 0.96 }}
             transition={springSnappy}
           >
-            <span
-              aria-hidden={compact || undefined}
-              className={cn(
-                'text-muted-foreground inline-grid px-1 text-xs font-medium tracking-wide uppercase transition-[grid-template-columns,opacity,padding] duration-200 ease-out',
-                compact
-                  ? 'grid-cols-[0fr] px-0 opacity-0'
-                  : 'grid-cols-[1fr] opacity-100',
-              )}
+            <Badge
+              variant="secondary"
+              className="inline-flex shrink-0 items-center gap-1.5 py-0.5 pr-1.5 pl-2.5"
             >
-              <span className="min-w-0 overflow-hidden whitespace-nowrap">
-                {t('toolbar.bulkActions')}
-              </span>
-            </span>
+              <AnimatedCount value={count} />
+              {t('toolbar.selectedSuffix')}
+              <button
+                type="button"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex size-4 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                aria-label={t('toolbar.deselect')}
+                onClick={clearSelection}
+              >
+                <X className="size-2.5" strokeWidth={2.5} />
+              </button>
+            </Badge>
             <ToolbarActionButton
               icon={FolderInput}
               label={t('toolbar.moveKeys')}
