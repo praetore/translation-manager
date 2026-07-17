@@ -1,37 +1,55 @@
 import {
   deleteRows as deleteProjectRows,
   moveKeysWithLead,
-  remapKeyList,
 } from '@/services/keyPaths'
+import {
+  renameKey as renameProjectKey,
+  type TranslationProject,
+} from '@/services/translationProject'
+import {
+  pickKeyLists,
+  remapKeysInLists,
+  removeKeysFromLists,
+  renameKeyInLists,
+  type KeyLists,
+} from '@/store/keyLists'
 import { withDirtyProject } from '@/store/sessionHelpers'
 import type { SessionState } from '@/store/types'
 
-export function applyDeleteRows(state: SessionState, keys: string[]): SessionState {
-  if (!state.project || keys.length === 0) {
-    return state
-  }
-  const remove = new Set(keys)
+/** Session document + selection lists updated by bulk/row edits. */
+export type SessionEditorState = SessionState & KeyLists
+
+function withProjectAndLists(
+  state: SessionEditorState,
+  project: TranslationProject,
+  lists: KeyLists,
+): SessionEditorState {
   return {
-    ...withDirtyProject(
-      state,
-      deleteProjectRows(state.project, keys),
-      state.missingFilterKeys === null
-        ? null
-        : state.missingFilterKeys.filter((key) => !remove.has(key)),
-      state.freshKeys.filter((key) => !remove.has(key)),
-    ),
-    pendingKeyEdit:
-      state.pendingKeyEdit && remove.has(state.pendingKeyEdit)
-        ? null
-        : state.pendingKeyEdit,
+    ...withDirtyProject(state, project, lists.missingFilterKeys, lists.freshKeys),
+    selectedKeys: lists.selectedKeys,
+    pendingKeyEdit: lists.pendingKeyEdit,
   }
 }
 
+export function applyDeleteRows(
+  state: SessionEditorState,
+  keys: string[],
+): SessionEditorState {
+  if (!state.project || keys.length === 0) {
+    return state
+  }
+  return withProjectAndLists(
+    state,
+    deleteProjectRows(state.project, keys),
+    removeKeysFromLists(pickKeyLists(state), keys),
+  )
+}
+
 export function applyMoveKeys(
-  state: SessionState,
+  state: SessionEditorState,
   keys: string[],
   lead: string,
-): SessionState {
+): SessionEditorState {
   if (!state.project || keys.length === 0) {
     return state
   }
@@ -39,18 +57,29 @@ export function applyMoveKeys(
   if (!result || result.project === state.project) {
     return state
   }
-  return {
-    ...withDirtyProject(
-      state,
-      result.project,
-      state.missingFilterKeys === null
-        ? null
-        : remapKeyList(state.missingFilterKeys, result.mapping),
-      remapKeyList(state.freshKeys, result.mapping),
-    ),
-    pendingKeyEdit:
-      state.pendingKeyEdit === null
-        ? null
-        : (result.mapping.get(state.pendingKeyEdit) ?? state.pendingKeyEdit),
+  return withProjectAndLists(
+    state,
+    result.project,
+    remapKeysInLists(pickKeyLists(state), result.mapping),
+  )
+}
+
+export function applyRenameKey(
+  state: SessionEditorState,
+  oldKey: string,
+  newKey: string,
+): SessionEditorState {
+  if (!state.project) {
+    return state
   }
+  const next = renameProjectKey(state.project, oldKey, newKey)
+  if (!next || next === state.project) {
+    return state
+  }
+  const trimmed = newKey.trim()
+  return withProjectAndLists(
+    state,
+    next,
+    renameKeyInLists(pickKeyLists(state), oldKey, trimmed),
+  )
 }

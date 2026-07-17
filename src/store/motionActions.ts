@@ -1,3 +1,4 @@
+import { unique } from 'remeda'
 import {
   FILTER_LAYOUT_MS,
   ROW_ENTER_MS,
@@ -30,13 +31,9 @@ function scheduleKeys(
   if (nextKeys.length === 0) {
     return
   }
-  set((state) => {
-    const merged = new Set(state[field])
-    for (const key of nextKeys) {
-      merged.add(key)
-    }
-    return { [field]: [...merged] }
-  })
+  set((state) => ({
+    [field]: unique([...state[field], ...nextKeys]),
+  }))
   for (const key of nextKeys) {
     const existing = timers.get(key)
     if (existing !== undefined) {

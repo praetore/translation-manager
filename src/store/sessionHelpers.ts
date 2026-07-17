@@ -8,12 +8,12 @@ export function clearMessages(load: LoadState): LoadState {
   return { ...load, status: null, error: null }
 }
 
-export function withDirtyProject(
-  state: SessionState,
+export function withDirtyProject<T extends SessionState>(
+  state: T,
   project: TranslationProject,
   missingFilterKeys: string[] | null = state.missingFilterKeys,
   freshKeys: string[] = state.freshKeys,
-): SessionState {
+): T {
   return {
     ...state,
     project,

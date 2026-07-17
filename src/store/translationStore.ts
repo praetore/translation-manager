@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { difference } from 'remeda'
 import { ROW_HEIGHT } from '@/lib/motion'
 import {
   buildLeadMoveMapping,
@@ -9,13 +10,22 @@ import {
   collectMissingRowKeys,
   deleteRow as deleteProjectRow,
   peekNextRowKey,
-  renameKey as renameProjectKey,
   updateCell,
 } from '@/services/translationProject'
+import { planFilterCollapse, planFilterExpand } from '@/store/filterLayout'
+import {
+  leaveKeyInLists,
+  pickKeyLists,
+  removeKeysFromLists,
+} from '@/store/keyLists'
 import { createMotionActions } from '@/store/motionActions'
 import { createPersistenceActions, readStoredDirectory, storeDirectory } from '@/store/persistence'
 import { canRenameKey } from '@/store/selectors'
-import { applyDeleteRows, applyMoveKeys } from '@/store/sessionBulkActions'
+import {
+  applyDeleteRows,
+  applyMoveKeys,
+  applyRenameKey,
+} from '@/store/sessionBulkActions'
 import { withDirtyProject } from '@/store/sessionHelpers'
 import { getStoreTranslator } from '@/store/translator'
 import {
@@ -68,9 +78,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
     clearSelection: () => set({ selectedKeys: [] }),
     removeFromSelection: (key) =>
       set((state) => ({
-        selectedKeys: state.selectedKeys.includes(key)
-          ? state.selectedKeys.filter((item) => item !== key)
-          : state.selectedKeys,
+        selectedKeys: difference(state.selectedKeys, [key]),
       })),
 
     editCell: (key, locale, value) =>
@@ -111,20 +119,16 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
           if (!state.project) {
             return state
           }
+          const lists = removeKeysFromLists(pickKeyLists(state), [key])
           return {
             ...withDirtyProject(
               state,
               deleteProjectRow(state.project, key),
-              state.missingFilterKeys === null
-                ? null
-                : state.missingFilterKeys.filter((item) => item !== key),
-              state.freshKeys.filter((item) => item !== key),
+              lists.missingFilterKeys,
+              lists.freshKeys,
             ),
-            pendingKeyEdit:
-              state.pendingKeyEdit === key ? null : state.pendingKeyEdit,
-            selectedKeys: state.selectedKeys.includes(key)
-              ? state.selectedKeys.filter((item) => item !== key)
-              : state.selectedKeys,
+            selectedKeys: lists.selectedKeys,
+            pendingKeyEdit: lists.pendingKeyEdit,
           }
         })
       })
@@ -145,33 +149,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       if (!canRenameKey(project, oldKey, newKey)) {
         return false
       }
-      set((state) => {
-        if (!state.project) {
-          return state
-        }
-        const next = renameProjectKey(state.project, oldKey, newKey)
-        if (!next || next === state.project) {
-          return state
-        }
-        const trimmed = newKey.trim()
-        return {
-          ...withDirtyProject(
-            state,
-            next,
-            state.missingFilterKeys === null
-              ? null
-              : state.missingFilterKeys.map((key) =>
-                  key === oldKey ? trimmed : key,
-                ),
-            state.freshKeys.map((key) => (key === oldKey ? trimmed : key)),
-          ),
-          pendingKeyEdit:
-            state.pendingKeyEdit === oldKey ? null : state.pendingKeyEdit,
-          selectedKeys: state.selectedKeys.includes(oldKey)
-            ? state.selectedKeys.map((key) => (key === oldKey ? trimmed : key))
-            : state.selectedKeys,
-        }
-      })
+      set((state) => applyRenameKey(state, oldKey, newKey))
       return true
     },
 
@@ -185,12 +163,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
         return false
       }
       const mapping = buildLeadMoveMapping(keys, lead)
-      set((state) => ({
-        ...applyMoveKeys(state, keys, lead),
-        selectedKeys: mapping
-          ? keys.map((key) => mapping.get(key) ?? key)
-          : state.selectedKeys,
-      }))
+      set((state) => applyMoveKeys(state, keys, lead))
       if (mapping) {
         motion.animateFlash(keys.map((key) => mapping.get(key) ?? key))
       }
@@ -199,14 +172,11 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
 
     leaveFreshKey: (key) =>
       set((state) => {
-        if (!state.freshKeys.includes(key) && state.pendingKeyEdit !== key) {
-          return state
-        }
-        return {
-          freshKeys: state.freshKeys.filter((item) => item !== key),
-          pendingKeyEdit:
-            state.pendingKeyEdit === key ? null : state.pendingKeyEdit,
-        }
+        const lists = pickKeyLists(state)
+        const next = leaveKeyInLists(lists, key)
+        return next === lists
+          ? state
+          : { freshKeys: next.freshKeys, pendingKeyEdit: next.pendingKeyEdit }
       }),
 
     clearPendingKeyEdit: () =>
@@ -225,40 +195,24 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       }
 
       if (state.missingFilterKeys !== null) {
-        const visible = state.missingFilterKeys
-        const visibleSet = new Set(visible)
-        const compactIndex = new Map(visible.map((key, index) => [key, index]))
-        const appearing: string[] = []
-        const expanding: { key: string; fromTop: number; toTop: number }[] = []
-        state.project.rows.forEach((row, index) => {
-          if (visibleSet.has(row.key)) {
-            expanding.push({
-              key: row.key,
-              fromTop: (compactIndex.get(row.key) ?? 0) * ROW_HEIGHT,
-              toTop: index * ROW_HEIGHT,
-            })
-          } else {
-            appearing.push(row.key)
-          }
-        })
+        const { appearing, expanding } = planFilterExpand(
+          state.project.rows,
+          state.missingFilterKeys,
+          ROW_HEIGHT,
+        )
         set({ missingFilterKeys: null })
         motion.animateFilterExpand(appearing, expanding)
         return
       }
 
       const missing = collectMissingRowKeys(state.project, state.freshKeys)
-      const missingSet = new Set(missing)
-      const hiding: string[] = []
-      const remaining: { key: string; fromTop: number }[] = []
-      state.project.rows.forEach((row, index) => {
-        if (missingSet.has(row.key)) {
-          remaining.push({ key: row.key, fromTop: index * ROW_HEIGHT })
-        } else {
-          hiding.push(row.key)
-        }
-      })
+      const { hiding, remaining, missingKeys } = planFilterCollapse(
+        state.project.rows,
+        missing,
+        ROW_HEIGHT,
+      )
       motion.animateFilterCollapse(hiding, remaining, () => {
-        set({ missingFilterKeys: missing })
+        set({ missingFilterKeys: missingKeys })
       })
     },
 
