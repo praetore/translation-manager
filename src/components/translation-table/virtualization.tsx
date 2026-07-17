@@ -46,6 +46,45 @@ function readTop(style: CSSProperties): number {
   return 0
 }
 
+/** Horizontally scroll the nearest overflow parent so `cell` is fully in view. */
+function ensureCellFullyVisibleHorizontally(cell: HTMLElement): void {
+  let scroller: HTMLElement | null = cell.parentElement
+  while (scroller) {
+    const { overflowX } = getComputedStyle(scroller)
+    if (
+      (overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay') &&
+      scroller.scrollWidth > scroller.clientWidth
+    ) {
+      break
+    }
+    scroller = scroller.parentElement
+  }
+  if (!scroller) {
+    return
+  }
+
+  // Use the content viewport (clientWidth), not the border box — otherwise the
+  // vertical scrollbar makes the rightmost column look "in view" when it isn't.
+  const scrollerRect = scroller.getBoundingClientRect()
+  const borderLeft = Number.parseFloat(getComputedStyle(scroller).borderLeftWidth) || 0
+  const visibleLeft = scrollerRect.left + borderLeft
+  const visibleRight = visibleLeft + scroller.clientWidth
+  const cellRect = cell.getBoundingClientRect()
+
+  let delta = 0
+  if (cellRect.left < visibleLeft) {
+    delta = cellRect.left - visibleLeft
+  } else if (cellRect.right > visibleRight) {
+    delta = cellRect.right - visibleRight
+  }
+  if (delta === 0) {
+    return
+  }
+
+  const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth)
+  scroller.scrollLeft = Math.min(maxScroll, Math.max(0, scroller.scrollLeft + delta))
+}
+
 export function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowData>) {
   const row = data.rows[index]
   if (!row) {
@@ -112,7 +151,8 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
       onBlur={handleRowBlur}
     >
       {cells.map((cell) => {
-        const locale = cell.column.id === 'key' ? null : cell.column.id
+        const isKeyCell = cell.column.id === 'key'
+        const locale = isKeyCell ? null : cell.column.id
         const missing =
           locale !== null &&
           isMissingAgainstSource(
@@ -127,16 +167,22 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
             key={cell.id}
             className={cn(
               'flex min-w-0 items-center border-r px-2.5',
+              isKeyCell && rowSelected && 'cell-key-accent',
               data.pane === 'locales' &&
                 !missing &&
-                'bg-muted/40 [&:not(:focus-within):hover]:bg-muted/70 focus-within:bg-muted/90',
+                'bg-muted/40 [&:not(:focus-within):hover]:bg-muted/70 focus-within:bg-muted/90 focus-within:shadow-[inset_3px_0_0_0_var(--primary)]',
               missing &&
                 !rowSelected &&
-                'bg-destructive/15 [&:not(:focus-within):hover]:bg-destructive/25 focus-within:bg-destructive/35',
+                'bg-destructive/15 [&:not(:focus-within):hover]:bg-destructive/25 focus-within:bg-destructive/35 focus-within:shadow-[inset_3px_0_0_0_var(--primary)]',
               missing && rowSelected && 'bg-primary/15',
             )}
             style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
             role="cell"
+            onFocusCapture={
+              data.pane === 'locales'
+                ? (event) => ensureCellFullyVisibleHorizontally(event.currentTarget)
+                : undefined
+            }
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </div>

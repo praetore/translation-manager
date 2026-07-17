@@ -110,13 +110,15 @@
 }
 
 @utility row-selected {
-  box-shadow: inset 3px 0 0 0 var(--primary);
   background-color: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+@utility cell-key-accent {
+  box-shadow: inset 3px 0 0 0 var(--primary);
 }
 
 @utility row-missing-selected {
   isolation: isolate;
-  box-shadow: inset 3px 0 0 0 var(--primary);
 
   &::before {
     content: "";
