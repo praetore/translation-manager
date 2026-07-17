@@ -1,20 +1,17 @@
-import { useRef, type RefObject } from 'react'
+import { useCallback, useRef, useState, type RefObject } from 'react'
 import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AnimatedCount } from '@/components/AnimatedCount'
-import { Hint } from '@/components/Hint'
 import { SearchControls } from '@/components/SearchControls'
 import { SelectionToolbarActions } from '@/components/SelectionToolbarActions'
 import { ToolbarActionButton } from '@/components/ToolbarActionButton'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import {
   ToolbarCompactProvider,
-  useIsToolbarCompact,
   useToolbarCompact,
 } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
@@ -24,13 +21,19 @@ import { cn } from '@/lib/utils'
 
 export function Toolbar() {
   const actionsRef = useRef<HTMLDivElement>(null)
-  const { selectedKeys } = useTranslationStore()
-  const compact = useToolbarCompact(actionsRef, [selectedKeys.length])
+  const [bulkChromePresent, setBulkChromePresent] = useState(false)
+  const onBulkChromePresentChange = useCallback((present: boolean) => {
+    setBulkChromePresent(present)
+  }, [])
+  const compact = useToolbarCompact(actionsRef, [bulkChromePresent])
 
   return (
     <ToolbarCompactProvider compact={compact}>
       <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
-        <ToolbarContent actionsRef={actionsRef} />
+        <ToolbarContent
+          actionsRef={actionsRef}
+          onBulkChromePresentChange={onBulkChromePresentChange}
+        />
       </header>
     </ToolbarCompactProvider>
   )
@@ -38,11 +41,12 @@ export function Toolbar() {
 
 function ToolbarContent({
   actionsRef,
+  onBulkChromePresentChange,
 }: {
   actionsRef: RefObject<HTMLDivElement | null>
+  onBulkChromePresentChange: (present: boolean) => void
 }) {
   const { t } = useI18n()
-  const compact = useIsToolbarCompact()
   const {
     project,
     directoryPath,
@@ -85,20 +89,6 @@ function ToolbarContent({
     count: missingFilterActive ? missingFilterCount : liveMissingCount,
   })
 
-  const browseButton = (
-    <Button
-      type="button"
-      variant="outline"
-      size={compact ? 'icon' : 'default'}
-      aria-label={browseLabel}
-      onClick={() => void browseDirectory()}
-      disabled={loading}
-    >
-      <FolderOpen />
-      {!compact && browseLabel}
-    </Button>
-  )
-
   return (
     <>
       <div>
@@ -128,13 +118,13 @@ function ToolbarContent({
                 }
               }}
             />
-            {compact ? (
-              <Hint label={browseLabel} side="bottom">
-                {browseButton}
-              </Hint>
-            ) : (
-              browseButton
-            )}
+            <ToolbarActionButton
+              icon={FolderOpen}
+              label={browseLabel}
+              variant="outline"
+              onClick={() => void browseDirectory()}
+              disabled={loading}
+            />
           </ButtonGroup>
         </div>
 
@@ -175,14 +165,15 @@ function ToolbarContent({
 
         <div
           ref={actionsRef}
-          className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2"
+          className="ml-auto flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2 overflow-hidden"
         >
-          <SelectionToolbarActions />
+          <SelectionToolbarActions onChromePresentChange={onBulkChromePresentChange} />
           <SearchControls />
-          <Separator orientation="vertical" className="mx-1 hidden sm:block" />
+          <Separator orientation="vertical" className="mx-1 hidden shrink-0 sm:block" />
           <ToolbarActionButton
             icon={Plus}
             label={t('toolbar.addRow')}
+            className="shrink-0"
             onClick={addRow}
             disabled={!canAddRow}
           />
@@ -195,6 +186,7 @@ function ToolbarContent({
                 : t('toolbar.missingFilterOff')
             }
             className={cn(
+              'shrink-0',
               hasMissing &&
                 !filterVisuallyOn &&
                 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',

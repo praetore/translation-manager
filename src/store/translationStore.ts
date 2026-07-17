@@ -149,8 +149,10 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
 
     setSearchQuery: (value) => set({ searchQuery: value }),
     clearSearch: () => set({ searchQuery: '' }),
-    setSearchScope: (scope) => set({ searchScope: scope }),
-    setSearchRegex: (enabled) => set({ searchRegex: enabled }),
+    setSearchScope: (scope) =>
+      set({ searchScope: scope, searchLayoutHoldKeys: null }),
+    setSearchRegex: (enabled) =>
+      set({ searchRegex: enabled, searchLayoutHoldKeys: null }),
 
     transitionDisplayKeys,
 

@@ -3,6 +3,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
+import { cn } from '@/lib/utils'
 
 type ToolbarActionButtonProps = Omit<ComponentProps<typeof Button>, 'children'> & {
   icon: LucideIcon
@@ -16,6 +17,7 @@ type ToolbarActionButtonProps = Omit<ComponentProps<typeof Button>, 'children'> 
 
 /**
  * Full labeled button when the toolbar is wide; icon-only with tooltip when compact.
+ * Label width animates both ways (duration must match TOOLBAR_COMPACT_MS).
  */
 export function ToolbarActionButton({
   icon: Icon,
@@ -23,27 +25,38 @@ export function ToolbarActionButton({
   children,
   hint,
   size,
+  className,
   ...props
 }: ToolbarActionButtonProps) {
   const compact = useIsToolbarCompact()
-  const button = (
-    <Button
-      size={compact ? 'icon' : (size ?? 'default')}
-      aria-label={label}
-      {...props}
-    >
-      <Icon />
-      {!compact && (children ?? label)}
-    </Button>
+  const labelContent = children ?? label
+  const showTooltip = compact || Boolean(hint)
+
+  return (
+    <Hint label={hint ?? label} side="bottom" disabled={!showTooltip}>
+      <Button
+        size={size ?? 'default'}
+        aria-label={label}
+        className={cn(
+          'gap-2 transition-[gap,padding] duration-200 ease-out',
+          compact && 'gap-0 px-2.5',
+          className,
+        )}
+        {...props}
+      >
+        <Icon />
+        <span
+          aria-hidden={compact || undefined}
+          className={cn(
+            'inline-grid transition-[grid-template-columns,opacity] duration-200 ease-out',
+            compact ? 'grid-cols-[0fr] opacity-0' : 'grid-cols-[1fr] opacity-100',
+          )}
+        >
+          <span className="min-w-0 overflow-hidden whitespace-nowrap">
+            {labelContent}
+          </span>
+        </span>
+      </Button>
+    </Hint>
   )
-
-  if (compact || hint) {
-    return (
-      <Hint label={hint ?? label} side="bottom">
-        {button}
-      </Hint>
-    )
-  }
-
-  return button
 }

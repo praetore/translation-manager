@@ -33,7 +33,8 @@ export function MoveKeysDialog({
   const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const preview = sampleKey ? applyKeyLead(sampleKey, lead) : ''
+  const trimmedLead = lead.trim()
+  const preview = sampleKey && trimmedLead ? applyKeyLead(sampleKey, trimmedLead) : ''
 
   const submit = useCallback(() => {
     const ok = onConfirm(lead)
@@ -92,9 +93,15 @@ export function MoveKeysDialog({
           {error && (
             <p className="text-destructive text-xs">{t('toolbar.moveConflict')}</p>
           )}
-          {sampleKey && (
-            <p className="text-muted-foreground font-mono text-xs">
-              {t('toolbar.movePreview', { from: sampleKey, to: preview })}
+          {preview ? (
+            <p className="text-muted-foreground font-mono text-xs break-all">
+              <span>{sampleKey}</span>
+              <span className="text-muted-foreground/80 mx-1.5">→</span>
+              <span className="text-foreground">{preview}</span>
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-xs">
+              {t('toolbar.movePreviewExample')}
             </p>
           )}
         </div>

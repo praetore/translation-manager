@@ -1,4 +1,4 @@
-import { Regex } from 'lucide-react'
+import { KeyRound, Regex, Search, Type, type LucideIcon } from 'lucide-react'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
   InputGroup,
@@ -24,6 +24,12 @@ import {
 
 const SCOPES: SearchScope[] = ['all', 'keys', 'text']
 
+const SCOPE_ICONS: Record<SearchScope, LucideIcon> = {
+  all: Search,
+  keys: KeyRound,
+  text: Type,
+}
+
 export function SearchControls() {
   const { t } = useI18n()
   const compact = useIsToolbarCompact()
@@ -39,11 +45,14 @@ export function SearchControls() {
 
   const disabled = !project
   const invalidRegex = searchRegex && !isValidSearchRegex(searchQuery)
+  const ScopeIcon = SCOPE_ICONS[searchScope]
+  const scopeLabel = t(`toolbar.searchScope.${searchScope}`)
 
   return (
-    <ButtonGroup className="w-fit max-w-full">
+    <ButtonGroup className="w-fit shrink-0">
       <InputGroup
         className={cn(
+          'transition-[width] duration-200 ease-out',
           compact ? 'w-36' : 'w-44 md:w-56',
           disabled && 'opacity-50',
         )}
@@ -53,7 +62,11 @@ export function SearchControls() {
           type="search"
           value={searchQuery}
           disabled={disabled}
-          placeholder={t('toolbar.searchPlaceholder')}
+          placeholder={t(
+            compact
+              ? 'toolbar.searchPlaceholderShort'
+              : 'toolbar.searchPlaceholder',
+          )}
           aria-label={t('toolbar.search')}
           aria-invalid={invalidRegex || undefined}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -85,12 +98,19 @@ export function SearchControls() {
       >
         <SelectTrigger
           size="default"
-          aria-label={t('toolbar.searchScope.label')}
-          className="bg-background w-[5.75rem]"
+          aria-label={`${t('toolbar.searchScope.label')}: ${scopeLabel}`}
+          title={compact ? scopeLabel : undefined}
+          className={cn(
+            'bg-background transition-[width,padding,gap] duration-200 ease-out',
+            compact
+              ? 'w-auto gap-1 px-2 [&_[data-slot=select-value]]:pointer-events-none [&_[data-slot=select-value]]:absolute [&_[data-slot=select-value]]:size-0 [&_[data-slot=select-value]]:overflow-hidden'
+              : 'w-[5.75rem]',
+          )}
         >
+          {compact && <ScopeIcon aria-hidden />}
           <SelectValue />
         </SelectTrigger>
-        <SelectContent align="end">
+        <SelectContent align="end" position="popper" className="w-max min-w-32">
           {SCOPES.map((scope) => (
             <SelectItem key={scope} value={scope}>
               {t(`toolbar.searchScope.${scope}`)}

@@ -1,16 +1,25 @@
 import { FolderInput, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatedCount } from '@/components/AnimatedCount'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { MoveKeysDialog } from '@/components/MoveKeysDialog'
 import { ToolbarActionButton } from '@/components/ToolbarActionButton'
+import { Separator } from '@/components/ui/separator'
 import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { springSnappy } from '@/lib/motion'
+import { cn } from '@/lib/utils'
 
-export function SelectionToolbarActions() {
+interface SelectionToolbarActionsProps {
+  /** True while bulk chrome is mounted, including during exit animation. */
+  onChromePresentChange?: (present: boolean) => void
+}
+
+export function SelectionToolbarActions({
+  onChromePresentChange,
+}: SelectionToolbarActionsProps) {
   const { t } = useI18n()
   const compact = useIsToolbarCompact()
   const { selectedKeys, clearSelection, deleteSelectedRows, moveSelectedKeys } =
@@ -20,30 +29,57 @@ export function SelectionToolbarActions() {
 
   const count = selectedKeys.length
   const hasSelection = count > 0
+  const hasSelectionRef = useRef(hasSelection)
+
   const [cachedCount, setCachedCount] = useState(count)
   if (count > 0 && count !== cachedCount) {
     setCachedCount(count)
   }
 
+  useEffect(() => {
+    hasSelectionRef.current = hasSelection
+  }, [hasSelection])
+
+  useEffect(() => {
+    if (hasSelection) {
+      onChromePresentChange?.(true)
+    }
+  }, [hasSelection, onChromePresentChange])
+
   const deleteLabel = t('toolbar.deleteSelected', { count: cachedCount })
 
   return (
     <>
-      <AnimatePresence initial={false}>
+      <AnimatePresence
+        initial={false}
+        onExitComplete={() => {
+          if (!hasSelectionRef.current) {
+            onChromePresentChange?.(false)
+          }
+        }}
+      >
         {hasSelection && (
           <motion.div
             key="bulk-actions"
-            className="flex flex-wrap items-center gap-2"
+            className="flex shrink-0 flex-nowrap items-center gap-2"
             initial={{ opacity: 0, x: -12, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -10, scale: 0.96 }}
             transition={springSnappy}
           >
-            {!compact && (
-              <span className="text-muted-foreground shrink-0 px-1 text-xs font-medium tracking-wide uppercase">
+            <span
+              aria-hidden={compact || undefined}
+              className={cn(
+                'text-muted-foreground inline-grid px-1 text-xs font-medium tracking-wide uppercase transition-[grid-template-columns,opacity,padding] duration-200 ease-out',
+                compact
+                  ? 'grid-cols-[0fr] px-0 opacity-0'
+                  : 'grid-cols-[1fr] opacity-100',
+              )}
+            >
+              <span className="min-w-0 overflow-hidden whitespace-nowrap">
                 {t('toolbar.bulkActions')}
               </span>
-            )}
+            </span>
             <ToolbarActionButton
               icon={X}
               label={t('toolbar.deselect')}
@@ -70,6 +106,7 @@ export function SelectionToolbarActions() {
                 </span>
               </span>
             </ToolbarActionButton>
+            <Separator orientation="vertical" className="mx-1 shrink-0" />
           </motion.div>
         )}
       </AnimatePresence>
