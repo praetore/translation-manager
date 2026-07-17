@@ -2,9 +2,9 @@
 
 A local desktop translation editor for software projects. Open a folder of locale files, edit keys and translations in a fast grid, and save changes back to disk — entirely offline, with no cloud or AI runtime.
 
-| Dark | Light |
-|:----:|:-----:|
-| ![Translation Manager in dark mode](docs/main-window-dark.png) | ![Translation Manager in light mode](docs/main-window-light.png) |
+|                                  Wide toolbar (dark mode)                                  |                                                    Compact toolbar + selection (light mode)                                                    |
+|:---------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------:|
+| ![Translation Manager with full toolbar labels in dark mode](docs/main-window-dark.png) | ![Translation Manager in light mode with a multi-row selection, selection badge, and icon-only toolbar actions](docs/main-window-light.png) |
 
 ## Features
 
@@ -79,7 +79,8 @@ This starts Vite and launches the Electron window.
 | `npm run lint:all` | ESLint + file-length checks |
 | `npm run dist` | Build + package for the current OS |
 | `npm run dist:win` / `dist:mac` / `dist:linux` | Platform-specific packages |
-| `npm run screenshots` | Capture README screenshots (after `npm run build`) |
+| `npm run screenshots` | Capture README screenshots into `docs/` (after `npm run build`) |
+| `npm run screenshots:local` | Same capture into gitignored `tmp/screenshots/` |
 | `npm run icons` | Regenerate `build/icon.ico` / favicons from `build/icon.png` |
 | `npm run preview` | Preview Vite production build |
 
@@ -119,9 +120,13 @@ You can also run **Actions → Release → Run workflow** manually.
 Local screenshots (after `npm run build`):
 
 ```bash
-npm run screenshots                 # Windows / macOS
-xvfb-run -a npm run screenshots     # Linux
+npm run screenshots                 # writes to docs/ (README assets)
+npm run screenshots:local           # writes to tmp/screenshots/ (gitignored)
+xvfb-run -a npm run screenshots     # Linux / CI-style headless
 ```
+
+Dark capture: wide window with full toolbar labels.  
+Light capture: narrower window (icon-only toolbar) with a multi-row selection so the selection badge and bulk actions are visible.
 
 Ensure `package.json` → `repository.url` points at your GitHub repo.
 
