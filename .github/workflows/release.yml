@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Version tag to build (e.g. v0.3.0). Leave empty to use package.json version.'
+        description: 'Version tag to build (e.g. v0.4.0). Leave empty to use package.json version.'
         required: false
         type: string
 
@@ -27,7 +27,7 @@ jobs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve tag
         id: tag
@@ -76,10 +76,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -118,12 +118,12 @@ jobs:
     if: ${{ success() }}
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -176,7 +176,7 @@ jobs:
           echo "Bumped ${CURRENT} → ${NEXT}"
 
       - name: Checkout master
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: master
           token: ${{ secrets.GITHUB_TOKEN }}

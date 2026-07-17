@@ -1,8 +1,6 @@
 # Translation Manager
 
-A local desktop translation editor for software projects. Open a folder of locale files, edit translations in a virtualized grid, and save changes back to disk — entirely offline, with no cloud or AI runtime.
-
-Built with **Electron**, **React**, **TypeScript**, **Vite**, **Tailwind CSS**, and **shadcn/ui**.
+A local desktop translation editor for software projects. Open a folder of locale files, edit keys and translations in a fast grid, and save changes back to disk — entirely offline, with no cloud or AI runtime.
 
 | Dark | Light |
 |:----:|:-----:|
@@ -10,30 +8,59 @@ Built with **Electron**, **React**, **TypeScript**, **Vite**, **Tailwind CSS**, 
 
 ## Features
 
-- **Local folder workflow** — pick a directory via path input or native folder dialog
-- **Multiple formats** via an adapter pattern:
-  - JSON
-  - YAML (`.yaml` / `.yml`)
-  - gettext PO (`.po`)
-  - Java `.properties`
-- **Virtualized grid** — TanStack Table + `react-window` for large key sets
-- **Dynamic language columns** — one column per detected locale file (e.g. `en.json`, `nl.json`, `it.po`)
-- **Inline editing** — changes stay in memory until you save
-- **Save to disk** — writes through Electron’s main process (`fs`) back to the original files
-- **Missing translation checks** — empty target cells are highlighted when the source locale (`en`) has a value
-- **Missing filter** — toggle to focus on incomplete rows; the filtered set stays stable while you edit (refresh by toggling the filter off and on again)
-- **100% local** — no network calls for translation; Main/Renderer separation via IPC
+- **Local folder workflow** — open a locales directory via path or **Browse…**
+- **Multiple formats in one project** — JSON, YAML (`.yaml` / `.yml`), gettext PO (`.po`), and Java `.properties`
+- **Virtualized grid** — smooth scrolling for large key sets; one column per detected locale file
+- **Search** — filter by keys and/or text, with optional regex and scope (all / keys / text)
+- **Missing translations** — empty targets are highlighted when the source locale has a value; **Missing (N)** focuses on incomplete rows (snapshot stays stable until you toggle the filter again)
+- **Inline editing** — edit keys and cells in place; unsaved work is tracked until you save
+- **Rows & bulk actions** — add rows, multi-select, move keys to a new path prefix, or delete
+- **Responsive toolbar** — full labels when there is room; icon-only with tooltips when the window is narrow
+- **Themes & UI language** — light / dark / system; app UI in English or Dutch
+- **100% local** — filesystem access stays in Electron’s main process via IPC; no network calls for translation
 
-## Sample data
+---
 
-Use the included `fixtures/` folder to try the app quickly (the screenshots above use this set). It contains English, Dutch, French, German, and Italian files across JSON, YAML, Properties, and PO.
+## For users
 
-## Requirements
+### Install
 
-- Node.js 20+ (recommended)
+Download the latest build from [GitHub Releases](https://github.com/praetore/translation-manager/releases):
+
+| Platform | Artifact |
+|----------|----------|
+| Windows | `Translation Manager-*-Setup.exe` (installer) or `*-Portable.exe` |
+| macOS | `Translation Manager-*-{x64\|arm64}.dmg` (unsigned in CI) |
+| Linux | `Translation Manager-*.AppImage` |
+
+### How to use
+
+1. Open the app
+2. Enter a folder path that contains translation files, or click **Browse…**
+3. Press **Enter** in the path field (or open via **File → Open…**) to load the project
+4. Edit cells and keys inline
+5. Click **Save** when you want changes written back to disk
+6. Optional:
+   - Use **search** (and regex / scope) to narrow the grid
+   - Click **Missing (N)** to focus on incomplete rows
+   - Select rows for **Move** / **Delete**, or use **Add row** for a new key
+
+Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, …). The source locale defaults to `en` when present.
+
+### Try sample data
+
+The repo’s [`fixtures/`](fixtures/) folder is a ready-made multi-format set (EN, NL, FR, DE, IT) — the screenshots above use it. Point the app at that folder after cloning, or copy it somewhere convenient.
+
+---
+
+## For developers
+
+### Requirements
+
+- Node.js 20+ (22 recommended)
 - npm
 
-## Getting started
+### Quick start
 
 ```bash
 npm install
@@ -42,76 +69,23 @@ npm run dev
 
 This starts Vite and launches the Electron window.
 
-### Build
+### Scripts
 
-```bash
-npm run build
-```
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server + Electron |
+| `npm run build` | Typecheck + production build |
+| `npm test` | Unit tests (Vitest) |
+| `npm run lint:all` | ESLint + file-length checks |
+| `npm run dist` | Build + package for the current OS |
+| `npm run dist:win` / `dist:mac` / `dist:linux` | Platform-specific packages |
+| `npm run screenshots` | Capture README screenshots (after `npm run build`) |
+| `npm run icons` | Regenerate `build/icon.ico` / favicons from `build/icon.png` |
+| `npm run preview` | Preview Vite production build |
 
-Outputs the renderer to `dist/` and Electron main/preload to `dist-electron/`.
+Packaged artifacts land in `release/`.
 
-### Package executables
-
-```bash
-# Current platform (Windows → installer + portable .exe)
-npm run dist
-
-# Explicit targets
-npm run dist:win     # NSIS installer + portable EXE
-npm run dist:mac     # DMG (run on macOS)
-npm run dist:linux   # AppImage (run on Linux)
-```
-
-Artifacts are written to `release/`:
-
-| Artifact | Description |
-|----------|-------------|
-| `Translation Manager-*-Setup.exe` | Windows NSIS installer |
-| `Translation Manager-*-Portable.exe` | Windows portable app (no install) |
-| `Translation Manager-*.dmg` | macOS disk image |
-| `Translation Manager-*.AppImage` | Linux AppImage |
-
-Optional: replace `build/icon.png` and run `npm run icons` to refresh `icon.ico` and public favicons.
-
-### GitHub Releases
-
-Pushing a version tag builds installers on Windows, macOS, and Linux and uploads them to a GitHub Release. After the release succeeds, CI captures fresh README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.3.0` → commit `0.4.0`).
-
-```bash
-# package.json should already be the version you want to release (e.g. 0.3.0)
-git tag v0.3.0
-git push origin v0.3.0
-```
-
-The workflow in `.github/workflows/release.yml` runs automatically on `v*` tags and:
-
-1. Publishes Windows / macOS / Linux installers for that tag
-2. Captures `docs/main-window-dark.png` + `docs/main-window-light.png` from the released build
-3. Bumps the next minor on `master` and commits the screenshots + version files
-
-You can also trigger it manually via **Actions → Release → Run workflow**.
-
-Local screenshot refresh (after `npm run build`):
-
-```bash
-npm run screenshots          # Windows / macOS
-xvfb-run -a npm run screenshots   # Linux / CI
-```
-
-Ensure `package.json` → `repository.url` points at your GitHub repo (`praetore/translation-manager`).
-
-## Usage
-
-1. Start the app with `npm run dev`
-2. Enter a folder path (or use **Browse…**) containing translation files
-3. Click **Open**
-4. Edit cells inline
-5. Click **Save** to write files back to disk
-6. Optionally click **Missing (N)** to show only rows that had incomplete translations when the filter was enabled
-
-Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, …). The source locale defaults to `en` when present.
-
-## Architecture
+### Architecture
 
 ```
 electron/          Main process + preload (filesystem & dialogs via IPC)
@@ -120,50 +94,38 @@ shared/            Shared types, locale helpers, format adapters
 fixtures/          Sample translation files for local testing
 ```
 
-### Process separation
+| Process | Responsibility |
+|---------|----------------|
+| Main | `dialog`, `fs` read/write, directory scan |
+| Preload | `contextBridge` API (`window.electronAPI`) |
+| Renderer | UI, adapters, in-memory project state |
 
-| Process   | Responsibility                                      |
-|-----------|-----------------------------------------------------|
-| Main      | `dialog`, `fs` read/write, directory scan           |
-| Preload   | `contextBridge` API (`window.electronAPI`)          |
-| Renderer  | UI, adapters, in-memory project state               |
+**Adapters** — each format implements `parse(content) → flat key/value map` and `serialize(map) → file content`. Nested JSON/YAML is flattened with dot notation (e.g. `nav.home`) for the grid, then reconstituted on save.
 
-IPC channels:
+**Tech stack** — Electron + Vite (`vite-plugin-electron`), React 19 + TypeScript, TanStack Table + `react-window`, Zustand, Tailwind CSS v4 + shadcn/ui, Motion, i18next, `js-yaml`.
 
-- `fs:select-directory`
-- `fs:scan-directory`
-- `fs:write-files`
+### Releasing
 
-### Adapter pattern
+Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
 
-Each format implements:
+```bash
+# package.json should already be the version you want to release (e.g. 0.4.0)
+git tag v0.4.0
+git push origin v0.4.0
+```
 
-- `parse(content) → flat key/value map`
-- `serialize(map) → file content`
+You can also run **Actions → Release → Run workflow** manually.
 
-Nested JSON/YAML objects are flattened with dot notation (e.g. `nav.home`) for the grid, then reconstituted on save.
+Local screenshots (after `npm run build`):
 
-## Tech stack
+```bash
+npm run screenshots                 # Windows / macOS
+xvfb-run -a npm run screenshots     # Linux
+```
 
-- Electron + Vite (`vite-plugin-electron`)
-- React 19 + TypeScript
-- TanStack Table + react-window
-- Tailwind CSS v4 + shadcn/ui
-- `js-yaml` for YAML
+Ensure `package.json` → `repository.url` points at your GitHub repo.
 
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Dev server + Electron |
-| `npm run build` | Typecheck + production build |
-| `npm run dist` | Build + package for the current OS |
-| `npm run dist:win` | Build Windows installer + portable EXE |
-| `npm run dist:mac` | Build macOS DMG |
-| `npm run dist:linux` | Build Linux AppImage |
-| `npm run dist:publish` | Build + publish to GitHub Releases (needs `GH_TOKEN`) |
-| `npm run icons` | Regenerate `build/icon.ico` from `build/icon.png` |
-| `npm run preview` | Preview Vite production build |
+---
 
 ## License
 
