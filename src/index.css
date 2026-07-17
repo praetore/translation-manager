@@ -128,4 +128,48 @@
       color-mix(in oklab, var(--destructive) 12%, var(--card)) 16px
     );
   }
+
+  /* Selection must stay visible on top of missing stripes. */
+  .row-selected {
+    box-shadow: inset 3px 0 0 0 var(--primary);
+    background-color: color-mix(in oklab, var(--primary) 16%, transparent);
+  }
+
+  .row-missing-stripe.row-selected {
+    background-color: color-mix(in oklab, var(--primary) 22%, rgb(254 226 226 / 0.55));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)),
+      color-mix(in oklab, var(--primary) 28%, rgb(254 202 202 / 0.55)) 8px,
+      color-mix(in oklab, var(--primary) 12%, transparent) 8px,
+      color-mix(in oklab, var(--primary) 12%, transparent) 16px
+    );
+  }
+
+  .dark .row-missing-stripe.row-selected {
+    background-color: color-mix(in oklab, var(--primary) 28%, rgb(127 29 29 / 0.4));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)),
+      color-mix(in oklab, var(--primary) 32%, rgb(185 28 28 / 0.45)) 8px,
+      color-mix(in oklab, var(--primary) 14%, transparent) 8px,
+      color-mix(in oklab, var(--primary) 14%, transparent) 16px
+    );
+  }
+
+  .row-selected-sticky {
+    background-color: color-mix(in oklab, var(--primary) 18%, var(--card));
+    box-shadow: inset 3px 0 0 0 var(--primary);
+  }
+
+  .row-missing-stripe-sticky.row-selected-sticky {
+    background-color: color-mix(in oklab, var(--primary) 22%, color-mix(in oklab, var(--destructive) 14%, var(--card)));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--primary) 30%, color-mix(in oklab, var(--destructive) 22%, var(--card))),
+      color-mix(in oklab, var(--primary) 30%, color-mix(in oklab, var(--destructive) 22%, var(--card))) 8px,
+      color-mix(in oklab, var(--primary) 16%, var(--card)) 8px,
+      color-mix(in oklab, var(--primary) 16%, var(--card)) 16px
+    );
+  }
 }

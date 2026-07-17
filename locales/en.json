@@ -10,15 +10,38 @@
     "saving": "Saving…",
     "unsaved": "Unsaved",
     "addRow": "Add row",
+    "search": "Search",
+    "searchPlaceholder": "Search keys or text…",
+    "selected": "{count} selected",
+    "selectedSuffix": "selected",
+    "moveKeys": "Move all",
+    "deleteSelected": "Delete ({count})",
+    "deleteSelectedLabel": "Delete",
+    "deselect": "Deselect",
+    "bulkActions": "Bulk actions",
+    "deleteSelectedConfirm": "Delete {count} selected key(s)? This removes them from all locale files when you save.",
+    "moveTitle": "Move keys",
+    "moveDescription": "Keep the leaf (after the last dot) and set a new key lead for {count} selected key(s).",
+    "moveLead": "Key lead",
+    "moveLeadPlaceholder": "ui.auth",
+    "movePreview": "{from} → {to}",
+    "moveConflict": "That lead would create empty or duplicate keys.",
+    "moveConfirm": "Move",
+    "deleteSelectedTitle": "Delete keys",
     "missing": "Missing ({count})",
     "missingFilterOn": "Turn off filter to recalculate the list",
     "missingFilterOff": "Show only rows with missing translations"
   },
   "table": {
     "deleteRow": "Delete row",
+    "deleteTitle": "Delete key",
     "editKey": "Edit key",
     "keyPlaceholder": "translation.key",
     "deleteConfirm": "Delete key \"{key}\"? This removes it from all locale files when you save."
+  },
+  "dialog": {
+    "cancel": "Cancel",
+    "delete": "Delete"
   },
   "empty": {
     "title": "No project loaded",

@@ -1,4 +1,5 @@
 import { flexRender, type Row } from '@tanstack/react-table'
+import { motion } from 'motion/react'
 import {
   forwardRef,
   type CSSProperties,
@@ -8,6 +9,7 @@ import {
 } from 'react'
 import { type ListChildComponentProps } from 'react-window'
 import type { TranslationRow } from '@shared/types'
+import { springLayout, springSoft } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { isMissingAgainstSource } from '@/services/translationProject'
 
@@ -22,7 +24,21 @@ export interface VirtualRowData {
   locales: string[]
   stripeMissingRows: boolean
   freshKeys: ReadonlySet<string>
+  selectedKeys: ReadonlySet<string>
+  enteringKeys: ReadonlySet<string>
+  flashingKeys: ReadonlySet<string>
+  exitingKeys: ReadonlySet<string>
   onLeaveFreshKey: (key: string) => void
+}
+
+function readTop(style: CSSProperties): number {
+  if (typeof style.top === 'number') {
+    return style.top
+  }
+  if (typeof style.top === 'string') {
+    return Number.parseFloat(style.top) || 0
+  }
+  return 0
 }
 
 export function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowData>) {
@@ -50,12 +66,49 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
     data.onLeaveFreshKey(row.original.key)
   }
 
+  const rowSelected = data.selectedKeys.has(row.original.key)
+  const rowEntering = data.enteringKeys.has(row.original.key)
+  const rowFlashing = data.flashingKeys.has(row.original.key)
+  const rowExiting = data.exitingKeys.has(row.original.key)
+  const top = readTop(style)
+
   return (
-    <div
-      className={cn('flex border-b', rowMissing && 'row-missing-stripe')}
-      style={{ ...style, width: data.totalWidth, minWidth: data.totalWidth }}
+    <motion.div
+      className={cn(
+        'flex border-b',
+        rowMissing && 'row-missing-stripe',
+        rowSelected && 'row-selected',
+        rowExiting && 'pointer-events-none',
+      )}
+      style={{
+        position: 'absolute',
+        left: 0,
+        height: style.height,
+        width: data.totalWidth,
+        minWidth: data.totalWidth,
+      }}
       role="row"
+      aria-selected={rowSelected}
       onBlur={handleRowBlur}
+      initial={
+        rowEntering
+          ? { opacity: 0, top: top - ROW_HEIGHT }
+          : false
+      }
+      animate={{
+        top,
+        opacity: rowExiting ? 0 : 1,
+        filter: rowFlashing ? 'brightness(1.08)' : 'brightness(1)',
+      }}
+      transition={{
+        top: springLayout,
+        opacity: rowExiting
+          ? { duration: 0.22, ease: 'easeIn' }
+          : rowEntering
+            ? springSoft
+            : { duration: 0 },
+        filter: rowFlashing ? { duration: 0.45, ease: 'easeOut' } : { duration: 0 },
+      }}
     >
       {row.getVisibleCells().map((cell) => {
         const locale = cell.column.id === 'key' ? null : cell.column.id
@@ -74,11 +127,14 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
             key={cell.id}
             className={cn(
               'flex min-w-0 items-center border-r px-2.5',
-              missing && 'bg-destructive/15',
+              missing && !rowSelected && 'bg-destructive/15',
+              missing && rowSelected && 'bg-primary/15',
               isKey &&
                 cn(
                   'sticky left-0 z-[2]',
-                  rowMissing ? 'row-missing-stripe-sticky' : 'bg-card',
+                  rowSelected && 'row-selected-sticky',
+                  rowMissing && 'row-missing-stripe-sticky',
+                  !rowMissing && !rowSelected && 'bg-card',
                 ),
             )}
             style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
@@ -88,7 +144,7 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
           </div>
         )
       })}
-    </div>
+    </motion.div>
   )
 }
 

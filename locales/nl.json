@@ -10,15 +10,38 @@
     "saving": "Opslaan…",
     "unsaved": "Niet opgeslagen",
     "addRow": "Rij toevoegen",
+    "search": "Zoeken",
+    "searchPlaceholder": "Zoek sleutels of tekst…",
+    "selected": "{count} geselecteerd",
+    "selectedSuffix": "geselecteerd",
+    "moveKeys": "Alles verplaatsen",
+    "deleteSelected": "Verwijderen ({count})",
+    "deleteSelectedLabel": "Verwijderen",
+    "deselect": "Deselecteren",
+    "bulkActions": "Bulkacties",
+    "deleteSelectedConfirm": "{count} geselecteerde sleutel(s) verwijderen? Bij opslaan verdwijnen ze uit alle locale-bestanden.",
+    "moveTitle": "Sleutels verplaatsen",
+    "moveDescription": "Behoud het blad (na de laatste punt) en stel een nieuwe key-lead in voor {count} geselecteerde sleutel(s).",
+    "moveLead": "Key-lead",
+    "moveLeadPlaceholder": "ui.auth",
+    "movePreview": "{from} → {to}",
+    "moveConflict": "Die lead zou lege of dubbele sleutels opleveren.",
+    "moveConfirm": "Verplaatsen",
+    "deleteSelectedTitle": "Sleutels verwijderen",
     "missing": "Ontbrekende ({count})",
     "missingFilterOn": "Filter uitzetten om de lijst opnieuw te berekenen",
     "missingFilterOff": "Toon alleen rijen met ontbrekende vertalingen"
   },
   "table": {
     "deleteRow": "Rij verwijderen",
+    "deleteTitle": "Sleutel verwijderen",
     "editKey": "Sleutel bewerken",
     "keyPlaceholder": "vertaling.sleutel",
     "deleteConfirm": "Sleutel \"{key}\" verwijderen? Bij opslaan verdwijnt die uit alle locale-bestanden."
+  },
+  "dialog": {
+    "cancel": "Annuleren",
+    "delete": "Verwijderen"
   },
   "empty": {
     "title": "Geen project geladen",

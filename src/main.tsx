@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { Toaster } from './components/ui/sonner'
+import { TooltipProvider } from './components/ui/tooltip'
 import { TranslationStoreProvider } from './hooks/useTranslationStore'
 import { LocaleProvider } from './i18n/LocaleProvider'
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -23,9 +25,12 @@ createRoot(root).render(
   <StrictMode>
     <ThemeProvider>
       <LocaleProvider>
-        <TranslationStoreProvider>
-          <App />
-        </TranslationStoreProvider>
+        <TooltipProvider>
+          <TranslationStoreProvider>
+            <App />
+            <Toaster />
+          </TranslationStoreProvider>
+        </TooltipProvider>
       </LocaleProvider>
     </ThemeProvider>
   </StrictMode>,

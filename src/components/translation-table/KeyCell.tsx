@@ -1,11 +1,18 @@
 import { Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { Hint } from '@/components/Hint'
+import { useIsKeySelected } from '@/components/translation-table/selectionContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import type { SelectionPointerHandler } from '@/hooks/useKeyDragSelection'
 import { useI18n } from '@/i18n/LocaleProvider'
+import { cn } from '@/lib/utils'
 
 interface KeyCellProps {
   keyName: string
+  rowIndex: number
+  onSelectionPointerDown: SelectionPointerHandler
   onDeleteRow: (key: string) => void
   onRenameKey: (oldKey: string, newKey: string) => boolean
   /** Open in edit mode (e.g. freshly added row). */
@@ -15,13 +22,17 @@ interface KeyCellProps {
 
 export function KeyCell({
   keyName,
+  rowIndex,
+  onSelectionPointerDown,
   onDeleteRow,
   onRenameKey,
   autoEdit = false,
   onAutoEditHandled,
 }: KeyCellProps) {
   const { t } = useI18n()
+  const selected = useIsKeySelected(keyName)
   const [manualEditing, setManualEditing] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const editing = Boolean(autoEdit) || manualEditing
   const inputRef = useRef<HTMLInputElement>(null)
   const blurReadyRef = useRef(false)
@@ -44,10 +55,12 @@ export function KeyCell({
     }
 
     input.focus()
-    input.select()
+    const end = input.value.length
+    input.setSelectionRange(end, end)
+    // Ignore blur from the activating click / DOM swap.
     const timer = window.setTimeout(() => {
       blurReadyRef.current = true
-    }, 0)
+    }, 200)
 
     return () => window.clearTimeout(timer)
   }, [editing])
@@ -65,6 +78,10 @@ export function KeyCell({
     }
     inputRef.current?.focus()
   }, [finishEditing, keyName, onRenameKey])
+
+  const startEditing = useCallback(() => {
+    setManualEditing(true)
+  }, [])
 
   if (editing) {
     return (
@@ -98,40 +115,76 @@ export function KeyCell({
   }
 
   return (
-    <div className="group/key flex w-full min-w-0 items-center gap-1">
+    <div
+      className={cn(
+        'group/key flex w-full min-w-0 items-center gap-1 rounded-sm',
+        selected && 'ring-2 ring-primary/70 bg-primary/20',
+      )}
+      data-selection-index={rowIndex}
+      onPointerDown={(event) => {
+        if (event.button !== 0) {
+          return
+        }
+        const target = event.target
+        if (target instanceof Element && target.closest('button')) {
+          return
+        }
+        onSelectionPointerDown(rowIndex, {
+          shift: event.shiftKey,
+          ctrl: event.ctrlKey || event.metaKey,
+        })
+      }}
+      onDoubleClick={(event) => {
+        const target = event.target
+        if (target instanceof Element && target.closest('button')) {
+          return
+        }
+        event.preventDefault()
+        startEditing()
+      }}
+    >
       <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/key:opacity-100 focus-within:opacity-100">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive size-6"
-          title={t('table.deleteRow')}
-          aria-label={t('table.deleteRow')}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => {
-            if (window.confirm(t('table.deleteConfirm', { key: keyName }))) {
-              onDeleteRow(keyName)
-            }
-          }}
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground size-6"
-          title={t('table.editKey')}
-          aria-label={t('table.editKey')}
-          onMouseDown={(event) => {
-            event.preventDefault()
-            setManualEditing(true)
-          }}
-        >
-          <Pencil className="size-3.5" />
-        </Button>
+        <Hint label={t('table.deleteRow')}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive size-6"
+            aria-label={t('table.deleteRow')}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </Hint>
+        <Hint label={t('table.editKey')}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground size-6"
+            aria-label={t('table.editKey')}
+            onMouseDown={(event) => {
+              event.preventDefault()
+              startEditing()
+            }}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
+        </Hint>
       </div>
-      <span className="block min-w-0 flex-1 truncate font-mono text-xs">{keyName}</span>
+      <span className="block min-w-0 flex-1 cursor-default select-none truncate font-mono text-xs">
+        {keyName}
+      </span>
+      <ConfirmDialog
+        open={deleteOpen}
+        title={t('table.deleteTitle')}
+        description={t('table.deleteConfirm', { key: keyName })}
+        cancelLabel={t('dialog.cancel')}
+        confirmLabel={t('dialog.delete')}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={() => onDeleteRow(keyName)}
+      />
     </div>
   )
 }

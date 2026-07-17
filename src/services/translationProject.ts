@@ -112,13 +112,20 @@ function nextAvailableKey(existing: Set<string>, preferredKey: string): string {
   return `${preferredKey}.${index}`
 }
 
+/** Key that `addRow` would assign next (without mutating the project). */
+export function peekNextRowKey(
+  project: TranslationProject,
+  preferredKey = 'new.key',
+): string {
+  return nextAvailableKey(new Set(project.rows.map((row) => row.key)), preferredKey)
+}
+
 /** Insert an empty row at the top of the grid. */
 export function addRow(
   project: TranslationProject,
   preferredKey = 'new.key',
 ): TranslationProject {
-  const existing = new Set(project.rows.map((row) => row.key))
-  const key = nextAvailableKey(existing, preferredKey)
+  const key = peekNextRowKey(project, preferredKey)
   const values: Record<string, string> = {}
   for (const column of project.columns) {
     values[column.locale] = ''
@@ -138,6 +145,7 @@ export function deleteRow(project: TranslationProject, key: string): Translation
     rows: project.rows.filter((row) => row.key !== key),
   }
 }
+
 
 /**
  * Rename a translation key. Returns null when the new key is empty or already used.
