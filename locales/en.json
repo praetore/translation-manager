@@ -9,9 +9,16 @@
     "save": "Save",
     "saving": "Saving…",
     "unsaved": "Unsaved",
+    "addRow": "Add row",
     "missing": "Missing ({count})",
     "missingFilterOn": "Turn off filter to recalculate the list",
     "missingFilterOff": "Show only rows with missing translations"
+  },
+  "table": {
+    "deleteRow": "Delete row",
+    "editKey": "Edit key",
+    "keyPlaceholder": "translation.key",
+    "deleteConfirm": "Delete key \"{key}\"? This removes it from all locale files when you save."
   },
   "empty": {
     "title": "No project loaded",

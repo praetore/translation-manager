@@ -9,9 +9,16 @@
     "save": "Opslaan",
     "saving": "Opslaan…",
     "unsaved": "Niet opgeslagen",
+    "addRow": "Rij toevoegen",
     "missing": "Ontbrekende ({count})",
     "missingFilterOn": "Filter uitzetten om de lijst opnieuw te berekenen",
     "missingFilterOff": "Toon alleen rijen met ontbrekende vertalingen"
+  },
+  "table": {
+    "deleteRow": "Rij verwijderen",
+    "editKey": "Sleutel bewerken",
+    "keyPlaceholder": "vertaling.sleutel",
+    "deleteConfirm": "Sleutel \"{key}\" verwijderen? Bij opslaan verdwijnt die uit alle locale-bestanden."
   },
   "empty": {
     "title": "Geen project geladen",
