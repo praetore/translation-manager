@@ -11,17 +11,13 @@ import {
   peekNextRowKey,
   updateCell,
 } from '@/services/translationProject'
-import {
-  createMotionActions,
-  type KeyListTransitionMode,
-} from '@/store/motionActions'
+import { createMotionActions } from '@/store/motionActions'
 import {
   leaveKeyInLists,
   pickKeyLists,
   removeKeysFromLists,
 } from '@/store/keyLists'
 import { createPersistenceActions, readStoredDirectory, storeDirectory } from '@/store/persistence'
-import type { SearchScope } from '@/store/searchFilter'
 import { canRenameKey, selectDisplayProject } from '@/store/selectors'
 import {
   applyDeleteRows,
@@ -29,11 +25,14 @@ import {
   applyRenameKey,
 } from '@/store/sessionBulkActions'
 import { withDirtyProject } from '@/store/sessionHelpers'
+import type { TranslationStore } from '@/store/storeApi'
 import { getStoreTranslator } from '@/store/translator'
 import {
   createInitialTranslationState,
   type TranslationState,
 } from '@/store/types'
+
+export type { TranslationStore } from '@/store/storeApi'
 
 function visibleDisplayKeys(state: TranslationState): string[] {
   return (
@@ -47,45 +46,6 @@ function visibleDisplayKeys(state: TranslationState): string[] {
       state.searchQuery,
     )?.rows.map((row) => row.key) ?? []
   )
-}
-
-export type TranslationStore = TranslationState & {
-  setDirectoryPath: (path: string) => void
-  setSearchQuery: (value: string) => void
-  clearSearch: () => void
-  setSearchScope: (scope: SearchScope) => void
-  setSearchRegex: (enabled: boolean) => void
-  /**
-   * Shared row-list FLIP/fade for search, filter, add, and delete.
-   * Returns the motion mode that was started.
-   */
-  transitionDisplayKeys: (
-    fromKeys: string[],
-    toKeys: string[],
-    options?: {
-      trackFilterMode?: boolean
-      holdOnCollapse?: boolean
-      slideEnterKeys?: readonly string[]
-      onDone?: () => void
-    },
-  ) => KeyListTransitionMode
-  selectKeys: (keys: string[]) => void
-  clearSelection: () => void
-  removeFromSelection: (key: string) => void
-  editCell: (key: string, locale: string, value: string) => void
-  addRow: () => void
-  deleteRow: (key: string) => void
-  deleteSelectedRows: () => void
-  renameKey: (oldKey: string, newKey: string) => boolean
-  moveSelectedKeys: (lead: string) => boolean
-  leaveFreshKey: (key: string) => void
-  clearPendingKeyEdit: () => void
-  toggleMissingFilter: () => void
-  clearMotion: () => void
-  browseDirectory: () => Promise<void>
-  loadDirectory: (pathOverride?: string) => Promise<void>
-  openProject: () => Promise<void>
-  saveProject: () => Promise<void>
 }
 
 export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
@@ -107,11 +67,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
 
     const state = get()
     // Missing-filter owns the layout channel — don't fight it (unless we are it).
-    if (
-      !options.trackFilterMode &&
-      state.layoutMotion !== null &&
-      state.searchLayoutHoldKeys === null
-    ) {
+    if (!options.trackFilterMode && state.filterLayoutMode !== null) {
       return 'none'
     }
 
@@ -184,14 +140,21 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
         }
         const next = addProjectRow(current.project)
         const addedKey = next.rows[0]?.key
+        const freshKeys = addedKey
+          ? [...current.freshKeys, addedKey]
+          : current.freshKeys
+        const missingFilterKeys =
+          current.missingFilterKeys === null || !addedKey
+            ? current.missingFilterKeys
+            : [addedKey, ...current.missingFilterKeys]
+        const searchLayoutHoldKeys =
+          current.searchLayoutHoldKeys && addedKey
+            ? [addedKey, ...current.searchLayoutHoldKeys]
+            : current.searchLayoutHoldKeys
         return {
-          ...withDirtyProject(
-            current,
-            next,
-            null,
-            addedKey ? [...current.freshKeys, addedKey] : current.freshKeys,
-          ),
+          ...withDirtyProject(current, next, missingFilterKeys, freshKeys),
           pendingKeyEdit: addedKey ?? null,
+          searchLayoutHoldKeys,
         }
       })
       const afterKeys = visibleDisplayKeys(get())
@@ -292,28 +255,32 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       if (!state.project) {
         return
       }
-      if (state.layoutMotion !== null) {
-        return
-      }
 
       const allKeys = state.project.rows.map((row) => row.key)
+      const turningOff = state.missingFilterKeys !== null
+      const fromFiltered = state.missingFilterKeys
 
-      if (state.missingFilterKeys !== null) {
-        const fromKeys = state.missingFilterKeys
+      // Allow rapid re-clicks: cancel the in-flight FLIP and reverse immediately.
+      if (
+        state.filterLayoutMode !== null ||
+        state.layoutMotion !== null ||
+        state.searchLayoutHoldKeys !== null
+      ) {
+        motion.clearMotion()
+      }
+
+      if (turningOff && fromFiltered) {
         set({ missingFilterKeys: null })
-        transitionDisplayKeys(fromKeys, allKeys, { trackFilterMode: true })
+        transitionDisplayKeys(fromFiltered, allKeys, { trackFilterMode: true })
         return
       }
 
       const toKeys = collectMissingRowKeys(state.project, state.freshKeys)
+      // Apply the snapshot immediately; hold full list so exiting rows can animate.
+      set({ missingFilterKeys: [...toKeys] })
       transitionDisplayKeys(allKeys, toKeys, {
         trackFilterMode: true,
-        onDone: () =>
-          set((current) => {
-            // Rows added during the collapse stay visible under the snapshot.
-            const extras = current.freshKeys.filter((key) => !toKeys.includes(key))
-            return { missingFilterKeys: [...extras, ...toKeys] }
-          }),
+        holdOnCollapse: true,
       })
     },
 

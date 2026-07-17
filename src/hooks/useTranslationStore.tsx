@@ -162,33 +162,19 @@ export function useTranslationStore(): TranslationStoreValue {
   }, [searchLayoutHoldKeys, targetKeys])
 
   const displayProject = useMemo(() => {
-    if (!liveDisplayProject || !searchLayoutHoldKeys) {
+    if (!liveDisplayProject || !searchLayoutHoldKeys || !store.project) {
       return liveDisplayProject
     }
-    const base = selectDisplayProject(
-      {
-        project: store.project,
-        missingFilterKeys: store.missingFilterKeys,
-      },
-      '',
-    )
-    if (!base) {
-      return liveDisplayProject
-    }
-    const byKey = new Map(base.rows.map((row) => [row.key, row]))
+    // Build from the full project so missing-filter collapse can keep exiting rows mounted.
+    const byKey = new Map(store.project.rows.map((row) => [row.key, row]))
     return {
-      ...base,
+      ...liveDisplayProject,
       rows: searchLayoutHoldKeys.flatMap((key) => {
         const row = byKey.get(key)
         return row ? [row] : []
       }),
     }
-  }, [
-    liveDisplayProject,
-    searchLayoutHoldKeys,
-    store.project,
-    store.missingFilterKeys,
-  ])
+  }, [liveDisplayProject, searchLayoutHoldKeys, store.project])
 
   const liveMissingKeys = useMemo(
     () => selectLiveMissingKeys(store),

@@ -20,6 +20,8 @@ export function planKeyListTransition(
 
   const fromSet = new Set(fromKeys)
   const toSet = new Set(toKeys)
+  const fromIndex = new Map(fromKeys.map((key, index) => [key, index]))
+  const toIndex = new Map(toKeys.map((key, index) => [key, index]))
   const hiding = fromKeys.filter((key) => !toSet.has(key))
   const appearing = toKeys.filter((key) => !fromSet.has(key))
 
@@ -29,7 +31,7 @@ export function planKeyListTransition(
       hiding,
       remaining: toKeys.map((key) => ({
         key,
-        fromTop: Math.max(0, fromKeys.indexOf(key)) * rowHeight,
+        fromTop: (fromIndex.get(key) ?? 0) * rowHeight,
       })),
     }
   }
@@ -41,8 +43,8 @@ export function planKeyListTransition(
       .filter((key) => fromSet.has(key))
       .map((key) => ({
         key,
-        fromTop: Math.max(0, fromKeys.indexOf(key)) * rowHeight,
-        toTop: toKeys.indexOf(key) * rowHeight,
+        fromTop: (fromIndex.get(key) ?? 0) * rowHeight,
+        toTop: (toIndex.get(key) ?? 0) * rowHeight,
       })),
   }
 }

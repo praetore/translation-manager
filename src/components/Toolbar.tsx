@@ -56,7 +56,6 @@ function ToolbarContent({
     saveProject,
     missingFilterKeys,
     liveMissingKeys,
-    layoutMotion,
     filterLayoutMode,
   } = useTranslationStore()
 
@@ -66,7 +65,6 @@ function ToolbarContent({
   const missingFilterActive = missingFilterKeys !== null
   const missingFilterCount = missingFilterKeys?.length ?? 0
   const liveMissingCount = liveMissingKeys.length
-  const filterBusy = layoutMotion !== null && filterLayoutMode !== null
   /** Collapse in flight → on-state colors; expand → off-state immediately. */
   const filterVisuallyOn =
     missingFilterActive || filterLayoutMode === 'collapse'
@@ -169,12 +167,10 @@ function ToolbarContent({
               hasMissing &&
                 !filterVisuallyOn &&
                 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/60 dark:hover:text-amber-50',
-              filterBusy && 'pointer-events-none',
             )}
             variant={hasMissing && filterVisuallyOn ? 'warning' : 'outline'}
             onClick={toggleMissingFilter}
             disabled={!canToggleMissing}
-            aria-disabled={!canToggleMissing || filterBusy}
             aria-pressed={filterVisuallyOn}
           />
         </div>

@@ -1,19 +1,21 @@
 import {
-  forwardRef,
   useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
-  type HTMLAttributes,
 } from 'react'
-import { FixedSizeList as List } from 'react-window'
+import { FixedSizeList as List, type FixedSizeList } from 'react-window'
 import {
   flexRender,
   useTranslationColumns,
   useTranslationTableModel,
 } from '@/components/translation-table/columns'
+import {
+  createInner,
+  KeyOuter,
+  useSyncedPaneScroll,
+} from '@/components/translation-table/tableScroll'
 import {
   KEY_COLUMN_WIDTH,
   ROW_HEIGHT,
@@ -22,35 +24,6 @@ import {
 } from '@/components/translation-table/virtualization'
 import { useKeyDragSelection } from '@/hooks/useKeyDragSelection'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
-
-function createInner(paneWidth: number) {
-  return forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function Inner(
-    { style, ...rest },
-    ref,
-  ) {
-    return (
-      <div
-        ref={ref}
-        {...rest}
-        style={{ ...style, width: paneWidth, minWidth: paneWidth }}
-      />
-    )
-  })
-}
-
-/** Key pane follows locale scrollTop; no independent overflow scrolling. */
-const KeyOuter = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement> & { style?: CSSProperties }
->(function KeyOuter({ style, ...rest }, ref) {
-  return (
-    <div
-      ref={ref}
-      {...rest}
-      style={{ ...style, overflow: 'hidden' }}
-    />
-  )
-})
 
 export function TranslationTable() {
   const { displayProject } = useTranslationStore()
@@ -87,6 +60,8 @@ function TranslationTableContent() {
   const headerRef = useRef<HTMLDivElement>(null)
   const keyOuterRef = useRef<HTMLDivElement>(null)
   const localeOuterRef = useRef<HTMLDivElement>(null)
+  const keyListRef = useRef<FixedSizeList>(null)
+  const localeListRef = useRef<FixedSizeList>(null)
   const [bodySize, setBodySize] = useState({ width: 800, height: 480 })
   const [localeWidth, setLocaleWidth] = useState(520)
   const [scrollbarSize, setScrollbarSize] = useState({ width: 0, height: 0 })
@@ -142,52 +117,16 @@ function TranslationTableContent() {
     .filter((column) => column.id !== 'key')
     .reduce((sum, column) => sum + column.getSize(), 0)
 
-  // Locale scroll is the source of truth; key + header follow in the same event.
-  useLayoutEffect(() => {
-    const locale = localeOuterRef.current
-    const key = keyOuterRef.current
-    if (!locale || !key) {
-      return
-    }
-
-    const measureScrollbars = (): void => {
-      setScrollbarSize({
-        width: Math.max(0, locale.offsetWidth - locale.clientWidth),
-        height: Math.max(0, locale.offsetHeight - locale.clientHeight),
-      })
-    }
-
-    const syncFromLocale = (): void => {
-      if (key.scrollTop !== locale.scrollTop) {
-        key.scrollTop = locale.scrollTop
-      }
-      if (headerRef.current) {
-        headerRef.current.scrollLeft = locale.scrollLeft
-      }
-    }
-
-    const onKeyWheel = (event: WheelEvent): void => {
-      if (event.deltaY === 0 && event.deltaX === 0) {
-        return
-      }
-      locale.scrollTop += event.deltaY
-      locale.scrollLeft += event.deltaX
-      event.preventDefault()
-    }
-
-    measureScrollbars()
-    syncFromLocale()
-    locale.addEventListener('scroll', syncFromLocale, { passive: true })
-    key.addEventListener('wheel', onKeyWheel, { passive: false })
-    const observer = new ResizeObserver(measureScrollbars)
-    observer.observe(locale)
-
-    return () => {
-      locale.removeEventListener('scroll', syncFromLocale)
-      key.removeEventListener('wheel', onKeyWheel)
-      observer.disconnect()
-    }
-  }, [rows.length, bodySize.height, localeWidth, localesWidth])
+  useSyncedPaneScroll({
+    bodyRef,
+    headerRef,
+    keyOuterRef,
+    localeOuterRef,
+    keyListRef,
+    localeListRef,
+    setScrollbarSize,
+    deps: [rows.length, bodySize.height, localeWidth, localesWidth],
+  })
 
   const KeyInner = useMemo(() => createInner(KEY_COLUMN_WIDTH), [])
   const LocaleInner = useMemo(() => createInner(localesWidth), [localesWidth])
@@ -287,6 +226,7 @@ function TranslationTableContent() {
             style={{ width: KEY_COLUMN_WIDTH }}
           >
             <List
+              ref={keyListRef}
               outerRef={keyOuterRef}
               outerElementType={KeyOuter}
               height={keyListHeight}
@@ -303,6 +243,7 @@ function TranslationTableContent() {
 
           <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden" ref={localePaneRef}>
             <List
+              ref={localeListRef}
               outerRef={localeOuterRef}
               height={bodySize.height}
               width={localeWidth}

@@ -129,35 +129,34 @@ describe('translationStore', () => {
     loadSample()
     useTranslationStoreBase.getState().toggleMissingFilter()
     const collapsing = useTranslationStoreBase.getState()
+    expect(collapsing.missingFilterKeys).toEqual(['farewell'])
+    expect(collapsing.searchLayoutHoldKeys).toEqual(['greeting', 'farewell'])
     expect(collapsing.exitingKeys).toEqual(['greeting'])
     expect(collapsing.layoutMotion).toEqual({
       farewell: { top: 0, shiftY: 40, animate: false },
     })
 
-    // Second click during collapse is ignored
+    // Second click during collapse reverses immediately
     useTranslationStoreBase.getState().toggleMissingFilter()
     expect(useTranslationStoreBase.getState().missingFilterKeys).toBeNull()
-    expect(useTranslationStoreBase.getState().layoutMotion).toEqual({
-      farewell: { top: 0, shiftY: 40, animate: false },
-    })
+    expect(useTranslationStoreBase.getState().filterLayoutMode).toBe('expand')
+    expect(useTranslationStoreBase.getState().searchLayoutHoldKeys).toBeNull()
+    expect(useTranslationStoreBase.getState().fadeEnteringKeys).toEqual(['greeting'])
 
     vi.runAllTimers()
     let state = useTranslationStoreBase.getState()
-    expect(state.missingFilterKeys).toEqual(['farewell'])
+    expect(state.missingFilterKeys).toBeNull()
+    expect(state.searchLayoutHoldKeys).toBeNull()
     expect(state.layoutMotion).toBeNull()
     expect(selectDisplayProject(state)?.rows.map((row) => row.key)).toEqual([
+      'greeting',
       'farewell',
     ])
 
     useTranslationStoreBase.getState().toggleMissingFilter()
     state = useTranslationStoreBase.getState()
-    expect(state.missingFilterKeys).toBeNull()
-    expect(state.filterLayoutMode).toBe('expand')
-    expect(state.layoutMotion).toEqual({
-      farewell: { top: 40, shiftY: -40, animate: false },
-    })
-    expect(state.fadeEnteringKeys).toEqual(['greeting'])
-    expect(state.enteringKeys).toEqual([])
+    expect(state.missingFilterKeys).toEqual(['farewell'])
+    expect(state.filterLayoutMode).toBe('collapse')
 
     vi.runAllTimers()
     state = useTranslationStoreBase.getState()
@@ -169,16 +168,19 @@ describe('translationStore', () => {
     loadSample()
     useTranslationStoreBase.getState().toggleMissingFilter()
     expect(useTranslationStoreBase.getState().layoutMotion).not.toBeNull()
+    expect(useTranslationStoreBase.getState().missingFilterKeys).toEqual(['farewell'])
 
     useTranslationStoreBase.getState().addRow()
     const during = useTranslationStoreBase.getState()
     expect(during.project?.rows[0]?.key).toBe('new.key')
     expect(during.enteringKeys).toContain('new.key')
     expect(during.freshKeys).toEqual(['new.key'])
+    expect(during.missingFilterKeys).toEqual(['new.key', 'farewell'])
 
     vi.runAllTimers()
     const after = useTranslationStoreBase.getState()
     expect(after.missingFilterKeys).toEqual(['new.key', 'farewell'])
+    expect(after.searchLayoutHoldKeys).toBeNull()
     expect(selectDisplayProject(after)?.rows.map((row) => row.key)).toEqual([
       'new.key',
       'farewell',
