@@ -1,3 +1,8 @@
+/**
+ * Selection / fresh / missing-snapshot / pending-edit lists.
+ * Always update these together on delete, rename, or move so a key never
+ * stays selected or "fresh" after it was removed or remapped.
+ */
 import { difference, evolve, isIncludedIn, map, pipe, unique } from 'remeda'
 
 /** Session key-tracking fields updated together on delete / rename / move. */

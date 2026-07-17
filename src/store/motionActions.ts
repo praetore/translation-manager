@@ -1,8 +1,17 @@
+/**
+ * Low-level row-list motion: timers + FLIP state writes.
+ *
+ * Prefer the store's `transitionDisplayKeys` for search / filter / add / delete.
+ * Call these helpers directly only when that path returns `'none'` but a side
+ * channel still needs to run (e.g. slide-enter a new row while missing-filter
+ * owns layout).
+ *
+ * Planning lives in `filterLayout.planKeyListTransition`; durations in `lib/motion`.
+ */
 import { planKeyListTransition } from '@/store/filterLayout'
 import {
   FILTER_LAYOUT_MS,
   ROW_ENTER_MS,
-  ROW_EXIT_MS,
   ROW_FLASH_MS,
   ROW_HEIGHT,
 } from '@/lib/motion'
@@ -17,8 +26,9 @@ type SetState = (
 
 export type KeyListTransitionMode = 'collapse' | 'expand' | 'none'
 
+/** Subset of store options that the motion layer understands (no hold keys). */
 export type KeyListTransitionOptions = {
-  /** Drive missing-filter button / stripe fade. */
+  /** Drive missing-filter button / stripe fade via `filterLayoutMode`. */
   trackFilterMode?: boolean
   /** Slide-enter these keys instead of fade-enter (e.g. new row). */
   slideEnterKeys?: readonly string[]
@@ -127,20 +137,6 @@ export function createMotionActions(set: SetState) {
     scheduleKeys(set, 'flashingKeys', keys, flashTimers, ROW_FLASH_MS)
   }
 
-  const animateExit = (keys: readonly string[], commit: () => void) => {
-    if (keys.length === 0) {
-      commit()
-      return
-    }
-    clearExitTimer()
-    set({ exitingKeys: [...keys], layoutMotion: null, filterLayoutMode: null })
-    exitTimer = setTimeout(() => {
-      commit()
-      set({ exitingKeys: [], layoutMotion: null, filterLayoutMode: null })
-      exitTimer = null
-    }, ROW_EXIT_MS) as unknown as number
-  }
-
   const animateCollapse = (
     hiding: readonly string[],
     remaining: readonly { key: string; fromTop: number }[],
@@ -206,8 +202,8 @@ export function createMotionActions(set: SetState) {
   }
 
   /**
-   * Shared FLIP/fade path for any from→to key list change (search, filter,
-   * add, delete).
+   * Shared FLIP/fade path for any from→to key list change.
+   * Collapse defers `onDone`; expand invokes it immediately.
    */
   const animateKeyListTransition = (
     fromKeys: readonly string[],
@@ -265,7 +261,6 @@ export function createMotionActions(set: SetState) {
   return {
     animateEnter,
     animateFlash,
-    animateExit,
     animateKeyListTransition,
     clearMotion,
   }

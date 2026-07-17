@@ -1,3 +1,10 @@
+/**
+ * Electron main process: window, menu, and filesystem IPC.
+ *
+ * Renderer never touches `fs` / `dialog` — only `window.electronAPI` (preload).
+ * Scan is non-recursive and limited to `SUPPORTED_EXTENSIONS`. Write returns
+ * partial success (`written` + `errors`). See `shared/types.ts` for channels.
+ */
 import {
   app,
   BrowserWindow,

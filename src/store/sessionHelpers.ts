@@ -1,3 +1,11 @@
+/**
+ * Dirty-flag helper for session edits.
+ *
+ * `baselineRows` is the last load/save snapshot. Every mutation that changes
+ * rows should go through `withDirtyProject` so `project.dirty` stays derived
+ * from a deep row compare — not a sticky boolean that never clears on revert.
+ * Load/save in `persistence.ts` refresh `baselineRows` and set dirty false.
+ */
 import {
   translationRowsEqual,
   type TranslationProject,

@@ -15,17 +15,24 @@ export interface LoadState {
   status: StatusMessage | null
 }
 
-/** Project session fields (load + editor document). */
+/**
+ * Project session fields (load + editor document).
+ * Missing-filter semantics: see `isMissingAgainstSource` in translationProject —
+ * filter snapshot ≠ live badge ≠ cell stripe.
+ */
 export interface SessionState {
   project: TranslationProject | null
   /**
    * Last loaded/saved row snapshot. `project.dirty` is derived by comparing
-   * current rows to this baseline.
+   * current rows to this baseline (`withDirtyProject`).
    */
   baselineRows: TranslationRow[] | null
   directoryPath: string
   load: LoadState
-  /** Snapshot of row keys when the missing-filter was enabled. Null = filter off. */
+  /**
+   * Keys visible while Missing is on — frozen at toggle-on.
+   * Null = filter off. Not the same as live missing (`selectLiveMissingKeys`).
+   */
   missingFilterKeys: string[] | null
   /** Keys just added; excluded from missing until focus leaves the row. */
   freshKeys: string[]
@@ -42,15 +49,23 @@ export interface RowLayoutMotion {
   animate: boolean
 }
 
+/**
+ * Ephemeral row-list animation fields. Cleared by `clearMotion`.
+ *
+ * Channels (do not mix roles):
+ * - `enteringKeys` — slide-in (new row)
+ * - `fadeEnteringKeys` — fade-in reappear (filter/search expand)
+ * - `exitingKeys` + `layoutMotion` — exit/FLIP compact (collapse)
+ * - `flashingKeys` — brief highlight after move (independent of FLIP)
+ * - `filterLayoutMode` — missing-filter owns the layout channel while non-null
+ * - `searchLayoutHoldKeys` — keep pre-shrink keys mounted for exit animation
+ */
 export interface MotionState {
   enteringKeys: string[]
-  /** Filter-expand reappear: fade only (must not flip to slide mid-animation). */
   fadeEnteringKeys: string[]
   flashingKeys: string[]
   exitingKeys: string[]
-  /** FLIP layout while compacting/expanding rows (missing filter). */
   layoutMotion: Record<string, RowLayoutMotion> | null
-  /** Distinguishes filter on vs off animation for UI + stripe fade. */
   filterLayoutMode: 'collapse' | 'expand' | null
 }
 
@@ -60,8 +75,8 @@ export interface TranslationState extends SessionState, MotionState {
   searchScope: SearchScope
   searchRegex: boolean
   /**
-   * While search shrink-animates, keep these keys mounted so exiting rows can
-   * fade out. Null = show live search results.
+   * While a shrink animates, keep these keys mounted so exiting rows can fade
+   * out / FLIP. Used by search and missing-filter collapse. Null = live list.
    */
   searchLayoutHoldKeys: string[] | null
 }

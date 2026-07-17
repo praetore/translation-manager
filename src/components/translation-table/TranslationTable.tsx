@@ -1,3 +1,16 @@
+/**
+ * Dual-pane virtualized translation grid.
+ *
+ * Why two `react-window` lists:
+ * - Key column stays fixed-width and vertically synced.
+ * - Locale pane scrolls horizontally (many locales) and vertically.
+ * Locale outer scroll is the source of truth; `useSyncedPaneScroll` drives
+ * both lists together (wheel capture) so the key pane never drifts.
+ *
+ * Motion: `layoutMotion` overrides row `top` / `translateY` during FLIP.
+ * `VirtualRowData` carries enter/exit/flash sets so both panes share one paint.
+ * Prefer `displayProject` from `useTranslationStore` (includes hold keys).
+ */
 import {
   useCallback,
   useLayoutEffect,

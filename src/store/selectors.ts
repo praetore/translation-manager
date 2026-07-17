@@ -1,3 +1,14 @@
+/**
+ * Pure projections over session state.
+ *
+ * Display pipeline (order matters):
+ * 1. Start from `project.rows`
+ * 2. If `missingFilterKeys !== null`, keep only that snapshot (stable until toggle off)
+ * 3. Apply search (scope + optional regex)
+ *
+ * `selectLiveMissingKeys` ignores the snapshot — used for the Missing (N) badge.
+ * Stripe highlighting uses `isMissingAgainstSource` on each cell (see translationProject).
+ */
 import { pipe } from 'remeda'
 import type { TranslationRow } from '@shared/types'
 import {
@@ -22,6 +33,7 @@ function filterByMissingKeys(
   return (rows) => rows.filter((row) => keySet.has(row.key))
 }
 
+/** Filtered project for the grid (missing snapshot + search). */
 export function selectDisplayProject(
   state: Pick<SessionState, 'project' | 'missingFilterKeys'> & {
     searchScope?: SearchScope
@@ -55,6 +67,7 @@ export function selectDisplayProject(
   }
 }
 
+/** Keys that currently need translations (badge count), excluding fresh rows. */
 export function selectLiveMissingKeys(
   state: Pick<SessionState, 'project' | 'freshKeys'>,
 ): string[] {

@@ -1,3 +1,13 @@
+/**
+ * App-facing store binding.
+ *
+ * - `useTranslationStoreBase` — raw Zustand (tests, IPC actions, `__TM_STORE__`).
+ * - `useTranslationStore` — UI: deferred search, `displayProject`, `liveMissingKeys`.
+ *
+ * Display pipeline: `project` → missing snapshot → search → optional
+ * `searchLayoutHoldKeys` (keep exiting rows mounted during shrink).
+ * See `src/store/README.md`.
+ */
 import {
   useDeferredValue,
   useEffect,
@@ -27,7 +37,9 @@ export type TranslationStoreValue = Omit<
   | 'searchLayoutHoldKeys'
 > & {
   loadState: TranslationStore['load']
+  /** Rows the grid should paint (may briefly include held exiting keys). */
   displayProject: TranslationProject | null
+  /** Live missing keys for the Missing badge (not the filter snapshot). */
   liveMissingKeys: string[]
 }
 
@@ -87,7 +99,11 @@ export function TranslationStoreProvider({ children }: { children: ReactNode }) 
   return children
 }
 
-/** App-facing store hook (deferred search + derived display rows). */
+/**
+ * Prefer this over `useTranslationStoreBase` in components.
+ * Search input stays eager in the store; filtering uses `useDeferredValue`
+ * so typing stays responsive while list motion catches up.
+ */
 export function useTranslationStore(): TranslationStoreValue {
   const store = useTranslationStoreBase()
   const deferredSearchQuery = useDeferredValue(store.searchQuery)
@@ -123,6 +139,8 @@ export function useTranslationStore(): TranslationStoreValue {
     [liveDisplayProject],
   )
 
+  // Search-driven list motion: compare previous visual keys → deferred results.
+  // Collapse holds `searchLayoutHoldKeys` until FLIP ends; expand updates immediately.
   useEffect(() => {
     const prev = prevKeysRef.current
     if (prev === null) {

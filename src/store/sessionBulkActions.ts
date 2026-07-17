@@ -1,3 +1,8 @@
+/**
+ * Pure session reducers for delete / move / rename.
+ * Applies the project change and remaps `KeyLists` in one step so the store
+ * actions stay thin wrappers.
+ */
 import {
   deleteRows as deleteProjectRows,
   moveKeysWithLead,

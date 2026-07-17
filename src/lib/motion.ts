@@ -2,7 +2,6 @@
 export const ROW_HEIGHT = 40
 export const ROW_ENTER_MS = 450
 export const ROW_FLASH_MS = 520
-export const ROW_EXIT_MS = 200
 /** Fade + compact remaining rows when applying the missing filter. */
 export const FILTER_LAYOUT_MS = 180
 /** Toolbar label collapse/expand (keep in sync with `duration-200` on toolbar buttons). */

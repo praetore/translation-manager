@@ -109,6 +109,8 @@ fixtures/          Sample translation files for local testing
 
 **Tech stack** — Electron + Vite (`vite-plugin-electron`), React 19 + TypeScript, TanStack Table + `react-window`, Zustand, Tailwind CSS v4 + shadcn/ui, Motion, i18next, `js-yaml`.
 
+Internal architecture notes for contributors: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`src/store/README.md`](src/store/README.md).
+
 ### Releasing
 
 Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. CI runs **`npm test`** and **`npm run test:e2e`** first; packaging only starts if those pass. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).

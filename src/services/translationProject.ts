@@ -219,6 +219,18 @@ export function renameKey(
  * - other locales: empty while the source locale has a value
  *
  * Fresh rows (just added, still focused) are ignored until leaveFreshKey.
+ *
+ * ## Three "missing" concepts (do not conflate)
+ * | Concept | Source | Used for |
+ * | --- | --- | --- |
+ * | Cell / row stripe | `isMissingAgainstSource` (live) | Highlight in the grid when filter is off |
+ * | Filter snapshot | `missingFilterKeys` in the store | Stable row set while Missing is toggled on |
+ * | Badge count | `collectMissingRowKeys` / `selectLiveMissingKeys` | Missing (N) label; updates as cells change |
+ *
+ * Toggle-on freezes keys via `collectMissingRowKeys` into `missingFilterKeys`.
+ * Editing a cell while filtered does not remove the row until the filter is
+ * turned off and on again. Fresh keys are omitted from both snapshot and badge
+ * until `leaveFreshKey`.
  */
 export function isMissingAgainstSource(
   row: TranslationRow,
@@ -255,6 +267,7 @@ export function rowHasMissingTranslation(
   )
 }
 
+/** Live missing keys (badge + filter toggle-on snapshot). Excludes `freshKeys`. */
 export function collectMissingRowKeys(
   project: TranslationProject,
   freshKeys: readonly string[] = [],

@@ -4,6 +4,7 @@ import type { TranslationAdapter } from './TranslationAdapter'
 /**
  * Lightweight .po parser/serializer (no Node-only deps).
  * Supports msgid / msgstr pairs used by typical software i18n files.
+ * Round-trip drops translator comments / flags; writes a minimal UTF-8 header.
  */
 export class PoAdapter implements TranslationAdapter {
   readonly format = 'po' as const

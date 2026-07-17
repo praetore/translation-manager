@@ -1,6 +1,10 @@
 import type { FlatTranslations } from '@shared/types'
 import type { TranslationAdapter } from './TranslationAdapter'
 
+/**
+ * Nested object ↔ flat map for JSON (and YamlAdapter via re-exports).
+ * Dot segments become object paths on serialize; arrays are leaf strings.
+ */
 function flattenObject(
   value: unknown,
   prefix = '',

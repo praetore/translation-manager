@@ -1,4 +1,11 @@
-/** Plan FLIP transition between two ordered key lists. */
+/**
+ * Pure planner: ordered key list A → B becomes collapse, expand, or none.
+ * Does not touch store state — `motionActions` / `transitionDisplayKeys` apply it.
+ *
+ * - Collapse: subset shrink (hiding keys leave; remaining FLIP upward).
+ * - Expand: keys appear and/or remaining rows shift (includes mixed add+remove
+ *   cases — treated as expand so appearing keys can fade/slide in).
+ */
 export function planKeyListTransition(
   fromKeys: readonly string[],
   toKeys: readonly string[],
@@ -46,47 +53,5 @@ export function planKeyListTransition(
         fromTop: (fromIndex.get(key) ?? 0) * rowHeight,
         toTop: (toIndex.get(key) ?? 0) * rowHeight,
       })),
-  }
-}
-
-/** @deprecated Prefer planKeyListTransition; kept for missing-filter call sites. */
-export function planFilterCollapse(
-  rows: readonly { key: string }[],
-  missingKeys: readonly string[],
-  rowHeight: number,
-) {
-  const fromKeys = rows.map((row) => row.key)
-  const plan = planKeyListTransition(fromKeys, missingKeys, rowHeight)
-  if (plan.type !== 'collapse') {
-    return {
-      hiding: [] as string[],
-      remaining: [] as { key: string; fromTop: number }[],
-      missingKeys: [...missingKeys],
-    }
-  }
-  return {
-    hiding: plan.hiding,
-    remaining: plan.remaining,
-    missingKeys: [...missingKeys],
-  }
-}
-
-/** @deprecated Prefer planKeyListTransition; kept for missing-filter call sites. */
-export function planFilterExpand(
-  rows: readonly { key: string }[],
-  visibleKeys: readonly string[],
-  rowHeight: number,
-) {
-  const toKeys = rows.map((row) => row.key)
-  const plan = planKeyListTransition(visibleKeys, toKeys, rowHeight)
-  if (plan.type !== 'expand') {
-    return {
-      appearing: [] as string[],
-      expanding: [] as { key: string; fromTop: number; toTop: number }[],
-    }
-  }
-  return {
-    appearing: plan.appearing,
-    expanding: plan.expanding,
   }
 }

@@ -1,3 +1,7 @@
+/**
+ * Raw Zustand store. Prefer `useTranslationStore` in UI.
+ * Architecture: `src/store/README.md`. Motion options: `storeApi.ts`.
+ */
 import { create } from 'zustand'
 import { difference } from 'remeda'
 import {
@@ -55,6 +59,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
     getStoreTranslator,
   )
 
+  /** Store wrapper around motion: ownership gate + optional search-hold. */
   const transitionDisplayKeys: TranslationStore['transitionDisplayKeys'] = (
     fromKeys,
     toKeys,

@@ -1,3 +1,10 @@
+/**
+ * Format adapters for locale files. Main only reads/writes bytes; the renderer
+ * (and `buildProjectFromFiles`) parse via this registry.
+ *
+ * Mixed formats in one folder are allowed — each file picks its adapter by
+ * extension. Unsupported files are skipped at scan/build time.
+ */
 import type { TranslationFormat } from '@shared/types'
 import type { TranslationAdapter } from './TranslationAdapter'
 import { JsonAdapter } from './JsonAdapter'

@@ -1,3 +1,19 @@
+/**
+ * Lead-template DSL for Move keys (re-prefix path, keep leaf).
+ *
+ * For key `auth.login.email` → leaf `email`, lead segments `['auth','login']`.
+ *
+ * | Token | Meaning | Example template → result |
+ * | --- | --- | --- |
+ * | `$$` | Full lead path | `app.$$` → `app.auth.login.email` |
+ * | `$1`, `$2`, … | Segment from left (1-based) | `$1.forms` → `auth.forms.email` |
+ * | `$-1`, `$-2`, … | Segment from right | `ui.$-1` → `ui.login.email` |
+ * | `\$` | Literal `$` | `prices.\$` → `prices.$.email` |
+ *
+ * Invalid: `$0`, out-of-range `$n`, bare `$`, or templates that collide within
+ * the selection or with other project keys (`moveKeysWithLead` → null).
+ * UI copy lives in `MoveKeysDialog`; keep this table in sync when tokens change.
+ */
 import type { TranslationProject } from '@/services/translationProject'
 
 /** Sentinel while expanding so literal `$` from `\$` is not re-parsed as a token. */

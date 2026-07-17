@@ -1,3 +1,9 @@
+/**
+ * Load / browse / save via Electron IPC.
+ * On load: clears selection, search, and motion; rebuilds project + baseline.
+ * Save only runs when `project.dirty`; refreshes `baselineRows` on success.
+ * Partial write errors stay dirty and surface a toast (see `WriteFilesResult`).
+ */
 import { toast } from 'sonner'
 import {
   buildProjectFromFiles,

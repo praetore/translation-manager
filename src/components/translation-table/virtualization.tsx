@@ -1,3 +1,13 @@
+/**
+ * Virtualized row renderer for the key or locales pane.
+ *
+ * - `pane` filters which TanStack cells to paint (same row model, two lists).
+ * - When `layoutMotion[key]` is set, `top` + `translateY(shiftY)` replace the
+ *   list's absolute `style.top` for FLIP compact/expand.
+ * - Motion key sets (`enteringKeys`, `exitingKeys`, …) map to CSS classes via
+ *   `rowVariants`; keep both panes on the same `itemData` snapshot.
+ * - `stripeMissingRows` is false while the missing filter is on (snapshot view).
+ */
 import { flexRender, type Row } from '@tanstack/react-table'
 import { type CSSProperties, type FocusEvent } from 'react'
 import { type ListChildComponentProps } from 'react-window'
@@ -18,12 +28,14 @@ export const LOCALE_COLUMN_WIDTH = 260
 
 export type TablePane = 'key' | 'locales'
 
+/** Shared itemData for both panes — keep motion fields identical across lists. */
 export interface VirtualRowData {
   rows: Array<Row<TranslationRow>>
   sourceLocale: string
   pane: TablePane
   paneWidth: number
   locales: string[]
+  /** When false (missing filter on), skip row-level missing stripes. */
   stripeMissingRows: boolean
   freshKeys: ReadonlySet<string>
   selectedKeys: ReadonlySet<string>

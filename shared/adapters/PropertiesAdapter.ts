@@ -1,6 +1,10 @@
 import type { FlatTranslations } from '@shared/types'
 import type { TranslationAdapter } from './TranslationAdapter'
 
+/**
+ * Java `.properties` adapter. Supports `\` line continuations and common
+ * escapes (`\n`, `\t`, `\\`, …). Comment lines (`#` / `!`) are not preserved on serialize.
+ */
 function unescapeProperties(value: string): string {
   return value
     .replace(/\\n/g, '\n')

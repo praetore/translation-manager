@@ -1,3 +1,8 @@
+/**
+ * Preload bridge: expose a narrow FS/UI API on `window.electronAPI`.
+ * Do not add Node APIs here — keep the renderer sandboxed.
+ * Channel list and payloads: `shared/types.ts` (`IPC_CHANNELS`).
+ */
 import { contextBridge, ipcRenderer } from 'electron'
 import {
   IPC_CHANNELS,
@@ -10,9 +15,11 @@ const electronApi = {
   selectDirectory: (): Promise<string | null> =>
     ipcRenderer.invoke(IPC_CHANNELS.SELECT_DIRECTORY),
 
+  /** Non-recursive; only `SUPPORTED_EXTENSIONS`. Mixed formats OK. */
   scanDirectory: (directoryPath: string): Promise<ScanDirectoryResult> =>
     ipcRenderer.invoke(IPC_CHANNELS.SCAN_DIRECTORY, directoryPath),
 
+  /** Writes all requests; result may include per-file errors without throwing. */
   writeFiles: (files: WriteFileRequest[]): Promise<WriteFilesResult> =>
     ipcRenderer.invoke(IPC_CHANNELS.WRITE_FILES, files),
 

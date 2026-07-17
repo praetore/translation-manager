@@ -1,22 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { planFilterCollapse, planFilterExpand, planKeyListTransition } from '@/store/filterLayout'
+import { planKeyListTransition } from '@/store/filterLayout'
 
-const rows = [{ key: 'greeting' }, { key: 'farewell' }, { key: 'keep' }]
+describe('planKeyListTransition', () => {
+  it('returns none when ordered lists match', () => {
+    expect(planKeyListTransition(['a', 'b'], ['a', 'b'], 40)).toEqual({
+      type: 'none',
+    })
+  })
 
-describe('filterLayout', () => {
-  it('plans collapse: hide non-missing, compact remaining', () => {
-    expect(planFilterCollapse(rows, ['farewell', 'keep'], 40)).toEqual({
+  it('plans collapse: hide removed keys, FLIP remaining from prior tops', () => {
+    expect(
+      planKeyListTransition(
+        ['greeting', 'farewell', 'keep'],
+        ['farewell', 'keep'],
+        40,
+      ),
+    ).toEqual({
+      type: 'collapse',
       hiding: ['greeting'],
       remaining: [
         { key: 'farewell', fromTop: 40 },
         { key: 'keep', fromTop: 80 },
       ],
-      missingKeys: ['farewell', 'keep'],
     })
   })
 
-  it('plans expand: fade appearing, FLIP visible rows', () => {
-    expect(planFilterExpand(rows, ['farewell', 'keep'], 40)).toEqual({
+  it('plans expand: fade appearing, FLIP shared rows to new tops', () => {
+    expect(
+      planKeyListTransition(
+        ['farewell', 'keep'],
+        ['greeting', 'farewell', 'keep'],
+        40,
+      ),
+    ).toEqual({
+      type: 'expand',
       appearing: ['greeting'],
       expanding: [
         { key: 'farewell', fromTop: 0, toTop: 40 },
@@ -26,9 +43,7 @@ describe('filterLayout', () => {
   })
 
   it('plans search shrink/grow between key lists', () => {
-    expect(
-      planKeyListTransition(['a', 'b', 'c'], ['a', 'c'], 40),
-    ).toEqual({
+    expect(planKeyListTransition(['a', 'b', 'c'], ['a', 'c'], 40)).toEqual({
       type: 'collapse',
       hiding: ['b'],
       remaining: [
@@ -36,9 +51,7 @@ describe('filterLayout', () => {
         { key: 'c', fromTop: 80 },
       ],
     })
-    expect(
-      planKeyListTransition(['a', 'c'], ['a', 'b', 'c'], 40),
-    ).toEqual({
+    expect(planKeyListTransition(['a', 'c'], ['a', 'b', 'c'], 40)).toEqual({
       type: 'expand',
       appearing: ['b'],
       expanding: [
