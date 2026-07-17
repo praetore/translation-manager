@@ -20,7 +20,6 @@ import {
   VirtualRow,
   type VirtualRowData,
 } from '@/components/translation-table/virtualization'
-import { SelectedKeysProvider } from '@/components/translation-table/selectionContext'
 import { useKeyDragSelection } from '@/hooks/useKeyDragSelection'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 
@@ -246,7 +245,6 @@ function TranslationTableContent() {
   const keyListHeight = Math.max(bodySize.height - scrollbarSize.height, 0)
 
   return (
-    <SelectedKeysProvider selectedKeys={selectedKeySet}>
       <div className="bg-card grid h-full min-h-0 min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border shadow-sm">
         <div className="bg-muted flex min-w-0 border-b">
           <div
@@ -319,6 +317,5 @@ function TranslationTableContent() {
           </div>
         </div>
       </div>
-    </SelectedKeysProvider>
   )
 }

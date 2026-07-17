@@ -2,12 +2,10 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Hint } from '@/components/Hint'
-import { useIsKeySelected } from '@/components/translation-table/selectionContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { SelectionPointerHandler } from '@/hooks/useKeyDragSelection'
 import { useI18n } from '@/i18n/LocaleProvider'
-import { cn } from '@/lib/utils'
 
 interface KeyCellProps {
   keyName: string
@@ -30,7 +28,6 @@ export function KeyCell({
   onAutoEditHandled,
 }: KeyCellProps) {
   const { t } = useI18n()
-  const selected = useIsKeySelected(keyName)
   const [manualEditing, setManualEditing] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const editing = Boolean(autoEdit) || manualEditing
@@ -116,10 +113,7 @@ export function KeyCell({
 
   return (
     <div
-      className={cn(
-        'group/key flex w-full min-w-0 items-center gap-1 rounded-sm',
-        selected && 'ring-2 ring-primary/70 bg-primary/20',
-      )}
+      className="group/key flex w-full min-w-0 items-center gap-1 rounded-sm"
       data-selection-index={rowIndex}
       onPointerDown={(event) => {
         if (event.button !== 0) {
