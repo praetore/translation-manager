@@ -155,7 +155,7 @@ export async function runScreenshotCapture(
     win.setContentSize(1000, 800)
     setTheme('light', true)
     await prepareSession(win, fixturesPath, 'light')
-    await selectKeysForScreenshot(win, 12)
+    await selectKeysForScreenshot(win, 3)
     await captureToFile(win, path.join(outDir, 'main-window-light.png'))
 
     app.exit(0)
