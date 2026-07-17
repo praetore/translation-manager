@@ -290,6 +290,7 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
     },
 
     clearMotion: motion.clearMotion,
+    animateLoadEnter: motion.animateLoadEnter,
 
     browseDirectory: persistence.browseDirectory,
     loadDirectory: persistence.loadDirectory,

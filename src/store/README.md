@@ -22,7 +22,7 @@ disk (Electron IPC)
   → scanDirectory
   → classifyTranslationFiles → filePicker dialog (or error if none valid)
   → confirmOpenFiles → buildProjectFromFiles
-  → store.project + baselineRows
+  → store.project + baselineRows + animateLoadEnter (staggered row cascade)
   → selectDisplayProject(missingFilterKeys, search*)
   → useTranslationStore (deferred query + searchLayoutHoldKeys)
   → displayProject → TranslationTable
@@ -48,5 +48,5 @@ Do not read `searchLayoutHoldKeys` or call `transitionDisplayKeys` from componen
 
 - Motion options: `storeApi.ts`
 - Missing rules: `services/translationProject.ts` (`isMissingAgainstSource`)
-- Dual-pane table: `components/translation-table/TranslationTable.tsx`
+- Virtualized table: `components/translation-table/TranslationTable.tsx`
 - Contributing / tests: repo root `CONTRIBUTING.md`

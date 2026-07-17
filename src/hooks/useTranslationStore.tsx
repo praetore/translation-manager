@@ -32,6 +32,7 @@ export type TranslationStoreValue = Omit<
   | 'baselineRows'
   | 'clearSearch'
   | 'clearMotion'
+  | 'animateLoadEnter'
   | 'removeFromSelection'
   | 'transitionDisplayKeys'
   | 'searchLayoutHoldKeys'
@@ -217,6 +218,7 @@ export function useTranslationStore(): TranslationStoreValue {
     moveSelectedKeys: store.moveSelectedKeys,
     enteringKeys: store.enteringKeys,
     fadeEnteringKeys: store.fadeEnteringKeys,
+    loadEntering: store.loadEntering,
     flashingKeys: store.flashingKeys,
     exitingKeys: store.exitingKeys,
     layoutMotion: store.layoutMotion,

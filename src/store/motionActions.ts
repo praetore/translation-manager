@@ -11,6 +11,7 @@
 import { planKeyListTransition } from '@/store/filterLayout'
 import {
   FILTER_LAYOUT_MS,
+  LOAD_ENTER_MS,
   ROW_ENTER_MS,
   ROW_FLASH_MS,
   ROW_HEIGHT,
@@ -41,6 +42,7 @@ const flashTimers = new Map<string, number>()
 let exitTimer: number | null = null
 let layoutFrameTimer: number | null = null
 let layoutRaf: number | null = null
+let loadEnterTimer: number | null = null
 
 function scheduleKeys(
   set: SetState,
@@ -135,6 +137,19 @@ export function createMotionActions(set: SetState) {
 
   const animateFlash = (keys: readonly string[]) => {
     scheduleKeys(set, 'flashingKeys', keys, flashTimers, ROW_FLASH_MS)
+  }
+
+  /** Staggered soft enter for every row after a folder finishes loading. */
+  const animateLoadEnter = () => {
+    if (loadEnterTimer !== null) {
+      clearTimeout(loadEnterTimer)
+      loadEnterTimer = null
+    }
+    set({ loadEntering: true })
+    loadEnterTimer = setTimeout(() => {
+      loadEnterTimer = null
+      set({ loadEntering: false })
+    }, LOAD_ENTER_MS) as unknown as number
   }
 
   const animateCollapse = (
@@ -246,10 +261,15 @@ export function createMotionActions(set: SetState) {
     enterTimers.clear()
     fadeEnterTimers.clear()
     flashTimers.clear()
+    if (loadEnterTimer !== null) {
+      clearTimeout(loadEnterTimer)
+      loadEnterTimer = null
+    }
     clearExitTimer()
     set({
       enteringKeys: [],
       fadeEnteringKeys: [],
+      loadEntering: false,
       flashingKeys: [],
       exitingKeys: [],
       layoutMotion: null,
@@ -261,6 +281,7 @@ export function createMotionActions(set: SetState) {
   return {
     animateEnter,
     animateFlash,
+    animateLoadEnter,
     animateKeyListTransition,
     clearMotion,
   }

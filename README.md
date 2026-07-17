@@ -108,7 +108,9 @@ fixtures/          Sample translation files for local testing
 
 **Adapters** — each format implements `parse(content) → flat key/value map` and `serialize(map) → file content`. Nested JSON/YAML is flattened with dot notation (e.g. `nav.home`) for the grid, then reconstituted on save.
 
-**Tech stack** — Electron + Vite (`vite-plugin-electron`), React 19 + TypeScript, TanStack Table + `react-window`, Zustand, Tailwind CSS v4 + shadcn/ui, Motion, i18next, `js-yaml`.
+**Grid** — TanStack Table + Virtual. The locale pane owns vertical/horizontal scroll; the key column mirrors vertical position so the horizontal scrollbar never sits under the keys (`TranslationTable.tsx`, `tableScroll.ts`).
+
+**Tech stack** — Electron + Vite (`vite-plugin-electron`), React 19 + TypeScript, TanStack Table + TanStack Virtual, Zustand, Tailwind CSS v4 + shadcn/ui, Motion, i18next, `js-yaml`.
 
 Internal architecture notes for contributors: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`src/store/README.md`](src/store/README.md).
 

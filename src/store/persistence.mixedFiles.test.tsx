@@ -81,6 +81,17 @@ describe('loadDirectory file picker (mixed files)', () => {
       { key: 'greeting', values: { nl: 'Hallo' } },
     ])
     expect(state.project?.dirty).toBe(false)
+    expect(state.loadEntering).toBe(true)
+  })
+
+  it('clears loadEntering after the cascade duration', () => {
+    vi.useFakeTimers()
+    useTranslationStoreBase.getState().animateLoadEnter()
+    expect(useTranslationStoreBase.getState().loadEntering).toBe(true)
+
+    vi.advanceTimersByTime(2000)
+    expect(useTranslationStoreBase.getState().loadEntering).toBe(false)
+    vi.useRealTimers()
   })
 
   it('errors when a mix yields no valid files', async () => {

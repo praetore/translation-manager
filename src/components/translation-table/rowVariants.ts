@@ -12,6 +12,7 @@ export const translationRowVariants = cva('flex border-b', {
       none: '',
       enter: 'animate-row-enter',
       'enter-fade': 'animate-row-enter-fade',
+      'enter-load': 'animate-row-enter-load',
       exit: 'row-exit',
       flash: 'row-flash',
     },
@@ -45,9 +46,13 @@ export function resolveRowMotion(
   exiting: boolean,
   flashing: boolean,
   enterFade = false,
+  enterLoad = false,
 ): NonNullable<TranslationRowVariantProps['motion']> {
   if (exiting) {
     return 'exit'
+  }
+  if (enterLoad) {
+    return 'enter-load'
   }
   if (entering) {
     return enterFade ? 'enter-fade' : 'enter'

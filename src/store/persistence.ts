@@ -15,6 +15,7 @@ import {
   serializeProject,
 } from '@/services/translationProject'
 import type { WriteFilesResult } from '@shared/types'
+import { keysAndLocalesStatus } from '@/store/sessionHelpers'
 import type { TranslateFn } from '@/store/translator'
 import type { LoadState, TranslationState } from '@/store/types'
 
@@ -51,6 +52,7 @@ type PersistenceHost = TranslationState & {
   clearSelection: () => void
   clearSearch: () => void
   clearMotion: () => void
+  animateLoadEnter: () => void
 }
 
 type StoreApi = {
@@ -72,13 +74,6 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
     api.getState().clearSelection()
     api.getState().clearSearch()
     api.getState().clearMotion()
-    const status = {
-      key: 'status.keysAndLocales',
-      params: {
-        keys: nextProject.rows.length,
-        locales: nextProject.columns.length,
-      },
-    }
     api.setState({
       project: nextProject,
       baselineRows: cloneTranslationRows(nextProject.rows),
@@ -87,8 +82,16 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
       freshKeys: [],
       pendingKeyEdit: null,
       filePicker: null,
-      load: { loading: false, saving: false, error: null, status },
+      load: {
+        loading: false,
+        saving: false,
+        error: null,
+        status: keysAndLocalesStatus(nextProject),
+      },
     })
+    if (nextProject.rows.length > 0) {
+      api.getState().animateLoadEnter()
+    }
   }
 
   const loadDirectory = async (pathOverride?: string) => {
@@ -220,17 +223,15 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
       }
 
       toast.success(t('status.saved', { count: result.written.length }))
-      const status = {
-        key: 'status.keysAndLocales',
-        params: {
-          keys: snapshot.rows.length,
-          locales: snapshot.columns.length,
-        },
-      }
       api.setState({
         project: { ...snapshot, dirty: false },
         baselineRows: cloneTranslationRows(snapshot.rows),
-        load: { loading: false, saving: false, error: null, status },
+        load: {
+          loading: false,
+          saving: false,
+          error: null,
+          status: keysAndLocalesStatus(snapshot),
+        },
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)

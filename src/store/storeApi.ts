@@ -14,6 +14,8 @@ import type { TranslationState } from '@/store/types'
  * | Add row | `slideEnterKeys` |
  * | Delete / delete-selected | `onDone` (commit after exit) |
  *
+ * Folder load uses {@link TranslationStore.animateLoadEnter} (not this helper).
+ *
  * ## Ownership
  * - Missing filter owns the FLIP layout channel while `filterLayoutMode !== null`.
  *   Non-filter callers (`trackFilterMode` unset/false) return `'none'` and must
@@ -65,6 +67,8 @@ export type TranslationStore = TranslationState & {
   toggleMissingFilter: () => void
   /** Cancel timers and clear all motion + search-hold fields. */
   clearMotion: () => void
+  /** Soft staggered enter after a folder project is applied to the grid. */
+  animateLoadEnter: () => void
   browseDirectory: () => Promise<void>
   loadDirectory: (pathOverride?: string) => Promise<void>
   /** Apply selected paths from `filePicker` and close the dialog. */

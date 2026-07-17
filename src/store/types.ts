@@ -56,6 +56,7 @@ export interface RowLayoutMotion {
  * Channels (do not mix roles):
  * - `enteringKeys` — slide-in (new row)
  * - `fadeEnteringKeys` — fade-in reappear (filter/search expand)
+ * - `loadEntering` — staggered soft enter for all rows after folder load
  * - `exitingKeys` + `layoutMotion` — exit/FLIP compact (collapse)
  * - `flashingKeys` — brief highlight after move (independent of FLIP)
  * - `filterLayoutMode` — missing-filter owns the layout channel while non-null
@@ -64,6 +65,8 @@ export interface RowLayoutMotion {
 export interface MotionState {
   enteringKeys: string[]
   fadeEnteringKeys: string[]
+  /** True while the grid plays the post-load cascade (`animateLoadEnter`). */
+  loadEntering: boolean
   flashingKeys: string[]
   exitingKeys: string[]
   layoutMotion: Record<string, RowLayoutMotion> | null
@@ -108,6 +111,7 @@ export function createInitialTranslationState(directoryPath: string): Translatio
     filePicker: null,
     enteringKeys: [],
     fadeEnteringKeys: [],
+    loadEntering: false,
     flashingKeys: [],
     exitingKeys: [],
     layoutMotion: null,

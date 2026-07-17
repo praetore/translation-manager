@@ -1,23 +1,22 @@
 /**
- * Virtualized row renderer for the key or locales pane.
+ * Virtualized translation row panes (TanStack Virtual).
  *
- * - `pane` filters which TanStack cells to paint (same row model, two lists).
- * - When `layoutMotion[key]` is set, `top` + `translateY(shiftY)` replace the
- *   list's absolute `style.top` for FLIP compact/expand.
- * - Motion key sets (`enteringKeys`, `exitingKeys`, …) map to CSS classes via
- *   `rowVariants`; keep both panes on the same `itemData` snapshot.
- * - `stripeMissingRows` is false while the missing filter is on (snapshot view).
+ * Locale pane owns overflow (x+y). Key pane is overflow-hidden and mirrors the
+ * same virtual items / `start` positions — so the horizontal scrollbar never
+ * sits under the key column.
+ *
+ * When `layoutMotion[key]` is set, `top` + `translateY(shiftY)` override
+ * virtualizer `start` for FLIP. Motion sets map to `rowVariants`.
  */
 import { flexRender, type Row } from '@tanstack/react-table'
-import { type CSSProperties, type FocusEvent } from 'react'
-import { type ListChildComponentProps } from 'react-window'
+import { type FocusEvent } from 'react'
 import type { TranslationRow } from '@shared/types'
 import {
   resolveRowMotion,
   resolveRowTone,
   translationRowVariants,
 } from '@/components/translation-table/rowVariants'
-import { ROW_HEIGHT } from '@/lib/motion'
+import { ROW_HEIGHT, LOAD_ENTER_STAGGER_MAX, LOAD_ENTER_STAGGER_MS } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { isMissingAgainstSource } from '@/services/translationProject'
 import type { RowLayoutMotion } from '@/store/types'
@@ -25,10 +24,10 @@ import type { RowLayoutMotion } from '@/store/types'
 export { ROW_HEIGHT }
 export const KEY_COLUMN_WIDTH = 280
 export const LOCALE_COLUMN_WIDTH = 260
+export const TABLE_HEADER_HEIGHT = 52
 
 export type TablePane = 'key' | 'locales'
 
-/** Shared itemData for both panes — keep motion fields identical across lists. */
 export interface VirtualRowData {
   rows: Array<Row<TranslationRow>>
   sourceLocale: string
@@ -41,6 +40,8 @@ export interface VirtualRowData {
   selectedKeys: ReadonlySet<string>
   enteringKeys: ReadonlySet<string>
   fadeEnteringKeys: ReadonlySet<string>
+  /** Soft cascade after folder load — all rows, staggered by index. */
+  loadEntering: boolean
   flashingKeys: ReadonlySet<string>
   exitingKeys: ReadonlySet<string>
   layoutMotion: Record<string, RowLayoutMotion> | null
@@ -48,18 +49,14 @@ export interface VirtualRowData {
   onLeaveFreshKey: (key: string) => void
 }
 
-function readTop(style: CSSProperties): number {
-  if (typeof style.top === 'number') {
-    return style.top
-  }
-  if (typeof style.top === 'string') {
-    return Number.parseFloat(style.top) || 0
-  }
-  return 0
+export interface VirtualRowProps {
+  index: number
+  start: number
+  data: VirtualRowData
 }
 
 /** Horizontally scroll the nearest overflow parent so `cell` is fully in view. */
-function ensureCellFullyVisibleHorizontally(cell: HTMLElement): void {
+export function ensureCellFullyVisibleHorizontally(cell: HTMLElement): void {
   let scroller: HTMLElement | null = cell.parentElement
   while (scroller) {
     const { overflowX } = getComputedStyle(scroller)
@@ -75,8 +72,6 @@ function ensureCellFullyVisibleHorizontally(cell: HTMLElement): void {
     return
   }
 
-  // Use the content viewport (clientWidth), not the border box — otherwise the
-  // vertical scrollbar makes the rightmost column look "in view" when it isn't.
   const scrollerRect = scroller.getBoundingClientRect()
   const borderLeft = Number.parseFloat(getComputedStyle(scroller).borderLeftWidth) || 0
   const visibleLeft = scrollerRect.left + borderLeft
@@ -97,7 +92,7 @@ function ensureCellFullyVisibleHorizontally(cell: HTMLElement): void {
   scroller.scrollLeft = Math.min(maxScroll, Math.max(0, scroller.scrollLeft + delta))
 }
 
-export function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowData>) {
+export function VirtualRow({ index, start, data }: VirtualRowProps) {
   const row = data.rows[index]
   if (!row) {
     return null
@@ -127,8 +122,14 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
 
   const rowSelected = data.selectedKeys.has(row.original.key)
   const layout = data.layoutMotion?.[row.original.key]
-  const top = layout?.top ?? readTop(style)
+  const top = layout?.top ?? start
   const fadeEntering = data.fadeEnteringKeys.has(row.original.key)
+  const loadEntering = data.loadEntering
+  const slideEntering = data.enteringKeys.has(row.original.key)
+  const isEntering = slideEntering || fadeEntering || loadEntering
+  const staggerMs = loadEntering
+    ? Math.min(index, LOAD_ENTER_STAGGER_MAX) * LOAD_ENTER_STAGGER_MS
+    : 0
   const cells = row.getVisibleCells().filter((cell) =>
     data.pane === 'key' ? cell.column.id === 'key' : cell.column.id !== 'key',
   )
@@ -139,10 +140,11 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
         translationRowVariants({
           tone: resolveRowTone(rowMissing, rowSelected),
           motion: resolveRowMotion(
-            data.enteringKeys.has(row.original.key) || fadeEntering,
+            isEntering,
             data.exitingKeys.has(row.original.key),
             data.flashingKeys.has(row.original.key),
             fadeEntering,
+            loadEntering,
           ),
         }),
         layout && layout.animate && 'row-layout',
@@ -152,10 +154,11 @@ export function VirtualRow({ index, style, data }: ListChildComponentProps<Virtu
         position: 'absolute',
         left: 0,
         top,
-        height: style.height,
+        height: ROW_HEIGHT,
         width: data.paneWidth,
         minWidth: data.paneWidth,
         transform: layout ? `translateY(${layout.shiftY}px)` : undefined,
+        animationDelay: staggerMs > 0 ? `${staggerMs}ms` : undefined,
       }}
       role="row"
       aria-selected={rowSelected}

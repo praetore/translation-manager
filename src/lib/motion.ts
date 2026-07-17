@@ -4,6 +4,14 @@ export const ROW_ENTER_MS = 450
 export const ROW_FLASH_MS = 520
 /** Fade + compact remaining rows when applying the missing filter. */
 export const FILTER_LAYOUT_MS = 180
+/** Soft rise+fade when a folder project finishes loading into the grid. */
+export const LOAD_ENTER_BASE_MS = 380
+/** Per-row delay for the load cascade (capped by {@link LOAD_ENTER_STAGGER_MAX}). */
+export const LOAD_ENTER_STAGGER_MS = 18
+export const LOAD_ENTER_STAGGER_MAX = 22
+/** Total time `loadEntering` stays true (base anim + max stagger). */
+export const LOAD_ENTER_MS =
+  LOAD_ENTER_BASE_MS + LOAD_ENTER_STAGGER_MAX * LOAD_ENTER_STAGGER_MS
 /** Toolbar label collapse/expand (keep in sync with `duration-200` on toolbar buttons). */
 export const TOOLBAR_COMPACT_MS = 200
 

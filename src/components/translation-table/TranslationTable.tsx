@@ -1,37 +1,25 @@
 /**
- * Dual-pane virtualized translation grid.
+ * Virtualized translation grid (TanStack Virtual).
  *
- * Why two `react-window` lists:
- * - Key column stays fixed-width and vertically synced.
- * - Locale pane scrolls horizontally (many locales) and vertically.
- * Locale outer scroll is the source of truth; `useSyncedPaneScroll` drives
- * both lists together (wheel capture) so the key pane never drifts.
+ * Locale pane owns overflow (x+y). Key pane is overflow-hidden and mirrors
+ * vertical position via imperative `translateY` (same-frame as scroll), so the
+ * horizontal scrollbar never sits under the key column and panes stay locked.
  *
  * Motion: `layoutMotion` overrides row `top` / `translateY` during FLIP.
- * `VirtualRowData` carries enter/exit/flash sets so both panes share one paint.
  * Prefer `displayProject` from `useTranslationStore` (includes hold keys).
  */
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { FixedSizeList as List, type FixedSizeList } from 'react-window'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   flexRender,
   useTranslationColumns,
   useTranslationTableModel,
 } from '@/components/translation-table/columns'
-import {
-  createInner,
-  KeyOuter,
-  useSyncedPaneScroll,
-} from '@/components/translation-table/tableScroll'
+import { useLocalePaneScrollSync } from '@/components/translation-table/tableScroll'
 import {
   KEY_COLUMN_WIDTH,
   ROW_HEIGHT,
+  TABLE_HEADER_HEIGHT,
   VirtualRow,
   type VirtualRowData,
 } from '@/components/translation-table/virtualization'
@@ -61,6 +49,7 @@ function TranslationTableContent() {
     selectKeys,
     enteringKeys,
     fadeEnteringKeys,
+    loadEntering,
     flashingKeys,
     exitingKeys,
     layoutMotion,
@@ -69,15 +58,10 @@ function TranslationTableContent() {
   const project = displayProject!
 
   const bodyRef = useRef<HTMLDivElement>(null)
-  const localePaneRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
-  const keyOuterRef = useRef<HTMLDivElement>(null)
-  const localeOuterRef = useRef<HTMLDivElement>(null)
-  const keyListRef = useRef<FixedSizeList>(null)
-  const localeListRef = useRef<FixedSizeList>(null)
-  const [bodySize, setBodySize] = useState({ width: 800, height: 480 })
-  const [localeWidth, setLocaleWidth] = useState(520)
-  const [scrollbarSize, setScrollbarSize] = useState({ width: 0, height: 0 })
+  const keyInnerRef = useRef<HTMLDivElement>(null)
+  const localePaneRef = useRef<HTMLDivElement>(null)
+  const [keyPaneHeight, setKeyPaneHeight] = useState(480)
 
   const freshKeySet = useMemo(() => new Set(freshKeys), [freshKeys])
   const selectedKeySet = useMemo(() => new Set(selectedKeys), [selectedKeys])
@@ -91,26 +75,6 @@ function TranslationTableContent() {
     selectKeys,
     selectedKeys,
   )
-
-  useLayoutEffect(() => {
-    const body = bodyRef.current
-    const localePane = localePaneRef.current
-    if (!body || !localePane) {
-      return
-    }
-    const measure = (): void => {
-      setBodySize({
-        width: Math.max(body.clientWidth, 200),
-        height: Math.max(body.clientHeight, 200),
-      })
-      setLocaleWidth(Math.max(localePane.clientWidth, 200))
-    }
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(body)
-    observer.observe(localePane)
-    return () => observer.disconnect()
-  }, [])
 
   const columns = useTranslationColumns({
     project,
@@ -130,19 +94,40 @@ function TranslationTableContent() {
     .filter((column) => column.id !== 'key')
     .reduce((sum, column) => sum + column.getSize(), 0)
 
-  useSyncedPaneScroll({
-    bodyRef,
-    headerRef,
-    keyOuterRef,
-    localeOuterRef,
-    keyListRef,
-    localeListRef,
-    setScrollbarSize,
-    deps: [rows.length, bodySize.height, localeWidth, localesWidth],
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => localePaneRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 10,
   })
 
-  const KeyInner = useMemo(() => createInner(KEY_COLUMN_WIDTH), [])
-  const LocaleInner = useMemo(() => createInner(localesWidth), [localesWidth])
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+  // Keep in sync with imperative updates in `useLocalePaneScrollSync` so React
+  // re-renders (virtualizer) do not wipe the key-pane transform.
+  const scrollTop = localePaneRef.current?.scrollTop ?? 0
+
+  useLayoutEffect(() => {
+    const locale = localePaneRef.current
+    if (!locale) {
+      return
+    }
+    const measure = (): void => {
+      setKeyPaneHeight(Math.max(locale.clientHeight, 0))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(locale)
+    return () => observer.disconnect()
+  }, [rows.length, localesWidth])
+
+  useLocalePaneScrollSync({
+    bodyRef,
+    headerRef,
+    keyInnerRef,
+    localePaneRef,
+    deps: [rows.length, localesWidth, totalSize],
+  })
 
   const sharedData = useMemo(
     () => ({
@@ -154,6 +139,7 @@ function TranslationTableContent() {
       selectedKeys: selectedKeySet,
       enteringKeys: enteringKeySet,
       fadeEnteringKeys: fadeEnteringKeySet,
+      loadEntering,
       flashingKeys: flashingKeySet,
       exitingKeys: exitingKeySet,
       layoutMotion,
@@ -168,6 +154,7 @@ function TranslationTableContent() {
       selectedKeySet,
       enteringKeySet,
       fadeEnteringKeySet,
+      loadEntering,
       flashingKeySet,
       exitingKeySet,
       layoutMotion,
@@ -185,91 +172,98 @@ function TranslationTableContent() {
     [sharedData, localesWidth],
   )
 
-  const itemKey = useCallback(
-    (index: number) => rows[index]?.id ?? String(index),
-    [rows],
-  )
-
   const localeHeaders = table
     .getHeaderGroups()
     .flatMap((group) => group.headers.filter((header) => header.id !== 'key'))
 
-  const keyListHeight = Math.max(bodySize.height - scrollbarSize.height, 0)
-
   return (
-      <div className="bg-card grid h-full min-h-0 min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border shadow-sm">
-        <div className="bg-muted flex min-w-0 border-b">
+    <div
+      className="bg-card grid h-full min-h-0 min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border shadow-sm"
+      role="table"
+    >
+      <div
+        className="bg-muted flex min-w-0 border-b"
+        style={{ height: TABLE_HEADER_HEIGHT }}
+      >
+        <div
+          className="flex h-full shrink-0 items-center border-r px-2.5 text-xs font-semibold"
+          style={{ width: KEY_COLUMN_WIDTH }}
+          role="columnheader"
+        >
+          Key
+        </div>
+        <div className="h-full min-w-0 flex-1 overflow-hidden" ref={headerRef}>
           <div
-            className="flex min-h-[52px] shrink-0 items-center border-r px-2.5 text-xs font-semibold"
-            style={{ width: KEY_COLUMN_WIDTH }}
-            role="columnheader"
+            className="flex h-full"
+            style={{ width: localesWidth, minWidth: localesWidth }}
+            role="row"
           >
-            Key
+            {localeHeaders.map((header) => (
+              <div
+                key={header.id}
+                className="flex h-full min-w-0 shrink-0 items-center border-r px-2.5 text-xs font-semibold"
+                style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
+                role="columnheader"
+              >
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(header.column.columnDef.header, header.getContext())}
+              </div>
+            ))}
           </div>
-          <div className="min-w-0 flex-1 overflow-hidden" ref={headerRef}>
+        </div>
+      </div>
+
+      <div ref={bodyRef} className="flex min-h-0 min-w-0 overflow-hidden">
+        <div
+          className="bg-card flex shrink-0 flex-col border-r"
+          style={{ width: KEY_COLUMN_WIDTH }}
+        >
+          <div className="overflow-hidden" style={{ height: keyPaneHeight }}>
             <div
-              className="flex"
+              ref={keyInnerRef}
+              className="relative will-change-transform"
               style={{
-                width: localesWidth,
-                minWidth: localesWidth,
-                paddingRight: scrollbarSize.width,
-                boxSizing: 'content-box',
+                height: totalSize,
+                width: KEY_COLUMN_WIDTH,
+                transform: `translateY(${-scrollTop}px)`,
               }}
-              role="row"
             >
-              {localeHeaders.map((header) => (
-                <div
-                  key={header.id}
-                  className="flex min-h-[52px] min-w-0 items-center border-r px-2.5 text-xs font-semibold"
-                  style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
-                  role="columnheader"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </div>
+              {virtualRows.map((virtualRow) => (
+                <VirtualRow
+                  key={`key-${rows[virtualRow.index]?.id ?? virtualRow.key}`}
+                  index={virtualRow.index}
+                  start={virtualRow.start}
+                  data={keyData}
+                />
               ))}
             </div>
           </div>
         </div>
 
-        <div className="flex min-h-0 min-w-0 overflow-hidden" ref={bodyRef}>
+        <div
+          ref={localePaneRef}
+          className="min-h-0 min-w-0 flex-1 overflow-auto"
+        >
           <div
-            className="bg-card flex h-full min-h-0 shrink-0 flex-col border-r"
-            style={{ width: KEY_COLUMN_WIDTH }}
+            className="relative"
+            style={{
+              height: totalSize,
+              width: localesWidth,
+              minWidth: localesWidth,
+            }}
           >
-            <List
-              ref={keyListRef}
-              outerRef={keyOuterRef}
-              outerElementType={KeyOuter}
-              height={keyListHeight}
-              width={KEY_COLUMN_WIDTH}
-              itemCount={rows.length}
-              itemSize={ROW_HEIGHT}
-              itemData={keyData}
-              itemKey={itemKey}
-              innerElementType={KeyInner}
-            >
-              {VirtualRow}
-            </List>
-          </div>
-
-          <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden" ref={localePaneRef}>
-            <List
-              ref={localeListRef}
-              outerRef={localeOuterRef}
-              height={bodySize.height}
-              width={localeWidth}
-              itemCount={rows.length}
-              itemSize={ROW_HEIGHT}
-              itemData={localeData}
-              itemKey={itemKey}
-              innerElementType={LocaleInner}
-            >
-              {VirtualRow}
-            </List>
+            {virtualRows.map((virtualRow) => (
+              <VirtualRow
+                key={`loc-${rows[virtualRow.index]?.id ?? virtualRow.key}`}
+                index={virtualRow.index}
+                start={virtualRow.start}
+                data={localeData}
+              />
+            ))}
           </div>
         </div>
       </div>
+    </div>
   )
 }

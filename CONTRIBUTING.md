@@ -50,7 +50,8 @@ npm run screenshots         # writes docs/ for README
 | Store layers | `src/store/README.md` |
 | Motion contract | `src/store/storeApi.ts` |
 | Missing-filter rules | `src/services/translationProject.ts` |
-| Dual-pane grid | `src/components/translation-table/TranslationTable.tsx` |
+| Virtualized grid | `src/components/translation-table/TranslationTable.tsx` |
+| Pane scroll sync | `src/components/translation-table/tableScroll.ts` |
 | Format adapters | `shared/adapters/TranslationAdapter.ts` |
 | IPC surface | `shared/types.ts` (`IPC_CHANNELS`), `electron/preload.ts` |
 | Move-key DSL | `src/services/keyPaths.ts` |

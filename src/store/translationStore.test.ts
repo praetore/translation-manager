@@ -78,6 +78,10 @@ describe('translationStore', () => {
     expect(state.missingFilterKeys).toBeNull()
     expect(state.project?.dirty).toBe(true)
     expect(state.enteringKeys).toContain('new.key')
+    expect(state.load.status).toEqual({
+      key: 'status.keysAndLocales',
+      params: { keys: 3, locales: 2 },
+    })
   })
 
   it('clears dirty after adding then deleting the same row', () => {
@@ -95,6 +99,10 @@ describe('translationStore', () => {
     ])
     expect(state.project?.dirty).toBe(false)
     expect(state.freshKeys).toEqual([])
+    expect(state.load.status).toEqual({
+      key: 'status.keysAndLocales',
+      params: { keys: 2, locales: 2 },
+    })
   })
 
   it('keeps fresh keys out of live missing until leaveFreshKey', () => {
