@@ -104,18 +104,23 @@ export function SearchControls() {
             'bg-background transition-[width,padding,gap] duration-200 ease-out',
             compact
               ? 'w-auto gap-1 px-2 [&_[data-slot=select-value]]:pointer-events-none [&_[data-slot=select-value]]:absolute [&_[data-slot=select-value]]:size-0 [&_[data-slot=select-value]]:overflow-hidden'
-              : 'w-[5.75rem]',
+              : 'w-[7.25rem]',
           )}
         >
-          {compact && <ScopeIcon aria-hidden />}
+          {/* Compact hides SelectValue; show icon here. Wide mode uses the item icon via SelectValue. */}
+          {compact ? <ScopeIcon aria-hidden /> : null}
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="end" position="popper" className="w-max min-w-32">
-          {SCOPES.map((scope) => (
-            <SelectItem key={scope} value={scope}>
-              {t(`toolbar.searchScope.${scope}`)}
-            </SelectItem>
-          ))}
+          {SCOPES.map((scope) => {
+            const ItemIcon = SCOPE_ICONS[scope]
+            return (
+              <SelectItem key={scope} value={scope}>
+                <ItemIcon aria-hidden />
+                {t(`toolbar.searchScope.${scope}`)}
+              </SelectItem>
+            )
+          })}
         </SelectContent>
       </Select>
     </ButtonGroup>

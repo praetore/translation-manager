@@ -22,6 +22,21 @@ describe('SearchControls', () => {
     )
   })
 
+  it('shows the scope icon with the label when not compact', () => {
+    loadSampleProject()
+    renderWithProviders(<SearchControls />, { compact: false })
+    const trigger = screen.getByRole('combobox', { name: /Search in/i })
+    expect(trigger.querySelector('svg')).toBeTruthy()
+    expect(trigger).toHaveTextContent('All')
+  })
+
+  it('shows the scope icon when compact', () => {
+    loadSampleProject()
+    renderWithProviders(<SearchControls />, { compact: true })
+    const trigger = screen.getByRole('combobox', { name: /Search in/i })
+    expect(trigger.querySelector('svg')).toBeTruthy()
+  })
+
   it('updates search scope from the select', async () => {
     const user = userEvent.setup()
     loadSampleProject()
