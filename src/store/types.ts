@@ -1,4 +1,5 @@
 import type { TranslationProject } from '@/services/translationProject'
+import type { FilePickerState } from '@/services/classifyTranslationFiles'
 import type { TranslationRow } from '@shared/types'
 import type { SearchScope } from '@/store/searchFilter'
 
@@ -79,6 +80,8 @@ export interface TranslationState extends SessionState, MotionState {
    * out / FLIP. Used by search and missing-filter collapse. Null = live list.
    */
   searchLayoutHoldKeys: string[] | null
+  /** Pending folder open: choose which scanned files to load. Null = closed. */
+  filePicker: FilePickerState | null
 }
 
 export const initialLoadState: LoadState = {
@@ -102,6 +105,7 @@ export function createInitialTranslationState(directoryPath: string): Translatio
     searchScope: 'all',
     searchRegex: false,
     searchLayoutHoldKeys: null,
+    filePicker: null,
     enteringKeys: [],
     fadeEnteringKeys: [],
     flashingKeys: [],

@@ -293,6 +293,8 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
 
     browseDirectory: persistence.browseDirectory,
     loadDirectory: persistence.loadDirectory,
+    confirmOpenFiles: persistence.confirmOpenFiles,
+    cancelOpenFiles: persistence.cancelOpenFiles,
     openProject: persistence.openProject,
     saveProject: persistence.saveProject,
   }

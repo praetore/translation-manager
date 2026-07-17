@@ -19,7 +19,9 @@ Zustand holds the editor session; React derives what the grid shows.
 
 ```
 disk (Electron IPC)
-  → buildProjectFromFiles
+  → scanDirectory
+  → classifyTranslationFiles → filePicker dialog (or error if none valid)
+  → confirmOpenFiles → buildProjectFromFiles
   → store.project + baselineRows
   → selectDisplayProject(missingFilterKeys, search*)
   → useTranslationStore (deferred query + searchLayoutHoldKeys)

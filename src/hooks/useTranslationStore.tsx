@@ -229,6 +229,8 @@ export function useTranslationStore(): TranslationStoreValue {
     setSearchRegex: store.setSearchRegex,
     browseDirectory: store.browseDirectory,
     loadDirectory: store.loadDirectory,
+    confirmOpenFiles: store.confirmOpenFiles,
+    cancelOpenFiles: store.cancelOpenFiles,
     openProject: store.openProject,
     editCell: store.editCell,
     addRow: store.addRow,
@@ -238,5 +240,6 @@ export function useTranslationStore(): TranslationStoreValue {
     clearPendingKeyEdit: store.clearPendingKeyEdit,
     toggleMissingFilter: store.toggleMissingFilter,
     saveProject: store.saveProject,
+    filePicker: store.filePicker,
   }
 }

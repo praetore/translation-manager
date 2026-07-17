@@ -6,7 +6,12 @@ import type {
   WriteFileRequest,
 } from '@shared/types'
 import { adapterRegistry } from '@shared/adapters'
-import { detectFormat, detectLocale, pickSourceLocale } from '@shared/locale'
+import {
+  detectFormat,
+  detectLocale,
+  isValidLocaleTag,
+  pickSourceLocale,
+} from '@shared/locale'
 
 export interface TranslationProject {
   directoryPath: string
@@ -38,10 +43,15 @@ export function buildProjectFromFiles(
       continue
     }
 
+    const locale = detectLocale(file.fileName)
+    if (!isValidLocaleTag(locale)) {
+      continue
+    }
+
     const data = adapter.parse(file.content)
     parsed.push({
       column: {
-        locale: detectLocale(file.fileName),
+        locale,
         fileName: file.fileName,
         filePath: file.filePath,
         format,

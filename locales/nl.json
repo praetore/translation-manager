@@ -63,6 +63,19 @@
     "cancel": "Annuleren",
     "delete": "Verwijderen"
   },
+  "openFiles": {
+    "title": "Kies vertaalbestanden",
+    "description": "Selecteer welke locale-bestanden je wilt laden uit {path}.",
+    "validHeading": "Klaar om te laden ({count})",
+    "skippedHeading": "Overgeslagen ({count})",
+    "selectAll": "Alles selecteren",
+    "deselectAll": "Alles deselecteren",
+    "confirm": "Openen ({count})",
+    "skipReason": {
+      "invalidLocale": "Bestandsnaam is geen geldige taalcode",
+      "parseError": "Bestand kon niet worden gelezen"
+    }
+  },
   "empty": {
     "title": "Geen project geladen",
     "description": "Kies via {menu} een lokale map met vertaalbestanden ({formats}) om te beginnen. Alles blijft op dit apparaat."
@@ -115,6 +128,7 @@
     "enterPath": "Voer een mappad in",
     "saveFailed": "Opslaan mislukt: {message}",
     "noSupportedFiles": "Geen ondersteunde vertaalbestanden gevonden in deze map",
-    "noValidFiles": "Geen geldige vertaalbestanden kunnen worden gelezen"
+    "noValidFiles": "Geen geldige vertaalbestanden gevonden in deze map",
+    "selectAtLeastOneFile": "Selecteer minstens één vertaalbestand"
   }
 }

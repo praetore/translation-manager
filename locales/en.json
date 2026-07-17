@@ -63,6 +63,19 @@
     "cancel": "Cancel",
     "delete": "Delete"
   },
+  "openFiles": {
+    "title": "Choose translation files",
+    "description": "Select which locale files to load from {path}.",
+    "validHeading": "Ready to load ({count})",
+    "skippedHeading": "Skipped ({count})",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "confirm": "Open ({count})",
+    "skipReason": {
+      "invalidLocale": "Filename is not a valid language code",
+      "parseError": "File could not be parsed"
+    }
+  },
   "empty": {
     "title": "No project loaded",
     "description": "Choose a local folder with translation files via {menu} ({formats}) to get started. Everything stays on this device."
@@ -115,6 +128,7 @@
     "enterPath": "Enter a folder path",
     "saveFailed": "Save failed: {message}",
     "noSupportedFiles": "No supported translation files found in this folder",
-    "noValidFiles": "No valid translation files could be read"
+    "noValidFiles": "No valid translation files found in this folder",
+    "selectAtLeastOneFile": "Select at least one translation file"
   }
 }

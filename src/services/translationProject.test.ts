@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { TranslationProject } from '@/services/translationProject'
 import {
   addRow,
+  buildProjectFromFiles,
   cloneTranslationRows,
   collectMissingRowKeys,
   deleteRow,
@@ -135,5 +136,34 @@ describe('rowHasMissingTranslation', () => {
         'en',
       ),
     ).toBe(false)
+  })
+
+  it('builds a project from a mix, keeping only valid locale files', () => {
+    const project = buildProjectFromFiles('/locales', [
+      {
+        filePath: '/locales/en.json',
+        fileName: 'en.json',
+        content: '{"hi":"Hello"}',
+      },
+      {
+        filePath: '/locales/nl.json',
+        fileName: 'nl.json',
+        content: '{"hi":"Hallo"}',
+      },
+      {
+        filePath: '/locales/zz.json',
+        fileName: 'zz.json',
+        content: '{"hi":"Nope"}',
+      },
+      {
+        filePath: '/locales/package.json',
+        fileName: 'package.json',
+        content: '{"name":"app"}',
+      },
+    ])
+    expect(project.columns.map((column) => column.locale)).toEqual(['en', 'nl'])
+    expect(project.rows).toEqual([
+      { key: 'hi', values: { en: 'Hello', nl: 'Hallo' } },
+    ])
   })
 })

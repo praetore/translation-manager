@@ -17,6 +17,8 @@ import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import type { TranslationProject } from '@/services/translationProject'
 import { isMissingAgainstSource } from '@/services/translationProject'
+import { LocaleFlag } from '@/components/LocaleFlag'
+import { localeDisplayName } from '@shared/locale'
 
 export function useTranslationColumns({
   project,
@@ -37,7 +39,7 @@ export function useTranslationColumns({
   onClearPendingKeyEdit: () => void
   onSelectionPointerDown: SelectionPointerHandler
 }): ColumnDef<TranslationRow>[] {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   return useMemo(() => {
     const keyColumn: ColumnDef<TranslationRow> = {
@@ -64,14 +66,25 @@ export function useTranslationColumns({
     const localeColumns: ColumnDef<TranslationRow>[] = project.columns.map((column) => ({
       id: column.locale,
       accessorFn: (row) => row.values[column.locale] ?? '',
-      header: () => (
-        <div className="grid gap-0.5">
-          <span className="tracking-wide uppercase">{column.locale}</span>
-          <span className="text-muted-foreground font-mono text-[0.72rem] font-normal">
-            {column.fileName}
-          </span>
-        </div>
-      ),
+      header: () => {
+        const languageName = localeDisplayName(column.locale, locale)
+        return (
+          <div className="grid gap-0.5">
+            <span className="flex items-center gap-1.5">
+              <LocaleFlag locale={column.locale} />
+              <span className="tracking-wide uppercase">{column.locale}</span>
+              {languageName ? (
+                <span className="text-muted-foreground font-normal normal-case">
+                  · {languageName}
+                </span>
+              ) : null}
+            </span>
+            <span className="text-muted-foreground font-mono text-[0.72rem] font-normal">
+              {column.fileName}
+            </span>
+          </div>
+        )
+      },
       size: LOCALE_COLUMN_WIDTH,
       cell: (info) => {
         const row = info.row.original
@@ -101,6 +114,7 @@ export function useTranslationColumns({
     return [keyColumn, ...localeColumns]
   }, [
     t,
+    locale,
     project.columns,
     project.sourceLocale,
     onEdit,

@@ -12,6 +12,10 @@ declare global {
         selectedKeys: string[]
         selectKeys: (keys: string[]) => void
         load?: { loading: boolean }
+        filePicker?: {
+          candidates: Array<{ filePath: string }>
+        } | null
+        confirmOpenFiles: (selectedPaths: readonly string[]) => void
       }
     }
   }

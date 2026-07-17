@@ -40,6 +40,12 @@ async function waitForStoreReady(win: BrowserWindow): Promise<void> {
         const store = window.__TM_STORE__
         if (!store) return false
         const state = store.getState()
+        if (state.filePicker?.candidates?.length && !state.load?.loading) {
+          store.getState().confirmOpenFiles(
+            state.filePicker.candidates.map((item) => item.filePath),
+          )
+          return false
+        }
         return Boolean(state.project?.rows?.length) && !state.load?.loading
       })()
     `)

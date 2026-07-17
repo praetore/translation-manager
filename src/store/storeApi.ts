@@ -67,6 +67,9 @@ export type TranslationStore = TranslationState & {
   clearMotion: () => void
   browseDirectory: () => Promise<void>
   loadDirectory: (pathOverride?: string) => Promise<void>
+  /** Apply selected paths from `filePicker` and close the dialog. */
+  confirmOpenFiles: (selectedPaths: readonly string[]) => void
+  cancelOpenFiles: () => void
   openProject: () => Promise<void>
   saveProject: () => Promise<void>
 }

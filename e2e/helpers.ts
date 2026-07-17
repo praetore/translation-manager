@@ -45,6 +45,23 @@ export async function loadFixtures(page: Page): Promise<void> {
       const store = window.__TM_STORE__
       if (!store) return false
       const state = store.getState()
+      return Boolean(state.filePicker?.candidates?.length) && !state.load?.loading
+    },
+    undefined,
+    { timeout: 30_000 },
+  )
+  await page.evaluate(() => {
+    const store = window.__TM_STORE__
+    if (!store) return
+    const picker = store.getState().filePicker
+    if (!picker) return
+    store.getState().confirmOpenFiles(picker.candidates.map((item) => item.filePath))
+  })
+  await page.waitForFunction(
+    () => {
+      const store = window.__TM_STORE__
+      if (!store) return false
+      const state = store.getState()
       return Boolean(state.project?.rows?.length) && !state.load?.loading
     },
     undefined,

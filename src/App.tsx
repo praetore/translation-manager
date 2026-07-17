@@ -2,10 +2,17 @@ import { Toolbar } from '@/components/Toolbar'
 import { TranslationTable } from '@/components/translation-table/TranslationTable'
 import { EmptyState } from '@/components/EmptyState'
 import { LoadingSkeleton } from '@/components/LoadingSkeleton'
+import { OpenProjectFilesDialog } from '@/components/OpenProjectFilesDialog'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 
 export default function App() {
-  const { displayProject, loadState } = useTranslationStore()
+  const {
+    displayProject,
+    loadState,
+    filePicker,
+    confirmOpenFiles,
+    cancelOpenFiles,
+  } = useTranslationStore()
   const showSkeleton = loadState.loading && !displayProject
 
   return (
@@ -20,6 +27,14 @@ export default function App() {
           <EmptyState />
         )}
       </main>
+      {filePicker ? (
+        <OpenProjectFilesDialog
+          key={filePicker.directoryPath}
+          picker={filePicker}
+          onCancel={cancelOpenFiles}
+          onConfirm={confirmOpenFiles}
+        />
+      ) : null}
     </div>
   )
 }

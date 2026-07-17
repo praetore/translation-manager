@@ -48,6 +48,7 @@ export function loadSampleProject(project = sampleProject()): TranslationProject
     searchScope: 'all',
     searchRegex: false,
     searchLayoutHoldKeys: null,
+    filePicker: null,
     layoutMotion: null,
     filterLayoutMode: null,
     load: {

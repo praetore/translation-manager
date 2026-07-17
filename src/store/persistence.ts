@@ -1,10 +1,14 @@
 /**
  * Load / browse / save via Electron IPC.
- * On load: clears selection, search, and motion; rebuilds project + baseline.
+ * Load scans the folder, then opens a file picker (or errors if nothing valid).
+ * Confirm applies the selected files; cancel leaves the current project intact.
  * Save only runs when `project.dirty`; refreshes `baselineRows` on success.
- * Partial write errors stay dirty and surface a toast (see `WriteFilesResult`).
  */
 import { toast } from 'sonner'
+import {
+  candidatesToPayloads,
+  classifyTranslationFiles,
+} from '@/services/classifyTranslationFiles'
 import {
   buildProjectFromFiles,
   cloneTranslationRows,
@@ -59,6 +63,34 @@ type StoreApi = {
 }
 
 export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn) {
+  const applyLoadedProject = (
+    directoryPath: string,
+    files: Parameters<typeof buildProjectFromFiles>[1],
+  ) => {
+    const nextProject = buildProjectFromFiles(directoryPath, files)
+    storeDirectory(directoryPath)
+    api.getState().clearSelection()
+    api.getState().clearSearch()
+    api.getState().clearMotion()
+    const status = {
+      key: 'status.keysAndLocales',
+      params: {
+        keys: nextProject.rows.length,
+        locales: nextProject.columns.length,
+      },
+    }
+    api.setState({
+      project: nextProject,
+      baselineRows: cloneTranslationRows(nextProject.rows),
+      directoryPath,
+      missingFilterKeys: null,
+      freshKeys: [],
+      pendingKeyEdit: null,
+      filePicker: null,
+      load: { loading: false, saving: false, error: null, status },
+    })
+  }
+
   const loadDirectory = async (pathOverride?: string) => {
     const t = getT()
     const target = (pathOverride ?? api.getState().directoryPath).trim()
@@ -72,44 +104,75 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
 
     api.setState({
       load: { loading: true, saving: false, error: null, status: null },
+      filePicker: null,
     })
-    api.getState().clearSelection()
-    api.getState().clearSearch()
-    api.getState().clearMotion()
 
     try {
       const scan = await window.electronAPI.scanDirectory(target)
-      const nextProject = buildProjectFromFiles(scan.directoryPath, scan.files)
-      storeDirectory(scan.directoryPath)
-      const status = {
-        key: 'status.keysAndLocales',
-        params: {
-          keys: nextProject.rows.length,
-          locales: nextProject.columns.length,
-        },
+      if (scan.files.length === 0) {
+        throw new Error('errors.noSupportedFiles')
       }
+
+      const classified = classifyTranslationFiles(scan.files)
+      if (classified.candidates.length === 0) {
+        const message = t('errors.noValidFiles')
+        toast.error(message)
+        api.setState({
+          filePicker: null,
+          load: { loading: false, saving: false, error: message, status: null },
+        })
+        return
+      }
+
       api.setState({
-        project: nextProject,
-        baselineRows: cloneTranslationRows(nextProject.rows),
         directoryPath: scan.directoryPath,
-        missingFilterKeys: null,
-        freshKeys: [],
-        pendingKeyEdit: null,
-        load: { loading: false, saving: false, error: null, status },
+        filePicker: {
+          directoryPath: scan.directoryPath,
+          candidates: classified.candidates,
+          skipped: classified.skipped,
+        },
+        load: { loading: false, saving: false, error: null, status: null },
       })
     } catch (error) {
       const raw = error instanceof Error ? error.message : String(error)
       const message = translateErrorMessage(raw, t)
       toast.error(message)
       api.setState({
-        project: null,
-        baselineRows: null,
-        missingFilterKeys: null,
-        freshKeys: [],
-        pendingKeyEdit: null,
+        filePicker: null,
         load: { loading: false, saving: false, error: message, status: null },
       })
     }
+  }
+
+  const confirmOpenFiles = (selectedPaths: readonly string[]) => {
+    const t = getT()
+    const picker = api.getState().filePicker
+    if (!picker) {
+      return
+    }
+
+    const selected = new Set(selectedPaths)
+    const chosen = picker.candidates.filter((item) => selected.has(item.filePath))
+    if (chosen.length === 0) {
+      const message = t('errors.selectAtLeastOneFile')
+      toast.error(message)
+      return
+    }
+
+    try {
+      applyLoadedProject(picker.directoryPath, candidatesToPayloads(chosen))
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : String(error)
+      const message = translateErrorMessage(raw, t)
+      toast.error(message)
+      api.setState({
+        load: { loading: false, saving: false, error: message, status: null },
+      })
+    }
+  }
+
+  const cancelOpenFiles = () => {
+    api.setState({ filePicker: null })
   }
 
   const browseDirectory = async () => {
@@ -181,6 +244,8 @@ export function createPersistenceActions(api: StoreApi, getT: () => TranslateFn)
   return {
     loadDirectory,
     browseDirectory,
+    confirmOpenFiles,
+    cancelOpenFiles,
     saveProject,
     openProject: browseDirectory,
   }
