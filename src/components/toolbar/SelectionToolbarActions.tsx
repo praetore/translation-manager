@@ -1,6 +1,6 @@
 import { FolderInput, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { AnimatedCount } from '@/components/common/AnimatedCount'
 import { ConfirmDialog } from '@/components/dialogs/ConfirmDialog'
 import { MoveKeysDialog } from '@/components/dialogs/MoveKeysDialog'
@@ -11,14 +11,8 @@ import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { springSnappy } from '@/lib/motion'
 
-interface SelectionToolbarActionsProps {
-  /** True while bulk chrome is mounted, including during exit animation. */
-  onChromePresentChange?: (present: boolean) => void
-}
-
-export function SelectionToolbarActions({
-  onChromePresentChange,
-}: SelectionToolbarActionsProps) {
+/** Always-visible bulk actions; Move/Delete disabled until rows are selected. */
+export function SelectionToolbarActions() {
   const { t } = useI18n()
   const { selectedKeys, clearSelection, deleteSelectedRows, moveSelectedKeys } =
     useTranslationStore()
@@ -27,72 +21,58 @@ export function SelectionToolbarActions({
 
   const count = selectedKeys.length
   const hasSelection = count > 0
-  const hasSelectionRef = useRef(hasSelection)
 
   const [cachedCount, setCachedCount] = useState(count)
   if (count > 0 && count !== cachedCount) {
     setCachedCount(count)
   }
 
-  useEffect(() => {
-    hasSelectionRef.current = hasSelection
-  }, [hasSelection])
-
-  useEffect(() => {
-    if (hasSelection) {
-      onChromePresentChange?.(true)
-    }
-  }, [hasSelection, onChromePresentChange])
-
   return (
     <>
-      <AnimatePresence
-        initial={false}
-        onExitComplete={() => {
-          if (!hasSelectionRef.current) {
-            onChromePresentChange?.(false)
-          }
-        }}
-      >
-        {hasSelection && (
-          <motion.div
-            key="bulk-actions"
-            className="flex shrink-0 flex-nowrap items-center gap-3"
-            initial={{ opacity: 0, x: -12, scale: 0.96 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -10, scale: 0.96 }}
-            transition={springSnappy}
-          >
-            <Badge
-              variant="secondary"
-              className="inline-flex shrink-0 items-center gap-1.5 py-0.5 pr-1.5 pl-2.5"
+      <div className="flex shrink-0 flex-nowrap items-center gap-2">
+        <AnimatePresence initial={false}>
+          {hasSelection ? (
+            <motion.div
+              key="selection-badge"
+              className="flex shrink-0"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={springSnappy}
             >
-              <AnimatedCount value={count} />
-              {t('toolbar.selectedSuffix')}
-              <button
-                type="button"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex size-4 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                aria-label={t('toolbar.deselect')}
-                onClick={clearSelection}
+              <Badge
+                variant="secondary"
+                className="inline-flex shrink-0 items-center gap-1.5 py-0.5 pr-1.5 pl-2.5"
               >
-                <X className="size-2.5" strokeWidth={2.5} />
-              </button>
-            </Badge>
-            <ToolbarActionButton
-              icon={FolderInput}
-              label={t('toolbar.moveKeys')}
-              onClick={() => setMoveOpen(true)}
-            />
-            <ToolbarActionButton
-              icon={Trash2}
-              label={t('toolbar.deleteSelectedLabel')}
-              variant="destructive"
-              onClick={() => setDeleteOpen(true)}
-            />
-            <Separator orientation="vertical" className="mx-1 shrink-0" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <AnimatedCount value={count} />
+                {t('toolbar.selectedSuffix')}
+                <button
+                  type="button"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex size-4 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  aria-label={t('toolbar.deselect')}
+                  onClick={clearSelection}
+                >
+                  <X className="size-2.5" strokeWidth={2.5} />
+                </button>
+              </Badge>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+        <ToolbarActionButton
+          icon={FolderInput}
+          label={t('toolbar.moveKeys')}
+          onClick={() => setMoveOpen(true)}
+          disabled={!hasSelection}
+        />
+        <ToolbarActionButton
+          icon={Trash2}
+          label={t('toolbar.deleteSelectedLabel')}
+          variant="destructive"
+          onClick={() => setDeleteOpen(true)}
+          disabled={!hasSelection}
+        />
+        <Separator orientation="vertical" className="mx-1 shrink-0" />
+      </div>
       <MoveKeysDialog
         open={moveOpen}
         sampleKey={selectedKeys[0] ?? ''}

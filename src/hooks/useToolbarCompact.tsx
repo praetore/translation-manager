@@ -13,8 +13,8 @@ import { TOOLBAR_COMPACT_MS } from '@/lib/motion'
 
 const ToolbarCompactContext = createContext(false)
 
-/** Extra width required before leaving compact mode (avoids flicker at the edge). */
-const EXPAND_HYSTERESIS_PX = 24
+/** Extra room beyond last measured expanded width before leaving compact. */
+const EXPAND_SLACK_PX = 8
 
 export function useIsToolbarCompact(): boolean {
   return useContext(ToolbarCompactContext)
@@ -34,42 +34,46 @@ export function ToolbarCompactProvider({
   )
 }
 
-/**
- * Flex + overflow-hidden often keeps scrollWidth === clientWidth even when
- * children visibly overflow, so measure child widths instead.
- */
-export function rowContentOverflows(el: HTMLElement): boolean {
+/** Sum of visible child widths + gaps (ignores enter transforms). */
+export function measureRowUsedWidth(el: HTMLElement): number {
   const children = Array.from(el.children).filter(
     (node): node is HTMLElement =>
       node instanceof HTMLElement && getComputedStyle(node).display !== 'none',
   )
   if (children.length === 0) {
-    return false
+    return 0
   }
 
   const styles = getComputedStyle(el)
-  const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0
+  const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0
   let used = 0
   for (let i = 0; i < children.length; i++) {
-    // offsetWidth ignores enter transforms (e.g. motion scale) that shrink getBoundingClientRect.
     used += children[i].offsetWidth
     if (i > 0) {
       used += gap
     }
   }
+  return used
+}
 
-  return used > el.clientWidth + 1
+/**
+ * Flex + overflow-hidden often keeps scrollWidth === clientWidth even when
+ * children visibly overflow, so measure child widths instead.
+ */
+export function rowContentOverflows(el: HTMLElement): boolean {
+  return measureRowUsedWidth(el) > el.clientWidth + 1
 }
 
 /**
  * Compact when the observed actions row overflows its width.
  * Pair with `flex-nowrap overflow-hidden` so excess clips instead of wrapping.
  *
- * Pass deps that flip when toolbar chrome is fully gone (after exit animations),
- * not on every selection count change — otherwise labels flash open/closed.
+ * Expand only when the row is wide enough for the last measured *expanded*
+ * content width (not merely a few px past the compact lock). That avoids the
+ * flash of labels opening and immediately collapsing while slowly resizing.
  *
- * Hysteresis uses window width, not the actions row: compact mode shrinks
- * siblings (search) which would otherwise widen this row and false-trigger expand.
+ * Pass deps that change when chrome appears/disappears (e.g. selection) so we
+ * can retry expand after space is freed.
  */
 export function useToolbarCompact(
   ref: RefObject<HTMLElement | null>,
@@ -77,7 +81,7 @@ export function useToolbarCompact(
 ): boolean {
   const [compact, setCompact] = useState(false)
   const compactRef = useRef(compact)
-  const compactAtWidthRef = useRef<number | null>(null)
+  const expandedNeedRef = useRef<number | null>(null)
   const expandUntilRef = useRef(0)
   const expandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const depsKey = deps.map(String).join('|')
@@ -102,36 +106,46 @@ export function useToolbarCompact(
     const depsChanged = prevDepsKeyRef.current !== depsKey
     prevDepsKeyRef.current = depsKey
 
-    const update = (options?: { allowDepsExpand?: boolean }) => {
-      const viewportWidth = window.innerWidth
+    const schedulePostExpandCheck = (): void => {
+      if (expandTimerRef.current) {
+        clearTimeout(expandTimerRef.current)
+      }
+      expandTimerRef.current = setTimeout(() => {
+        expandTimerRef.current = null
+        update()
+      }, TOOLBAR_COMPACT_MS)
+    }
+
+    const beginExpand = (): void => {
+      expandUntilRef.current = performance.now() + TOOLBAR_COMPACT_MS
+      setCompact(false)
+      schedulePostExpandCheck()
+    }
+
+    const update = (options?: { allowDepsExpand?: boolean }): void => {
       const expanding = performance.now() < expandUntilRef.current
-
       // While labels animate open, ignore overflow so the expand isn't cancelled mid-way.
-      if (!expanding && rowContentOverflows(el)) {
-        compactAtWidthRef.current = viewportWidth
-        setCompact(true)
+      if (expanding) {
         return
       }
 
-      if (!compactRef.current) {
-        return
-      }
+      const used = measureRowUsedWidth(el)
+      const available = el.clientWidth
 
-      const lockedAt = compactAtWidthRef.current
-      const grewEnough =
-        lockedAt != null && viewportWidth >= lockedAt + EXPAND_HYSTERESIS_PX
-
-      if (grewEnough || options?.allowDepsExpand) {
-        compactAtWidthRef.current = null
-        expandUntilRef.current = performance.now() + TOOLBAR_COMPACT_MS
-        setCompact(false)
-        if (expandTimerRef.current) {
-          clearTimeout(expandTimerRef.current)
+      if (compactRef.current) {
+        const need = expandedNeedRef.current
+        const fitsKnownNeed =
+          need != null && available >= need + EXPAND_SLACK_PX
+        if (fitsKnownNeed || options?.allowDepsExpand) {
+          beginExpand()
         }
-        expandTimerRef.current = setTimeout(() => {
-          expandTimerRef.current = null
-          update()
-        }, TOOLBAR_COMPACT_MS)
+        return
+      }
+
+      // Expanded: remember true label width; collapse only when it no longer fits.
+      expandedNeedRef.current = used
+      if (used > available + 1) {
+        setCompact(true)
       }
     }
 
@@ -145,7 +159,7 @@ export function useToolbarCompact(
       }
     }
 
-    const onWindowResize = () => update()
+    const onWindowResize = (): void => update()
     window.addEventListener('resize', onWindowResize)
 
     return () => {

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type RefObject } from 'react'
+import { useRef, useState } from 'react'
 import { FolderOpen, Languages, ListFilter, Plus, Save } from 'lucide-react'
 import { AddLocaleDialog } from '@/components/dialogs/AddLocaleDialog'
 import { SearchControls } from '@/components/toolbar/SearchControls'
@@ -18,32 +18,15 @@ import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 
 export function Toolbar() {
-  const actionsRef = useRef<HTMLDivElement>(null)
-  const [bulkChromePresent, setBulkChromePresent] = useState(false)
-  const onBulkChromePresentChange = useCallback((present: boolean) => {
-    setBulkChromePresent(present)
-  }, [])
-  const compact = useToolbarCompact(actionsRef, [bulkChromePresent])
-
   return (
-    <ToolbarCompactProvider compact={compact}>
-      <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
-        <ToolbarContent
-          actionsRef={actionsRef}
-          onBulkChromePresentChange={onBulkChromePresentChange}
-        />
-      </header>
-    </ToolbarCompactProvider>
+    <header className="grid gap-3 border-b bg-card/90 px-5 py-4 backdrop-blur">
+      <ToolbarContent />
+    </header>
   )
 }
 
-function ToolbarContent({
-  actionsRef,
-  onBulkChromePresentChange,
-}: {
-  actionsRef: RefObject<HTMLDivElement | null>
-  onBulkChromePresentChange: (present: boolean) => void
-}) {
+function ToolbarContent() {
+  const actionsRef = useRef<HTMLDivElement>(null)
   const { t } = useI18n()
   const {
     project,
@@ -59,7 +42,9 @@ function ToolbarContent({
     missingFilterKeys,
     liveMissingKeys,
     filterLayoutMode,
+    selectedKeys,
   } = useTranslationStore()
+  const compact = useToolbarCompact(actionsRef, [selectedKeys.length > 0])
   const [addLocaleOpen, setAddLocaleOpen] = useState(false)
 
   const dirty = Boolean(project?.dirty)
@@ -87,7 +72,7 @@ function ToolbarContent({
   })
 
   return (
-    <>
+    <ToolbarCompactProvider compact={compact}>
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t('app.title')}</h1>
         <p className="text-muted-foreground text-sm">{t('app.tagline')}</p>
@@ -148,7 +133,7 @@ function ToolbarContent({
           ref={actionsRef}
           className="ml-auto flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2 overflow-hidden"
         >
-          <SelectionToolbarActions onChromePresentChange={onBulkChromePresentChange} />
+          <SelectionToolbarActions />
           <SearchControls />
           <ToolbarActionButton
             icon={ListFilter}
@@ -197,6 +182,6 @@ function ToolbarContent({
           onConfirm={addLocale}
         />
       ) : null}
-    </>
+    </ToolbarCompactProvider>
   )
 }

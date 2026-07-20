@@ -7,10 +7,10 @@ import { loadSampleProject, sampleProject } from '@/test/projectFixture'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 describe('SelectionToolbarActions', () => {
-  it('renders nothing actionable when there is no selection', () => {
+  it('shows move and delete disabled when there is no selection', () => {
     renderWithProviders(<SelectionToolbarActions />)
-    expect(screen.queryByRole('button', { name: 'Move' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled()
     expect(screen.queryByRole('button', { name: 'Deselect' })).not.toBeInTheDocument()
   })
 
@@ -25,8 +25,8 @@ describe('SelectionToolbarActions', () => {
   it('shows move, delete, and a selected-count badge with deselect', () => {
     useTranslationStoreBase.setState({ selectedKeys: ['a', 'b', 'c'] })
     renderWithProviders(<SelectionToolbarActions />)
-    expect(screen.getByRole('button', { name: 'Move' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Move' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Deselect' })).toBeInTheDocument()
     expect(screen.getByText('selected')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).not.toHaveAccessibleName(

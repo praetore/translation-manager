@@ -16,7 +16,8 @@ test.describe('Electron smoke', () => {
 
       await page.getByRole('button', { name: 'Deselect' }).click()
       await expect(page.getByRole('button', { name: 'Deselect' })).toHaveCount(0)
-      await expect(page.getByRole('button', { name: 'Move' })).toHaveCount(0)
+      await expect(page.getByRole('button', { name: 'Move' })).toBeDisabled()
+      await expect(bulkDelete).toBeDisabled()
 
       const browserWindow = await app.browserWindow(page)
       await browserWindow.evaluate((win) => {

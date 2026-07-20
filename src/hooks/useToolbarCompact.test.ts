@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { rowContentOverflows } from '@/hooks/useToolbarCompact'
+import {
+  measureRowUsedWidth,
+  rowContentOverflows,
+} from '@/hooks/useToolbarCompact'
 
 function box(width: number, display = 'block'): HTMLElement {
   const el = document.createElement('div')
@@ -10,6 +13,22 @@ function box(width: number, display = 'block'): HTMLElement {
 
 afterEach(() => {
   vi.restoreAllMocks()
+})
+
+describe('measureRowUsedWidth', () => {
+  it('sums child widths and gaps', () => {
+    const row = document.createElement('div')
+    row.append(box(80), box(80))
+    document.body.append(row)
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((el) => {
+      if (el === row) {
+        return { columnGap: '8px', gap: '8px' } as CSSStyleDeclaration
+      }
+      return { display: (el as HTMLElement).style.display || 'block' } as CSSStyleDeclaration
+    })
+    expect(measureRowUsedWidth(row)).toBe(168)
+    row.remove()
+  })
 })
 
 describe('rowContentOverflows', () => {
