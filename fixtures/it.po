@@ -2,35 +2,35 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "auth.createAccount"
-msgstr "Crea account"
+msgid "auth.login.title"
+msgstr "Bentornato"
 
-msgid "auth.email"
+msgid "auth.login.action"
+msgstr "Accedi"
+
+msgid "auth.login.email"
 msgstr "Email"
 
-msgid "auth.forgotPassword"
+msgid "auth.login.password"
+msgstr "Password"
+
+msgid "auth.login.rememberMe"
+msgstr "Ricordami"
+
+msgid "auth.login.forgotPassword"
 msgstr "Password dimenticata?"
 
-msgid "auth.login"
-msgstr "Accedi"
+msgid "auth.signup.title"
+msgstr "Registrati"
+
+msgid "auth.signup.createAccount"
+msgstr "Crea account"
 
 msgid "auth.logout"
 msgstr "Esci"
 
-msgid "auth.password"
-msgstr "Password"
-
-msgid "auth.rememberMe"
-msgstr "Ricordami"
-
 msgid "auth.resetPassword"
 msgstr "Reimposta password"
-
-msgid "auth.signup"
-msgstr "Registrati"
-
-msgid "auth.welcomeBack"
-msgstr "Bentornato"
 
 msgid "common.apply"
 msgstr "Applica"

@@ -10,6 +10,7 @@
     "saving": "Saving…",
     "unsaved": "Unsaved",
     "addRow": "Add row",
+    "addLocale": "Add language",
     "search": "Search",
     "searchPlaceholder": "Search keys or text…",
     "searchPlaceholderShort": "Search…",
@@ -58,6 +59,23 @@
     "editKey": "Edit key",
     "keyPlaceholder": "translation.key",
     "deleteConfirm": "Delete key \"{key}\"? This removes it from all locale files when you save."
+  },
+  "addLocale": {
+    "title": "Add language",
+    "description": "Create a new locale column. The file is written when you save the project.",
+    "locale": "Language",
+    "localePlaceholder": "Choose a language",
+    "format": "File format",
+    "formats": {
+      "json": "JSON (.json)",
+      "yaml": "YAML (.yaml)",
+      "po": "Gettext (.po)",
+      "properties": "Java properties (.properties)"
+    },
+    "filePreview": "File: {fileName}",
+    "noneAvailable": "All catalog languages are already in this project.",
+    "duplicateLocale": "This language is already in the project.",
+    "confirm": "Add"
   },
   "dialog": {
     "cancel": "Cancel",

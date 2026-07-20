@@ -1,3 +1,4 @@
+import type { TranslationFormat } from '@shared/types'
 import type { KeyListTransitionMode } from '@/store/motionActions'
 import type { SearchScope } from '@/store/searchFilter'
 import type { TranslationState } from '@/store/types'
@@ -62,6 +63,8 @@ export type TranslationStore = TranslationState & {
   deleteSelectedRows: () => void
   renameKey: (oldKey: string, newKey: string) => boolean
   moveSelectedKeys: (lead: string) => boolean
+  /** Append a locale column; returns false when locale/format is invalid or duplicate. */
+  addLocale: (locale: string, format: TranslationFormat) => boolean
   leaveFreshKey: (key: string) => void
   clearPendingKeyEdit: () => void
   toggleMissingFilter: () => void

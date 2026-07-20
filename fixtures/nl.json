@@ -1,15 +1,19 @@
 {
   "auth": {
-    "createAccount": "Account aanmaken",
-    "email": "E-mail",
-    "forgotPassword": "Wachtwoord vergeten?",
-    "login": "",
+    "login": {
+      "title": "Welkom terug",
+      "action": "",
+      "email": "E-mail",
+      "password": "Wachtwoord",
+      "rememberMe": "Onthoud mij",
+      "forgotPassword": "Wachtwoord vergeten?"
+    },
+    "signup": {
+      "title": "Registreren",
+      "createAccount": "Account aanmaken"
+    },
     "logout": "Uitloggen",
-    "password": "Wachtwoord",
-    "rememberMe": "Onthoud mij",
-    "resetPassword": "Wachtwoord resetten",
-    "signup": "Registreren",
-    "welcomeBack": "Welkom terug"
+    "resetPassword": "Wachtwoord resetten"
   },
   "common": {
     "apply": "Toepassen",

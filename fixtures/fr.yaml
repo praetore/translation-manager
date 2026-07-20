@@ -1,14 +1,16 @@
 auth:
-  createAccount: Créer un compte
-  email: E-mail
-  forgotPassword: Mot de passe oublié ?
-  login: Connexion
+  login:
+    title: Bon retour
+    action: Connexion
+    email: E-mail
+    password: Mot de passe
+    rememberMe: Se souvenir de moi
+    forgotPassword: Mot de passe oublié ?
+  signup:
+    title: Inscription
+    createAccount: Créer un compte
   logout: Déconnexion
-  password: Mot de passe
-  rememberMe: Se souvenir de moi
   resetPassword: Réinitialiser le mot de passe
-  signup: Inscription
-  welcomeBack: Bon retour
 common:
   apply: Appliquer
   back: Retour

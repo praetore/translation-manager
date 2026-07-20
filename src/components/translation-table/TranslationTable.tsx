@@ -11,15 +11,14 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
-  flexRender,
   useTranslationColumns,
   useTranslationTableModel,
 } from '@/components/translation-table/columns'
+import { LocaleTableHeader } from '@/components/translation-table/LocaleTableHeader'
 import { useLocalePaneScrollSync } from '@/components/translation-table/tableScroll'
 import {
   KEY_COLUMN_WIDTH,
   ROW_HEIGHT,
-  TABLE_HEADER_HEIGHT,
   VirtualRow,
   type VirtualRowData,
 } from '@/components/translation-table/virtualization'
@@ -62,6 +61,8 @@ function TranslationTableContent() {
   const keyInnerRef = useRef<HTMLDivElement>(null)
   const localePaneRef = useRef<HTMLDivElement>(null)
   const [keyPaneHeight, setKeyPaneHeight] = useState(480)
+  /** Match header viewport to locale body (excludes classic vertical scrollbar). */
+  const [localeScrollbarY, setLocaleScrollbarY] = useState(0)
 
   const freshKeySet = useMemo(() => new Set(freshKeys), [freshKeys])
   const selectedKeySet = useMemo(() => new Set(selectedKeys), [selectedKeys])
@@ -94,6 +95,7 @@ function TranslationTableContent() {
     .filter((column) => column.id !== 'key')
     .reduce((sum, column) => sum + column.getSize(), 0)
 
+
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => localePaneRef.current,
@@ -114,6 +116,7 @@ function TranslationTableContent() {
     }
     const measure = (): void => {
       setKeyPaneHeight(Math.max(locale.clientHeight, 0))
+      setLocaleScrollbarY(Math.max(0, locale.offsetWidth - locale.clientWidth))
     }
     measure()
     const observer = new ResizeObserver(measure)
@@ -126,7 +129,7 @@ function TranslationTableContent() {
     headerRef,
     keyInnerRef,
     localePaneRef,
-    deps: [rows.length, localesWidth, totalSize],
+    deps: [rows.length, localesWidth, totalSize, localeScrollbarY],
   })
 
   const sharedData = useMemo(
@@ -181,38 +184,12 @@ function TranslationTableContent() {
       className="bg-card grid h-full min-h-0 min-w-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border shadow-sm"
       role="table"
     >
-      <div
-        className="bg-muted flex min-w-0 border-b"
-        style={{ height: TABLE_HEADER_HEIGHT }}
-      >
-        <div
-          className="flex h-full shrink-0 items-center border-r px-2.5 text-xs font-semibold"
-          style={{ width: KEY_COLUMN_WIDTH }}
-          role="columnheader"
-        >
-          Key
-        </div>
-        <div className="h-full min-w-0 flex-1 overflow-hidden" ref={headerRef}>
-          <div
-            className="flex h-full"
-            style={{ width: localesWidth, minWidth: localesWidth }}
-            role="row"
-          >
-            {localeHeaders.map((header) => (
-              <div
-                key={header.id}
-                className="flex h-full min-w-0 shrink-0 items-center border-r px-2.5 text-xs font-semibold"
-                style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
-                role="columnheader"
-              >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(header.column.columnDef.header, header.getContext())}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <LocaleTableHeader
+        headerRef={headerRef}
+        localeHeaders={localeHeaders}
+        localesWidth={localesWidth}
+        localeScrollbarY={localeScrollbarY}
+      />
 
       <div ref={bodyRef} className="flex min-h-0 min-w-0 overflow-hidden">
         <div

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type RefObject } from 'react'
-import { FolderOpen, ListFilter, Plus, Save } from 'lucide-react'
+import { FolderOpen, Languages, ListFilter, Plus, Save } from 'lucide-react'
+import { AddLocaleDialog } from '@/components/dialogs/AddLocaleDialog'
 import { SearchControls } from '@/components/toolbar/SearchControls'
 import { SelectionToolbarActions } from '@/components/toolbar/SelectionToolbarActions'
 import { ToolbarActionButton } from '@/components/toolbar/ToolbarActionButton'
@@ -52,16 +53,19 @@ function ToolbarContent({
     browseDirectory,
     loadDirectory,
     addRow,
+    addLocale,
     toggleMissingFilter,
     saveProject,
     missingFilterKeys,
     liveMissingKeys,
     filterLayoutMode,
   } = useTranslationStore()
+  const [addLocaleOpen, setAddLocaleOpen] = useState(false)
 
   const dirty = Boolean(project?.dirty)
   const canSave = dirty
   const canAddRow = Boolean(project)
+  const canAddLocale = Boolean(project)
   const missingFilterActive = missingFilterKeys !== null
   const missingFilterCount = missingFilterKeys?.length ?? 0
   const liveMissingCount = liveMissingKeys.length
@@ -146,14 +150,6 @@ function ToolbarContent({
         >
           <SelectionToolbarActions onChromePresentChange={onBulkChromePresentChange} />
           <SearchControls />
-          <Separator orientation="vertical" className="mx-1 hidden shrink-0 sm:block" />
-          <ToolbarActionButton
-            icon={Plus}
-            label={t('toolbar.addRow')}
-            className="shrink-0"
-            onClick={addRow}
-            disabled={!canAddRow}
-          />
           <ToolbarActionButton
             icon={ListFilter}
             label={missingLabel}
@@ -173,8 +169,34 @@ function ToolbarContent({
             disabled={!canToggleMissing}
             aria-pressed={filterVisuallyOn}
           />
+          <Separator orientation="vertical" className="mx-1 hidden shrink-0 sm:block" />
+          <ToolbarActionButton
+            icon={Plus}
+            label={t('toolbar.addRow')}
+            className="shrink-0"
+            onClick={addRow}
+            disabled={!canAddRow}
+          />
+          <ToolbarActionButton
+            icon={Languages}
+            label={t('toolbar.addLocale')}
+            className="shrink-0"
+            onClick={() => setAddLocaleOpen(true)}
+            disabled={!canAddLocale}
+          />
         </div>
       </div>
+
+      {project ? (
+        <AddLocaleDialog
+          open={addLocaleOpen}
+          existingLocales={project.columns.map((column) => column.locale)}
+          templateFileName={project.columns[0]?.fileName ?? 'en.json'}
+          defaultFormat={project.columns[0]?.format ?? 'json'}
+          onClose={() => setAddLocaleOpen(false)}
+          onConfirm={addLocale}
+        />
+      ) : null}
     </>
   )
 }

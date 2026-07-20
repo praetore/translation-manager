@@ -216,6 +216,7 @@ export function useTranslationStore(): TranslationStoreValue {
     clearSelection: store.clearSelection,
     deleteSelectedRows: store.deleteSelectedRows,
     moveSelectedKeys: store.moveSelectedKeys,
+    addLocale: store.addLocale,
     enteringKeys: store.enteringKeys,
     fadeEnteringKeys: store.fadeEnteringKeys,
     loadEntering: store.loadEntering,

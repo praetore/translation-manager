@@ -10,6 +10,7 @@
     "saving": "Opslaan…",
     "unsaved": "Niet opgeslagen",
     "addRow": "Rij toevoegen",
+    "addLocale": "Taal toevoegen",
     "search": "Zoeken",
     "searchPlaceholder": "Zoek keys of tekst…",
     "searchPlaceholderShort": "Zoeken…",
@@ -58,6 +59,23 @@
     "editKey": "Key bewerken",
     "keyPlaceholder": "translation.key",
     "deleteConfirm": "Key \"{key}\" verwijderen? Bij opslaan verdwijnt die uit alle locale-bestanden."
+  },
+  "addLocale": {
+    "title": "Taal toevoegen",
+    "description": "Maak een nieuwe locale-kolom. Het bestand wordt geschreven wanneer je het project opslaat.",
+    "locale": "Taal",
+    "localePlaceholder": "Kies een taal",
+    "format": "Bestandsformaat",
+    "formats": {
+      "json": "JSON (.json)",
+      "yaml": "YAML (.yaml)",
+      "po": "Gettext (.po)",
+      "properties": "Java properties (.properties)"
+    },
+    "filePreview": "Bestand: {fileName}",
+    "noneAvailable": "Alle talen uit de catalogus zitten al in dit project.",
+    "duplicateLocale": "Deze taal zit al in het project.",
+    "confirm": "Toevoegen"
   },
   "dialog": {
     "cancel": "Annuleren",

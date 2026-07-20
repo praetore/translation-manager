@@ -80,7 +80,7 @@ export function OpenProjectFilesDialog({
             </h3>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               className="h-7 shrink-0 px-2 text-xs"
               onClick={toggleAll}

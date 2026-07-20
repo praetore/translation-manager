@@ -91,6 +91,7 @@ export function pickSourceLocale(locales: string[]): string {
 /**
  * Language → representative ISO 3166-1 alpha-2 when the tag has no region.
  * Flags are countries, not languages — this is a UI convention only.
+ * Keys also seed the add-locale language picker.
  */
 const LANGUAGE_FLAG_REGION: Record<string, string> = {
   ar: 'SA',
@@ -134,6 +135,11 @@ const LANGUAGE_FLAG_REGION: Record<string, string> = {
   vi: 'VN',
   zh: 'CN',
 }
+
+/** Language codes offered in the add-locale picker (sorted). */
+export const CATALOG_LOCALES: readonly string[] = Object.keys(LANGUAGE_FLAG_REGION).sort(
+  (a, b) => a.localeCompare(b),
+)
 
 function regionToFlagEmoji(region: string): string | null {
   const code = region.toUpperCase()

@@ -6,7 +6,6 @@ import { ConfirmDialog } from '@/components/dialogs/ConfirmDialog'
 import { MoveKeysDialog } from '@/components/dialogs/MoveKeysDialog'
 import { ToolbarActionButton } from '@/components/toolbar/ToolbarActionButton'
 import { Badge } from '@/components/ui/badge'
-import { ButtonGroup } from '@/components/ui/button-group'
 import { Separator } from '@/components/ui/separator'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
@@ -79,19 +78,17 @@ export function SelectionToolbarActions({
                 <X className="size-2.5" strokeWidth={2.5} />
               </button>
             </Badge>
-            <ButtonGroup className="shrink-0">
-              <ToolbarActionButton
-                icon={FolderInput}
-                label={t('toolbar.moveKeys')}
-                onClick={() => setMoveOpen(true)}
-              />
-              <ToolbarActionButton
-                icon={Trash2}
-                label={t('toolbar.deleteSelectedLabel')}
-                variant="destructive"
-                onClick={() => setDeleteOpen(true)}
-              />
-            </ButtonGroup>
+            <ToolbarActionButton
+              icon={FolderInput}
+              label={t('toolbar.moveKeys')}
+              onClick={() => setMoveOpen(true)}
+            />
+            <ToolbarActionButton
+              icon={Trash2}
+              label={t('toolbar.deleteSelectedLabel')}
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+            />
             <Separator orientation="vertical" className="mx-1 shrink-0" />
           </motion.div>
         )}

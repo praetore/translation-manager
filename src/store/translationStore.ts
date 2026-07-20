@@ -15,6 +15,7 @@ import {
   peekNextRowKey,
   updateCell,
 } from '@/services/translationProject'
+import { addLocaleColumn } from '@/services/addLocaleColumn'
 import { createMotionActions } from '@/store/motionActions'
 import {
   leaveKeyInLists,
@@ -238,6 +239,19 @@ export const useTranslationStoreBase = create<TranslationStore>((set, get) => {
       if (mapping) {
         motion.animateFlash(keys.map((key) => mapping.get(key) ?? key))
       }
+      return true
+    },
+
+    addLocale: (locale, format) => {
+      const { project } = get()
+      if (!project) {
+        return false
+      }
+      const next = addLocaleColumn(project, { locale, format })
+      if (!next) {
+        return false
+      }
+      set((state) => withDirtyProject(state, next))
       return true
     },
 
