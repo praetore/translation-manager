@@ -1,4 +1,4 @@
-export type TranslationFormat = 'json' | 'yaml' | 'po' | 'properties'
+export type TranslationFormat = 'json' | 'yaml' | 'po' | 'properties' | 'xliff'
 
 export interface FlatTranslations {
   [key: string]: string
@@ -68,6 +68,14 @@ export const IPC_CHANNELS = {
 } as const
 
 /** Extensions main includes when scanning a locales directory (non-recursive). */
-export const SUPPORTED_EXTENSIONS = ['.json', '.yaml', '.yml', '.po', '.properties'] as const
+export const SUPPORTED_EXTENSIONS = [
+  '.json',
+  '.yaml',
+  '.yml',
+  '.po',
+  '.properties',
+  '.xliff',
+  '.xlf',
+] as const
 
 export const SOURCE_LOCALE = 'en'

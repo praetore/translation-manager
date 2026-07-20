@@ -16,7 +16,12 @@ export default defineConfig({
           name: 'node',
           environment: 'node',
           include: ['src/**/*.test.ts', 'shared/**/*.test.ts'],
-          exclude: ['src/hooks/useToolbarCompact.test.ts', 'src/**/*.test.tsx'],
+          exclude: [
+            'src/hooks/useToolbarCompact.test.ts',
+            'src/**/*.test.tsx',
+            // DOMParser for XLIFF
+            'shared/adapters/adapters.test.ts',
+          ],
           setupFiles: ['src/test/setup.ts'],
         },
       },
@@ -25,7 +30,11 @@ export default defineConfig({
         test: {
           name: 'jsdom',
           environment: 'jsdom',
-          include: ['src/**/*.test.tsx', 'src/hooks/useToolbarCompact.test.ts'],
+          include: [
+            'src/**/*.test.tsx',
+            'src/hooks/useToolbarCompact.test.ts',
+            'shared/adapters/adapters.test.ts',
+          ],
           setupFiles: ['src/test/setup.ts'],
         },
       },

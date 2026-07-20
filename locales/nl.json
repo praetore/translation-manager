@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Translation Manager",
-    "tagline": "Lokale vertaal-editor · JSON · YAML · PO · Properties"
+    "tagline": "Lokale vertaal-editor · JSON · YAML · PO · Properties · XLIFF"
   },
   "toolbar": {
     "directoryPath": "Mappad",
@@ -70,7 +70,8 @@
       "json": "JSON (.json)",
       "yaml": "YAML (.yaml)",
       "po": "Gettext (.po)",
-      "properties": "Java properties (.properties)"
+      "properties": "Java properties (.properties)",
+      "xliff": "XLIFF (.xliff)"
     },
     "filePreview": "Bestand: {fileName}",
     "noneAvailable": "Alle talen uit de catalogus zitten al in dit project.",

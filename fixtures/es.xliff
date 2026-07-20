@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="es" datatype="plaintext" original="messages">
+    <body>
+    <trans-unit id="auth.login.action">
+      <source>Log in</source>
+      <target>Iniciar sesión</target>
+    </trans-unit>
+    <trans-unit id="auth.login.email">
+      <source>Email</source>
+      <target>Correo electrónico</target>
+    </trans-unit>
+    <trans-unit id="auth.login.forgotPassword">
+      <source>Forgot password?</source>
+      <target>¿Olvidaste tu contraseña?</target>
+    </trans-unit>
+    <trans-unit id="auth.login.password">
+      <source>Password</source>
+      <target>Contraseña</target>
+    </trans-unit>
+    <trans-unit id="auth.login.rememberMe">
+      <source>Remember me</source>
+      <target>Recordarme</target>
+    </trans-unit>
+    <trans-unit id="auth.login.title">
+      <source>Welcome back</source>
+      <target>Bienvenido de nuevo</target>
+    </trans-unit>
+    <trans-unit id="auth.logout">
+      <source>Log out</source>
+      <target>Cerrar sesión</target>
+    </trans-unit>
+    <trans-unit id="auth.resetPassword">
+      <source>Reset password</source>
+      <target>Restablecer contraseña</target>
+    </trans-unit>
+    <trans-unit id="auth.signup.createAccount">
+      <source>Create account</source>
+      <target>Crear cuenta</target>
+    </trans-unit>
+    <trans-unit id="auth.signup.title">
+      <source>Sign up</source>
+      <target>Registrarse</target>
+    </trans-unit>
+    <trans-unit id="common.apply">
+      <source>Apply</source>
+      <target>Aplicar</target>
+    </trans-unit>
+    <trans-unit id="common.back">
+      <source>Back</source>
+      <target>Atrás</target>
+    </trans-unit>
+    <trans-unit id="common.cancel">
+      <source>Cancel</source>
+      <target>Cancelar</target>
+    </trans-unit>
+    <trans-unit id="common.close">
+      <source>Close</source>
+      <target>Cerrar</target>
+    </trans-unit>
+    <trans-unit id="common.confirm">
+      <source>Confirm</source>
+      <target>Confirmar</target>
+    </trans-unit>
+    <trans-unit id="common.copy">
+      <source>Copy</source>
+      <target>Copiar</target>
+    </trans-unit>
+    <trans-unit id="common.create">
+      <source>Create</source>
+      <target>Crear</target>
+    </trans-unit>
+    <trans-unit id="common.delete">
+      <source>Delete</source>
+      <target>Eliminar</target>
+    </trans-unit>
+    <trans-unit id="common.download">
+      <source>Download</source>
+      <target>Descargar</target>
+    </trans-unit>
+    <trans-unit id="common.duplicate">
+      <source>Duplicate</source>
+      <target>Duplicar</target>
+    </trans-unit>
+    <trans-unit id="common.edit">
+      <source>Edit</source>
+      <target>Editar</target>
+    </trans-unit>
+    <trans-unit id="common.export">
+      <source>Export</source>
+      <target>Exportar</target>
+    </trans-unit>
+    <trans-unit id="common.filter">
+      <source>Filter</source>
+      <target>Filtrar</target>
+    </trans-unit>
+    <trans-unit id="common.import">
+      <source>Import</source>
+      <target>Importar</target>
+    </trans-unit>
+    <trans-unit id="common.less">
+      <source>Less</source>
+      <target>Menos</target>
+    </trans-unit>
+    <trans-unit id="common.loading">
+      <source>Loading…</source>
+      <target>Cargando…</target>
+    </trans-unit>
+    <trans-unit id="common.more">
+      <source>More</source>
+      <target>Más</target>
+    </trans-unit>
+    <trans-unit id="common.next">
+      <source>Next</source>
+      <target>Siguiente</target>
+    </trans-unit>
+    <trans-unit id="common.no">
+      <source>No</source>
+      <target>No</target>
+    </trans-unit>
+    <trans-unit id="common.paste">
+      <source>Paste</source>
+      <target>Pegar</target>
+    </trans-unit>
+    <trans-unit id="common.previous">
+      <source>Previous</source>
+      <target>Anterior</target>
+    </trans-unit>
+    <trans-unit id="common.refresh">
+      <source>Refresh</source>
+      <target>Actualizar</target>
+    </trans-unit>
+    <trans-unit id="common.rename">
+      <source>Rename</source>
+      <target>Renombrar</target>
+    </trans-unit>
+    <trans-unit id="common.reset">
+      <source>Reset</source>
+      <target>Restablecer</target>
+    </trans-unit>
+    <trans-unit id="common.retry">
+      <source>Retry</source>
+      <target>Reintentar</target>
+    </trans-unit>
+    <trans-unit id="common.save">
+      <source>Save</source>
+      <target>Guardar</target>
+    </trans-unit>
+    <trans-unit id="common.search">
+      <source>Search</source>
+      <target>Buscar</target>
+    </trans-unit>
+    <trans-unit id="common.update">
+      <source>Update</source>
+      <target>Actualizar</target>
+    </trans-unit>
+    <trans-unit id="common.upload">
+      <source>Upload</source>
+      <target>Subir</target>
+    </trans-unit>
+    <trans-unit id="common.yes">
+      <source>Yes</source>
+      <target>Sí</target>
+    </trans-unit>
+    <trans-unit id="editor.addKey">
+      <source>Add key</source>
+      <target>Añadir clave</target>
+    </trans-unit>
+    <trans-unit id="editor.findReplace">
+      <source>Find and replace</source>
+      <target>Buscar y reemplazar</target>
+    </trans-unit>
+    <trans-unit id="editor.key">
+      <source>Key</source>
+      <target>Clave</target>
+    </trans-unit>
+    <trans-unit id="editor.missing">
+      <source>Missing translations</source>
+      <target>Traducciones faltantes</target>
+    </trans-unit>
+    <trans-unit id="editor.removeKey">
+      <source>Remove key</source>
+      <target>Eliminar clave</target>
+    </trans-unit>
+    <trans-unit id="editor.saved">
+      <source>All changes saved</source>
+      <target>Todos los cambios guardados</target>
+    </trans-unit>
+    <trans-unit id="editor.sortByKey">
+      <source>Sort by key</source>
+      <target>Ordenar por clave</target>
+    </trans-unit>
+    <trans-unit id="editor.sortByLocale">
+      <source>Sort by locale</source>
+      <target>Ordenar por idioma</target>
+    </trans-unit>
+    <trans-unit id="editor.source">
+      <source>Source</source>
+      <target>Origen</target>
+    </trans-unit>
+    <trans-unit id="editor.target">
+      <source>Target</source>
+      <target>Destino</target>
+    </trans-unit>
+    <trans-unit id="editor.title">
+      <source>Translation editor</source>
+      <target>Editor de traducciones</target>
+    </trans-unit>
+    <trans-unit id="editor.unsaved">
+      <source>Unsaved changes</source>
+      <target>Cambios sin guardar</target>
+    </trans-unit>
+    <trans-unit id="editor.value">
+      <source>Value</source>
+      <target>Valor</target>
+    </trans-unit>
+    <trans-unit id="errors.forbidden">
+      <source>Access denied</source>
+      <target>Acceso denegado</target>
+    </trans-unit>
+    <trans-unit id="errors.network">
+      <source>Network error</source>
+      <target>Error de red</target>
+    </trans-unit>
+    <trans-unit id="errors.notFound">
+      <source>Page not found</source>
+      <target>Página no encontrada</target>
+    </trans-unit>
+    <trans-unit id="errors.parseFailed">
+      <source>Could not parse file</source>
+      <target>No se pudo analizar el archivo</target>
+    </trans-unit>
+    <trans-unit id="errors.readFailed">
+      <source>Could not read folder</source>
+      <target>No se pudo leer la carpeta</target>
+    </trans-unit>
+    <trans-unit id="errors.server">
+      <source>Something went wrong</source>
+      <target>Algo salió mal</target>
+    </trans-unit>
+    <trans-unit id="errors.timeout">
+      <source>Request timed out</source>
+      <target>Tiempo de espera agotado</target>
+    </trans-unit>
+    <trans-unit id="errors.unauthorized">
+      <source>You are not authorized</source>
+      <target>No estás autorizado</target>
+    </trans-unit>
+    <trans-unit id="errors.writeFailed">
+      <source>Could not write file</source>
+      <target>No se pudo escribir el archivo</target>
+    </trans-unit>
+    <trans-unit id="nav.billing">
+      <source>Billing</source>
+      <target>Facturación</target>
+    </trans-unit>
+    <trans-unit id="nav.help">
+      <source>Help</source>
+      <target>Ayuda</target>
+    </trans-unit>
+    <trans-unit id="nav.home">
+      <source>Home</source>
+      <target>Inicio</target>
+    </trans-unit>
+    <trans-unit id="nav.languages">
+      <source>Languages</source>
+      <target>Idiomas</target>
+    </trans-unit>
+    <trans-unit id="nav.logout">
+      <source>Log out</source>
+      <target>Cerrar sesión</target>
+    </trans-unit>
+    <trans-unit id="nav.profile">
+      <source>Profile</source>
+      <target>Perfil</target>
+    </trans-unit>
+    <trans-unit id="nav.projects">
+      <source>Projects</source>
+      <target>Proyectos</target>
+    </trans-unit>
+    <trans-unit id="nav.settings">
+      <source>Settings</source>
+      <target>Ajustes</target>
+    </trans-unit>
+    <trans-unit id="nav.team">
+      <source>Team</source>
+      <target>Equipo</target>
+    </trans-unit>
+    <trans-unit id="nav.translations">
+      <source>Translations</source>
+      <target>Traducciones</target>
+    </trans-unit>
+    <trans-unit id="projects.archive">
+      <source>Archive project</source>
+      <target>Archivar proyecto</target>
+    </trans-unit>
+    <trans-unit id="projects.createdAt">
+      <source>Created at</source>
+      <target>Creado el</target>
+    </trans-unit>
+    <trans-unit id="projects.description">
+      <source>Description</source>
+      <target>Descripción</target>
+    </trans-unit>
+    <trans-unit id="projects.empty">
+      <source>No projects yet</source>
+      <target>Aún no hay proyectos</target>
+    </trans-unit>
+    <trans-unit id="projects.name">
+      <source>Project name</source>
+      <target>Nombre del proyecto</target>
+    </trans-unit>
+    <trans-unit id="projects.new">
+      <source>New project</source>
+      <target>Nuevo proyecto</target>
+    </trans-unit>
+    <trans-unit id="projects.open">
+      <source>Open project</source>
+      <target>Abrir proyecto</target>
+    </trans-unit>
+    <trans-unit id="projects.owner">
+      <source>Owner</source>
+      <target>Propietario</target>
+    </trans-unit>
+    <trans-unit id="projects.title">
+      <source>Projects</source>
+      <target>Proyectos</target>
+    </trans-unit>
+    <trans-unit id="projects.updatedAt">
+      <source>Updated at</source>
+      <target>Actualizado el</target>
+    </trans-unit>
+    <trans-unit id="settings.appearance">
+      <source>Appearance</source>
+      <target>Apariencia</target>
+    </trans-unit>
+    <trans-unit id="settings.autoSave">
+      <source>Auto save</source>
+      <target>Guardado automático</target>
+    </trans-unit>
+    <trans-unit id="settings.general">
+      <source>General</source>
+      <target>General</target>
+    </trans-unit>
+    <trans-unit id="settings.language">
+      <source>Language</source>
+      <target>Idioma</target>
+    </trans-unit>
+    <trans-unit id="settings.notifications">
+      <source>Notifications</source>
+      <target>Notificaciones</target>
+    </trans-unit>
+    <trans-unit id="settings.saveInterval">
+      <source>Save interval</source>
+      <target>Intervalo de guardado</target>
+    </trans-unit>
+    <trans-unit id="settings.shortcuts">
+      <source>Keyboard shortcuts</source>
+      <target>Atajos de teclado</target>
+    </trans-unit>
+    <trans-unit id="settings.sourceLocale">
+      <source>Source locale</source>
+      <target>Idioma de origen</target>
+    </trans-unit>
+    <trans-unit id="settings.theme">
+      <source>Theme</source>
+      <target>Tema</target>
+    </trans-unit>
+    <trans-unit id="settings.title">
+      <source>Settings</source>
+      <target>Ajustes</target>
+    </trans-unit>
+    <trans-unit id="status.archived">
+      <source>Archived</source>
+      <target>Archivado</target>
+    </trans-unit>
+    <trans-unit id="status.draft">
+      <source>Draft</source>
+      <target>Borrador</target>
+    </trans-unit>
+    <trans-unit id="status.offline">
+      <source>Offline</source>
+      <target>Sin conexión</target>
+    </trans-unit>
+    <trans-unit id="status.online">
+      <source>Online</source>
+      <target>En línea</target>
+    </trans-unit>
+    <trans-unit id="status.published">
+      <source>Published</source>
+      <target>Publicado</target>
+    </trans-unit>
+    <trans-unit id="status.synced">
+      <source>Synced</source>
+      <target>Sincronizado</target>
+    </trans-unit>
+    <trans-unit id="status.syncing">
+      <source>Syncing</source>
+      <target>Sincronizando</target>
+    </trans-unit>
+    <trans-unit id="table.columns">
+      <source>Columns</source>
+      <target>Columnas</target>
+    </trans-unit>
+    <trans-unit id="table.jumpTo">
+      <source>Jump to</source>
+      <target>Ir a</target>
+    </trans-unit>
+    <trans-unit id="table.noResults">
+      <source>No results</source>
+      <target>Sin resultados</target>
+    </trans-unit>
+    <trans-unit id="table.of">
+      <source>of</source>
+      <target>de</target>
+    </trans-unit>
+    <trans-unit id="table.page">
+      <source>Page</source>
+      <target>Página</target>
+    </trans-unit>
+    <trans-unit id="table.perPage">
+      <source>Per page</source>
+      <target>Por página</target>
+    </trans-unit>
+    <trans-unit id="table.rows">
+      <source>Rows</source>
+      <target>Filas</target>
+    </trans-unit>
+    <trans-unit id="table.selected">
+      <source>Selected</source>
+      <target>Seleccionado</target>
+    </trans-unit>
+    <trans-unit id="validation.duplicateKey">
+      <source>This key already exists</source>
+      <target>Esta clave ya existe</target>
+    </trans-unit>
+    <trans-unit id="validation.emptyFolder">
+      <source>No translation files found</source>
+      <target>No se encontraron archivos de traducción</target>
+    </trans-unit>
+    <trans-unit id="validation.invalidEmail">
+      <source>Enter a valid email address</source>
+      <target>Introduce un correo válido</target>
+    </trans-unit>
+    <trans-unit id="validation.mismatch">
+      <source>Values do not match</source>
+      <target>Los valores no coinciden</target>
+    </trans-unit>
+    <trans-unit id="validation.required">
+      <source>This field is required</source>
+      <target>Este campo es obligatorio</target>
+    </trans-unit>
+    <trans-unit id="validation.tooLong">
+      <source>Value is too long</source>
+      <target>El valor es demasiado largo</target>
+    </trans-unit>
+    <trans-unit id="validation.tooShort">
+      <source>Value is too short</source>
+      <target>El valor es demasiado corto</target>
+    </trans-unit>
+    <trans-unit id="validation.unsupportedFormat">
+      <source>Unsupported file format</source>
+      <target>Formato de archivo no compatible</target>
+    </trans-unit>
+    </body>
+  </file>
+</xliff>

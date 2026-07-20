@@ -11,13 +11,20 @@ import { JsonAdapter } from './JsonAdapter'
 import { YamlAdapter } from './YamlAdapter'
 import { PoAdapter } from './PoAdapter'
 import { PropertiesAdapter } from './PropertiesAdapter'
+import { XliffAdapter } from './XliffAdapter'
 
 export class AdapterRegistry {
   private readonly adapters: TranslationAdapter[]
 
   constructor(adapters?: TranslationAdapter[]) {
     this.adapters =
-      adapters ?? [new JsonAdapter(), new YamlAdapter(), new PoAdapter(), new PropertiesAdapter()]
+      adapters ?? [
+        new JsonAdapter(),
+        new YamlAdapter(),
+        new PoAdapter(),
+        new PropertiesAdapter(),
+        new XliffAdapter(),
+      ]
   }
 
   getByFileName(fileName: string): TranslationAdapter | undefined {

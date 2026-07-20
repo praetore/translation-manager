@@ -28,7 +28,10 @@ export function suggestLocaleFileName(
   const normalized = normalizeLocale(locale)
   const extension = formatExtension(format)
   const templateLocale = detectLocale(templateFileName)
-  const withoutExt = templateFileName.replace(/\.(json|ya?ml|po|properties)$/i, '')
+  const withoutExt = templateFileName.replace(
+    /\.(json|ya?ml|po|properties|xliff|xlf)$/i,
+    '',
+  )
 
   if (!templateLocale || withoutExt === templateLocale) {
     return `${normalized}${extension}`

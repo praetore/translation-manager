@@ -2,7 +2,7 @@ import type { TranslationFormat } from '@shared/types'
 import { SOURCE_LOCALE } from '@shared/types'
 
 const LOCALE_PATTERN =
-  /(?:^|[._-])([a-z]{2}(?:[-_][A-Za-z]{2})?)(?:\.(?:json|ya?ml|po|properties)$)/i
+  /(?:^|[._-])([a-z]{2}(?:[-_][A-Za-z]{2})?)(?:\.(?:json|ya?ml|po|properties|xliff|xlf)$)/i
 
 /** language or language-REGION (after normalizeLocale). */
 const LOCALE_TAG_PATTERN = /^[a-z]{2,3}(?:-[A-Z]{2})?$/
@@ -17,7 +17,7 @@ export function detectLocale(fileName: string): string {
     return normalizeLocale(match[1])
   }
 
-  const base = fileName.replace(/\.(json|ya?ml|po|properties)$/i, '')
+  const base = fileName.replace(/\.(json|ya?ml|po|properties|xliff|xlf)$/i, '')
   if (/^[a-z]{2}(?:[-_][A-Za-z]{2})?$/i.test(base)) {
     return normalizeLocale(base)
   }
@@ -80,6 +80,7 @@ export function detectFormat(fileName: string): TranslationFormat | null {
   if (lower.endsWith('.yaml') || lower.endsWith('.yml')) return 'yaml'
   if (lower.endsWith('.po')) return 'po'
   if (lower.endsWith('.properties')) return 'properties'
+  if (lower.endsWith('.xliff') || lower.endsWith('.xlf')) return 'xliff'
   return null
 }
 

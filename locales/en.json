@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Translation Manager",
-    "tagline": "Local translation editor · JSON · YAML · PO · Properties"
+    "tagline": "Local translation editor · JSON · YAML · PO · Properties · XLIFF"
   },
   "toolbar": {
     "directoryPath": "Folder path",
@@ -70,7 +70,8 @@
       "json": "JSON (.json)",
       "yaml": "YAML (.yaml)",
       "po": "Gettext (.po)",
-      "properties": "Java properties (.properties)"
+      "properties": "Java properties (.properties)",
+      "xliff": "XLIFF (.xliff)"
     },
     "filePreview": "File: {fileName}",
     "noneAvailable": "All catalog languages are already in this project.",

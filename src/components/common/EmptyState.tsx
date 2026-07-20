@@ -2,7 +2,7 @@ import { FolderSearch } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useI18n } from '@/i18n/LocaleProvider'
 
-const FORMAT_EXAMPLES = 'en.json, nl.json, YAML, PO, Properties'
+const FORMAT_EXAMPLES = 'en.json, nl.json, YAML, PO, Properties, XLIFF'
 
 export function EmptyState() {
   const { t } = useI18n()

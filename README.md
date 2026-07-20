@@ -12,7 +12,7 @@ A local desktop translation editor for software projects. Open a folder of local
 ## Features
 
 - **Local folder workflow** — open a locales directory via path or **Browse…**, then choose which translation files to load
-- **Multiple formats in one project** — JSON, YAML (`.yaml` / `.yml`), gettext PO (`.po`), and Java `.properties`; unreadable or non-locale files are skipped with a reason
+- **Multiple formats in one project** — JSON, YAML (`.yaml` / `.yml`), gettext PO (`.po`), Java `.properties`, and XLIFF (`.xliff` / `.xlf`); unreadable or non-locale files are skipped with a reason
 - **Virtualized grid** — smooth scrolling for large key sets; one column per locale with flag + language label
 - **Search** — filter by keys and/or text, with optional regex and scope (all / keys / text)
 - **Missing translations** — empty targets are highlighted when the source locale has a value; **Missing (N)** focuses on incomplete rows (snapshot stays stable until you toggle the filter again)
@@ -49,11 +49,11 @@ Download the latest build from [GitHub Releases](https://github.com/praetore/tra
    - Click **Missing (N)** to focus on incomplete rows
    - Select rows for **Move** / **Delete**, or use **Add row** for a new key
 
-Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, …). The source locale defaults to `en` when present. Files that are not valid locales or fail to parse appear under **Skipped** in the picker and are not loaded.
+Locale codes are inferred from filenames (`en.json`, `messages_de.properties`, `fr.yaml`, `it.po`, `es.xliff`, …). The source locale defaults to `en` when present. Files that are not valid locales or fail to parse appear under **Skipped** in the picker and are not loaded.
 
 ### Try sample data
 
-The repo’s [`fixtures/`](fixtures/) folder is a ready-made multi-format set (EN, NL, FR, DE, IT) — the screenshots above use it. Point the app at that folder after cloning, or copy it somewhere convenient.
+The repo’s [`fixtures/`](fixtures/) folder is a ready-made multi-format set (EN, NL, FR, DE, IT, ES) — the screenshots above use it. Point the app at that folder after cloning, or copy it somewhere convenient.
 
 ---
 
