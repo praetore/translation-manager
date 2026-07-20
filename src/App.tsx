@@ -1,8 +1,8 @@
-import { Toolbar } from '@/components/Toolbar'
+import { Toolbar } from '@/components/toolbar/Toolbar'
 import { TranslationTable } from '@/components/translation-table/TranslationTable'
-import { EmptyState } from '@/components/EmptyState'
-import { LoadingSkeleton } from '@/components/LoadingSkeleton'
-import { OpenProjectFilesDialog } from '@/components/OpenProjectFilesDialog'
+import { EmptyState } from '@/components/common/EmptyState'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { OpenProjectFilesDialog } from '@/components/dialogs/OpenProjectFilesDialog'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 
 export default function App() {

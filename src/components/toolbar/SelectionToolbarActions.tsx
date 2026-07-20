@@ -1,11 +1,12 @@
 import { FolderInput, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { AnimatedCount } from '@/components/AnimatedCount'
-import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { MoveKeysDialog } from '@/components/MoveKeysDialog'
-import { ToolbarActionButton } from '@/components/ToolbarActionButton'
+import { AnimatedCount } from '@/components/common/AnimatedCount'
+import { ConfirmDialog } from '@/components/dialogs/ConfirmDialog'
+import { MoveKeysDialog } from '@/components/dialogs/MoveKeysDialog'
+import { ToolbarActionButton } from '@/components/toolbar/ToolbarActionButton'
 import { Badge } from '@/components/ui/badge'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { Separator } from '@/components/ui/separator'
 import { useTranslationStore } from '@/hooks/useTranslationStore'
 import { useI18n } from '@/i18n/LocaleProvider'
@@ -78,17 +79,19 @@ export function SelectionToolbarActions({
                 <X className="size-2.5" strokeWidth={2.5} />
               </button>
             </Badge>
-            <ToolbarActionButton
-              icon={FolderInput}
-              label={t('toolbar.moveKeys')}
-              onClick={() => setMoveOpen(true)}
-            />
-            <ToolbarActionButton
-              icon={Trash2}
-              label={t('toolbar.deleteSelectedLabel')}
-              variant="destructive"
-              onClick={() => setDeleteOpen(true)}
-            />
+            <ButtonGroup className="shrink-0">
+              <ToolbarActionButton
+                icon={FolderInput}
+                label={t('toolbar.moveKeys')}
+                onClick={() => setMoveOpen(true)}
+              />
+              <ToolbarActionButton
+                icon={Trash2}
+                label={t('toolbar.deleteSelectedLabel')}
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+              />
+            </ButtonGroup>
             <Separator orientation="vertical" className="mx-1 shrink-0" />
           </motion.div>
         )}

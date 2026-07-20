@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentProps, ReactNode } from 'react'
-import { Hint } from '@/components/Hint'
+import { Hint } from '@/components/common/Hint'
 import { Button } from '@/components/ui/button'
 import { useIsToolbarCompact } from '@/hooks/useToolbarCompact'
 import { cn } from '@/lib/utils'

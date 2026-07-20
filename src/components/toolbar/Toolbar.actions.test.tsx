@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Toolbar } from '@/components/Toolbar'
+import { Toolbar } from '@/components/toolbar/Toolbar'
 import { useTranslationStoreBase } from '@/store/translationStore'
 import { loadSampleProject, sampleProject } from '@/test/projectFixture'
 import { renderWithProviders } from '@/test/renderWithProviders'

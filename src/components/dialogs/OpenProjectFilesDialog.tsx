@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { LocaleFlag } from '@/components/LocaleFlag'
+import { LocaleFlag } from '@/components/common/LocaleFlag'
 import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import type { FilePickerState } from '@/services/classifyTranslationFiles'

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { OpenProjectFilesDialog } from '@/components/OpenProjectFilesDialog'
+import { OpenProjectFilesDialog } from '@/components/dialogs/OpenProjectFilesDialog'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 const mixedPicker = {

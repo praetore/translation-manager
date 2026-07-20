@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
-import { LoadingSkeleton } from '@/components/LoadingSkeleton'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 describe('LoadingSkeleton', () => {

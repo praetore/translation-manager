@@ -58,6 +58,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let mainWindow: BrowserWindow | null = null
 let uiLocale: UiLocale = 'en'
 let uiTheme: UiTheme = 'system'
+let lastOpenDirectory: string | undefined
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -272,13 +273,11 @@ function registerIpcHandlers(): void {
     const result = await dialog.showOpenDialog(mainWindow!, {
       properties: ['openDirectory'],
       title: t('menu.openFolderDialog'),
+      ...(lastOpenDirectory ? { defaultPath: lastOpenDirectory } : {}),
     })
-
-    if (result.canceled || result.filePaths.length === 0) {
-      return null
-    }
-
-    return result.filePaths[0]
+    if (result.canceled || result.filePaths.length === 0) return null
+    lastOpenDirectory = result.filePaths[0]
+    return lastOpenDirectory
   })
 
   ipcMain.handle(

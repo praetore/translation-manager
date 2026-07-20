@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Save } from 'lucide-react'
 import { screen } from '@testing-library/react'
-import { ToolbarActionButton } from '@/components/ToolbarActionButton'
+import { ToolbarActionButton } from '@/components/toolbar/ToolbarActionButton'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 describe('ToolbarActionButton', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
-import { EmptyState } from '@/components/EmptyState'
+import { EmptyState } from '@/components/common/EmptyState'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 describe('EmptyState', () => {

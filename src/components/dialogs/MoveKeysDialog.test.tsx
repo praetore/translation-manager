@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MoveKeysDialog } from '@/components/MoveKeysDialog'
+import { MoveKeysDialog } from '@/components/dialogs/MoveKeysDialog'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
 const keys = ['auth.createAccount', 'auth.login'] as const

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { SelectionToolbarActions } from '@/components/SelectionToolbarActions'
+import { SelectionToolbarActions } from '@/components/toolbar/SelectionToolbarActions'
 import { useTranslationStoreBase } from '@/store/translationStore'
 import { loadSampleProject, sampleProject } from '@/test/projectFixture'
 import { renderWithProviders } from '@/test/renderWithProviders'
