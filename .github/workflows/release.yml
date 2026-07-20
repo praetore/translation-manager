@@ -93,12 +93,19 @@ jobs:
           TAG="${{ steps.tag.outputs.tag }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release ${TAG} already exists — publishers will upload assets to it."
-          else
-            gh release create "$TAG" \
-              --title "$TAG" \
-              --notes "Release ${TAG}" \
-              --target "$GITHUB_SHA"
+            exit 0
+          fi
+          # Ignore races if another run created the release between view and create.
+          if gh release create "$TAG" \
+            --title "$TAG" \
+            --notes "Release ${TAG}" \
+            --target "$GITHUB_SHA"; then
             echo "Created release ${TAG}"
+          elif gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} appeared concurrently — continuing."
+          else
+            echo "Failed to create or find release ${TAG}" >&2
+            exit 1
           fi
 
   release:
@@ -132,25 +139,48 @@ jobs:
       - name: Build renderer + Electron
         run: npm run build
 
+      # Build only — do not let electron-builder create/upload the GitHub release.
+      # Parallel matrix jobs (and Windows nsis+portable) race on POST /releases and
+      # fail with 422 tag_name already_exists; prepare owns release creation.
       - name: Package (Windows)
         if: matrix.platform == 'win'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --publish always
+        run: npx electron-builder --win --publish never
 
       - name: Package (macOS)
         if: matrix.platform == 'mac'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Unsigned CI builds (no Apple Developer cert in this workflow)
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npx electron-builder --mac --publish always
+        run: npx electron-builder --mac --publish never
 
       - name: Package (Linux)
         if: matrix.platform == 'linux'
+        run: npx electron-builder --linux --publish never
+
+      - name: Upload artifacts to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --linux --publish always
+          TAG: ${{ needs.prepare.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(
+            release/*.exe
+            release/*.dmg
+            release/*.AppImage
+            release/*.zip
+            release/*.blockmap
+            release/latest*.yml
+          )
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No release artifacts found under release/" >&2
+            ls -la release/ >&2 || true
+            exit 1
+          fi
+          echo "Uploading ${#files[@]} file(s) to ${TAG}:"
+          printf '  %s\n' "${files[@]}"
+          gh release upload "$TAG" "${files[@]}" --clobber
 
   # After a successful release: refresh README screenshots from that build,
   # bump package.json to the next minor, and commit both to master.

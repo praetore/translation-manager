@@ -116,7 +116,7 @@ Internal architecture notes for contributors: [`CONTRIBUTING.md`](CONTRIBUTING.m
 
 ### Releasing
 
-Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. CI runs **`npm test`** and **`npm run test:e2e`** first; packaging only starts if those pass. After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
+Pushing a `v*` tag builds installers for Windows, macOS, and Linux and uploads them to a GitHub Release. CI runs **`npm test`** and **`npm run test:e2e`** first; packaging only starts if those pass. The workflow creates the GitHub release once, then each platform job packages with electron-builder and uploads artifacts via `gh release upload` (avoids parallel publish races). After a successful release, CI refreshes README screenshots and bumps `package.json` to the **next minor** on `master` (e.g. release `v0.4.0` → commit `0.5.0`).
 
 ```bash
 # package.json should already be the version you want to release (e.g. 0.4.0)
