@@ -77,28 +77,36 @@ export function MoveKeysDialog({
   const preview =
     sampleKey && canSubmit ? applyKeyLead(sampleKey, trimmedLead) : ''
 
+  const reset = useCallback(() => {
+    setLead('')
+    setConflict(false)
+    setRevealIncompleteError(false)
+  }, [])
+
+  const close = useCallback(() => {
+    reset()
+    onClose()
+  }, [onClose, reset])
+
   const submit = useCallback(() => {
     if (!canSubmit) {
       return
     }
     const ok = onConfirm(trimmedLead)
     if (ok) {
-      onClose()
+      close()
       return
     }
     setConflict(true)
     inputRef.current?.focus()
-  }, [canSubmit, trimmedLead, onClose, onConfirm])
+  }, [canSubmit, trimmedLead, close, onConfirm])
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
         if (!next) {
-          setLead('')
-          setConflict(false)
-          setRevealIncompleteError(false)
-          onClose()
+          close()
         }
       }}
     >
@@ -200,7 +208,7 @@ export function MoveKeysDialog({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={close}>
             {t('dialog.cancel')}
           </Button>
           <Button type="button" onClick={submit} disabled={!canSubmit}>

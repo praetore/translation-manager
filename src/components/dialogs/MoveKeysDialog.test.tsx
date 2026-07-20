@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MoveKeysDialog } from '@/components/dialogs/MoveKeysDialog'
@@ -104,5 +104,35 @@ describe('MoveKeysDialog', () => {
       screen.getByText('That path would create empty or duplicate keys.'),
     ).toBeInTheDocument()
     expect(screen.getByLabelText('New path')).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('clears the lead input when the dialog is cancelled', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    const { rerender } = renderWithProviders(
+      <MoveKeysDialog
+        open
+        sampleKey="auth.createAccount"
+        selectedKeys={keys}
+        selectedCount={2}
+        onClose={onClose}
+        onConfirm={() => true}
+      />,
+    )
+    await user.type(screen.getByLabelText('New path'), 'ui.auth')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(onClose).toHaveBeenCalled()
+
+    rerender(
+      <MoveKeysDialog
+        open
+        sampleKey="auth.createAccount"
+        selectedKeys={keys}
+        selectedCount={2}
+        onClose={onClose}
+        onConfirm={() => true}
+      />,
+    )
+    expect(screen.getByLabelText('New path')).toHaveValue('')
   })
 })
